@@ -20,7 +20,9 @@
 | i18n | Bilingual UI / content / mock narration (zh default, --lang en) | done |
 | Provider | Real `openai`, `anthropic`, `openai-compatible` adapters + auto fallback | done |
 | B | 3 heroes, 9 skills, 6 items, 6 affixes, 2 resonances, build resolver | done |
-| C | Combat playback (pacing, color, replay) | next |
+| C0 | BattleLLMSession, static context, turn delta, session trace | next |
+| C1 | Build panel, Buff/Debuff UI, monster tier, codex stage | next |
+| C2 | 6 heroes, monster families, tiered codex/content schema | planned |
 | D | Dungeon, route, shop, rewards | planned |
 | E | Codex, run save, death persistence | planned |
 | F | Batch playtest + balance stats | planned |
@@ -212,12 +214,16 @@ agents should read the nearest `_rules.md` before adding or moving files.
 
 Next ready slices (in order of recommended priority):
 
-1. **Slice C** — pacing / color / `--no-color` / `--no-animation` /
-   `ouro replay <trace>`.
-2. **Slice D** — dungeons, routes, shops, rewards (so a full run becomes
+1. **Slice C0** — `BattleLLMSession`, static context / turn delta,
+   session trace, context reuse metrics.
+2. **Slice C1** — Build panel, Buff/Debuff groups, monster tier, codex
+   stage, no-color snapshot stability.
+3. **Slice C2** — six-hero content plan, monster families, three-tier
+   monster variants, codex schema.
+4. **Slice D** — dungeons, routes, shops, rewards (so a full run becomes
    playable).
-3. **Slice E** — Codex progress, death handling, run/codex save files.
-4. **Slice F** — `ouro batch` with seed sweeps and balance stats.
+5. **Slice E** — Codex progress, death handling, run/codex save files.
+6. **Slice F** — `ouro batch` with seed sweeps and balance stats.
 
 See the requirement matrix:
 [docs/product/06_需求追踪矩阵_20260503.md](docs/product/06_需求追踪矩阵_20260503.md).

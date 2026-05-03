@@ -19,11 +19,12 @@
 7. `F:\WorkSpace\01-prd\ouro-agent\04_策划完成度与实现前验收清单_20260503.md`
 8. `F:\WorkSpace\01-prd\ouro-agent\05_策划与研发标准对齐_20260503.md`
 9. `F:\WorkSpace\01-prd\ouro-agent\06_需求追踪矩阵_20260503.md`
-10. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_命令行AI肉鸽系统规划_20260503.md`
-11. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_AI协作规则_20260503.md`
-12. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_分步实现路线图_20260503.md`
-13. `F:\WorkSpace\03-planning\jobs\JOBS-OuroAgent.md`
-14. `F:\WorkSpace\WAL.md` 中 Ouro Agent 相关决策
+10. `F:\WorkSpace\01-prd\ouro-agent\09_内容扩展Session与Build改版规划_20260503.md`
+11. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_命令行AI肉鸽系统规划_20260503.md`
+12. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_AI协作规则_20260503.md`
+13. `F:\WorkSpace\03-planning\ouro-agent\OuroAgent_分步实现路线图_20260503.md`
+14. `F:\WorkSpace\03-planning\jobs\JOBS-OuroAgent.md`
+15. `F:\WorkSpace\WAL.md` 中 Ouro Agent 相关决策
 
 如果这些文件之间冲突：
 
@@ -42,7 +43,7 @@ Ouro Agent 第一阶段必须遵守：
 
 1. 目标是先做一个好玩的单机 CLI 肉鸽，不是先做评测平台。
 2. MVP 只做单英雄，不做小队系统。
-3. 战斗采用读条制，英雄每次行动条满都调用模型决策。
+3. 战斗采用读条制；下一阶段采用每场战斗一个 BattleLLMSession，英雄行动时发送 turn delta。
 4. 玩家只在战斗外操作：选关、商店、装备替换、Build 调整、英雄 Prompt 调整。
 5. 战斗中玩家不能直接选择技能或目标，只能观看战斗反馈。
 6. AI 决定行动，游戏引擎决定结果。
@@ -66,6 +67,7 @@ Ouro Agent 第一阶段必须遵守：
 | 可观察 | 每场战斗必须保存关键 trace，便于调试和复盘 |
 | 可安装 | 第一轮工程必须能通过命令行安装和启动 |
 | 可配置 | Provider、model、base_url、api_key_env 必须通过 CLI 配置 |
+| Session 可复盘 | BattleLLMSession 必须记录 session id、static context hash 和 turn delta |
 
 ---
 
@@ -78,6 +80,7 @@ Ouro Agent 第一阶段必须遵守：
 3. 引用已解锁图鉴进行战术分析。
 4. 在传奇装备允许的有限选项里选择适配效果。
 5. 根据玩家 Prompt 表现不同战斗风格。
+6. 在同一 BattleLLMSession 内基于已发生行动形成战术连续性。
 
 模型不能做：
 
@@ -86,6 +89,7 @@ Ouro Agent 第一阶段必须遵守：
 3. 读取未解锁图鉴信息。
 4. 绕过冷却、法力、道具数量和行动规则。
 5. 用自然语言替代结构化 action。
+6. 借 Session 记忆访问未解锁图鉴或隐藏状态。
 
 模型输出失败时：
 
@@ -131,6 +135,9 @@ Ouro Agent 第一阶段必须遵守：
 | 羁绊 | 必须由有限标签触发，不能靠玩家自由声明 |
 | 怪物 | 必须有读条速度、技能、弱点、图鉴阶段 |
 | 副本 | 必须有路线选择和风险收益差异 |
+| Build | 必须有明确 archetype、核心标签、策略倾向和 UI 展示 |
+| Buff/Debuff | 必须有统一 status ID、短名、类型、效果和显示规则 |
+| 怪物家族 | 必须有 family ID 和 I/II/III 三档扩展方向 |
 
 ID 使用稳定英文 snake_case；展示名可以使用中文。
 

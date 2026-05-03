@@ -1,8 +1,8 @@
 # Ouro Agent 分步实现路线图
 
-> 日期：2026-05-03  
-> 状态：路线图草案，等待 RicHe 审批后进入实现。  
-> 原则：先跑通可玩的最小闭环，再扩内容、表现和模式。
+> 日期：2026-05-03
+> 状态：v0.2，已根据 Cursor 完成 Slice 0/A/B 和真实 Provider adapter 后的项目状态更新。
+> 原则：先稳住模型 Session、Build 表达和内容体系，再进入完整副本路线。
 
 ---
 
@@ -11,12 +11,15 @@
 | 阶段 | 目标 | 状态 |
 |------|------|------|
 | S0 | 规则与计划沉淀 | done |
-| S1 | 技术栈、发布安装与工程骨架 | pending |
-| S2 | 确定性战斗引擎 | pending |
-| S3 | 内容数据模型 | pending |
-| S4 | 模型行动协议与 mock model | pending |
-| S5 | 真实模型接入 | pending |
-| S6 | CLI / TUI 观战体验 | pending |
+| S1 | 技术栈、发布安装与工程骨架 | done |
+| S2 | 确定性战斗引擎 | done |
+| S3 | 内容数据模型 | done |
+| S4 | 模型行动协议与 mock model | done |
+| S5 | 真实模型接入 | done |
+| S6 | CLI / TUI 观战体验基础 | partial |
+| S6.1 | BattleLLMSession 改版 | next |
+| S6.2 | Build / Buff / 图鉴 UI 改版 | next |
+| S6.3 | 英雄与怪物内容扩展 | next |
 | S7 | 节点型副本与商店 | pending |
 | S8 | 图鉴、成长、失败机制 | pending |
 | S9 | MVP 打磨与验证 | pending |
@@ -201,6 +204,70 @@
 
 ---
 
+## S6.1 BattleLLMSession 改版
+
+目标：把每场战斗从多次 stateless prompt 升级为一个持续的模型战斗会话。
+
+建议动作：
+
+1. 建立 `BattleLLMSession` 接口。
+2. 把 Prompt Composer 拆成 static context 和 turn delta。
+3. trace 记录 `battle_session_id`、`static_context_hash`、`delta_context_id`。
+4. Provider 不支持服务端 session 时使用本地 transcript fallback。
+5. mock 固定 seed 仍然可复测。
+
+验收标准：
+
+1. 同一场战斗只有一个 `battle_session_id`。
+2. 静态 Build、技能、图鉴不在每回合完整重复。
+3. 模型依然不能决定伤害、掉落、胜负。
+
+不要做：
+
+1. 不借 Session 机制让模型持有未解锁图鉴。
+2. 不为了省 token 牺牲裁判可解释性。
+
+---
+
+## S6.2 Build / Buff / 图鉴 UI 改版
+
+目标：让玩家能看懂英雄为什么这样行动，以及怪物危险程度和图鉴阶段。
+
+建议动作：
+
+1. 英雄详情显示 Build 类型、核心标签、装备、词条、羁绊。
+2. 战斗主屏显示 Buff / Debuff 分组。
+3. 怪物显示 family tier、glyph、codex stage。
+4. BattleLLMSession 显示 Battle Echo / Sealed Echo / Echo Cost。
+5. 增加 no-color 快照测试。
+
+验收标准：
+
+1. 玩家只看战斗屏就能知道当前 Build 和敌人档次。
+2. 状态不依赖颜色也能读懂。
+3. Session 成本展示不抢占 HP/MP/ATB。
+
+---
+
+## S6.3 英雄与怪物内容扩展
+
+目标：把内容扩展到足以支撑新手副本和后续图鉴成长。
+
+建议动作：
+
+1. 规划并实现 6 英雄数据。
+2. 定义至少 4 个怪物家族 I/II 档，1 个 III 档 Boss。
+3. 新增 family/tier/codex 字段和校验。
+4. 对 Build、怪物档次和英雄胜率做批量试跑。
+
+验收标准：
+
+1. 内容校验通过。
+2. 每个怪物家族至少有图鉴 unknown/observed/familiar。
+3. Build 改动能影响模型策略提示。
+
+---
+
 ## S7. 节点型副本与商店
 
 目标：从单场战斗扩展为一局肉鸽。
@@ -294,12 +361,12 @@
 
 ---
 
-## 第一轮建议执行顺序
+## 当前建议执行顺序
 
-如果 RicHe 批准进入实现，建议第一轮只做：
+当前 Cursor 已完成 Slice 0/A/B 和真实 Provider adapter。下一轮建议只做：
 
-1. S1 技术栈、发布安装与工程骨架。
-2. S2 无 LLM 战斗引擎。
-3. S4 的 mock model 协议最小版。
+1. S6.1 BattleLLMSession。
+2. S6.2 Build / Buff / 图鉴 UI。
+3. S6.3 英雄与怪物内容扩展。
 
-先不做真实模型完整接入。原因是先用 mock model 跑通战斗协议，能更快发现规则和结算问题；但配置层必须预留 OpenAI、Anthropic 和 OpenAI-compatible Provider。
+先不做完整副本、路线和商店。原因是 Session、Build 和怪物图鉴是后续副本体验的底座，先把这些做稳，后面路线和商店才不会变成只是在单场战斗外套壳。

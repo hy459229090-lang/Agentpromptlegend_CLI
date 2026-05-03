@@ -19,7 +19,9 @@ English: **[README.md](README.md)**.
 | i18n | UI / 内容 / Mock 旁白中英双语（中文默认，--lang en 切英文） | done |
 | Provider | `openai` / `anthropic` / `openai-compatible` 真实 adapter + 自动降级 | done |
 | B | 3 英雄 / 9 技能 / 6 装备 / 6 词条 / 2 羁绊 / 构筑结算 | done |
-| C | 战斗观战表现（节奏 / 颜色 / replay） | next |
+| C0 | BattleLLMSession、静态上下文、turn delta、session trace | next |
+| C1 | Build 面板、Buff/Debuff UI、怪物档次、图鉴阶段 | next |
+| C2 | 6 英雄、怪物家族、三档图鉴与内容 schema | planned |
 | D | 副本 / 路线 / 商店 / 奖励 | planned |
 | E | 图鉴 / 存档 / 死亡保留 | planned |
 | F | 批量试跑 + 基础平衡 | planned |
@@ -206,11 +208,14 @@ scripts/                      开发辅助脚本
 
 按推荐优先级：
 
-1. **Slice C** — 节奏控制 / 颜色 / `--no-color` / `--no-animation` /
-   `ouro replay <trace>`。
-2. **Slice D** — 副本 / 路线 / 节点 / 商店 / 奖励（让"一整局"成立）。
-3. **Slice E** — 图鉴进度、死亡保留、Run / Codex 存档。
-4. **Slice F** — `ouro batch` 批量试跑、平衡统计。
+1. **Slice C0** — `BattleLLMSession`、static context / turn delta、
+   session trace、上下文复用指标。
+2. **Slice C1** — Build 面板、Buff/Debuff 分组、怪物档次、图鉴阶段、
+   no-color 快照稳定性。
+3. **Slice C2** — 六英雄内容规划、怪物家族、三档怪物变体、图鉴 schema。
+4. **Slice D** — 副本 / 路线 / 节点 / 商店 / 奖励（让"一整局"成立）。
+5. **Slice E** — 图鉴进度、死亡保留、Run / Codex 存档。
+6. **Slice F** — `ouro batch` 批量试跑、平衡统计。
 
 需求矩阵：[docs/product/06_需求追踪矩阵_20260503.md](docs/product/06_需求追踪矩阵_20260503.md)。
 
