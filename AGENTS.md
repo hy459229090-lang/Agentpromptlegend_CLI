@@ -13,11 +13,14 @@ Before coding, read these files in order:
 5. `docs/product/04_策划完成度与实现前验收清单_20260503.md`
 6. `docs/product/05_策划与研发标准对齐_20260503.md`
 7. `docs/product/06_需求追踪矩阵_20260503.md`
-8. `docs/product/modules/13_角色世界观与内容圣经策划案.md`
-9. `docs/product/modules/14_命令行美术与TUI设计策划案.md`
-10. `docs/product/modules/15_GitHub发布安装与Provider接入策划案.md`
-11. `docs/planning/OuroAgent_AI协作规则_20260503.md`
-12. `docs/planning/OuroAgent_分步实现路线图_20260503.md`
+8. `docs/product/08_代码目录与文件摆放规划_20260503.md`
+9. `docs/engineering/CODE_LAYOUT.md`
+10. `docs/product/modules/13_角色世界观与内容圣经策划案.md`
+11. `docs/product/modules/14_命令行美术与TUI设计策划案.md`
+12. `docs/product/modules/15_GitHub发布安装与Provider接入策划案.md`
+13. `docs/product/art/00_美术设计板块索引_20260503.md`
+14. `docs/planning/OuroAgent_AI协作规则_20260503.md`
+15. `docs/planning/OuroAgent_分步实现路线图_20260503.md`
 
 ## Current Build Scope
 
@@ -41,6 +44,18 @@ Do not start shops, route maps, real provider calls, leaderboards, multiplayer, 
 7. GitHub installability, mock play, provider config, and ASCII-safe UI are product requirements.
 8. API keys must not be stored in plaintext; save environment variable names only.
 9. Default output must be ASCII-safe; Unicode and color are optional enhancements.
+10. Every directory must keep a local `README.md` and `_rules.md`; read the nearest `_rules.md` before adding files there.
+11. Follow `docs/engineering/CODE_LAYOUT.md` when deciding where code, content, tests, examples, and scripts belong.
+
+## Directory Rules
+
+1. Put runtime package code under `src/ouro_agent/`.
+2. Put structured game data under `content/`.
+3. Put repeatable tests under `tests/`.
+4. Put sample configs and sample traces under `examples/`.
+5. Put developer helpers under `scripts/`.
+6. Put product, planning, engineering, and AI handoff docs under `docs/`.
+7. Do not create ad hoc top-level folders without updating `docs/engineering/CODE_LAYOUT.md`, `README.md`, and the relevant directory rules.
 
 ## Provider Rules
 
@@ -87,4 +102,3 @@ Each completed `REQ-*` must include evidence:
 5. documented manual playtest note.
 
 Do not mark a requirement done without evidence.
-

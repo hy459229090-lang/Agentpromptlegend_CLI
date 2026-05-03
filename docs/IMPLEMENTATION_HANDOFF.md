@@ -41,6 +41,19 @@ Planning recommendation:
 
 This is a recommendation, not a permanent lock. If changed, update docs and explain why.
 
+## Directory Layout
+
+The repository already contains the intended directory skeleton. Follow `docs/engineering/CODE_LAYOUT.md` and the nearest `README.md` / `_rules.md` before adding files.
+
+Key placement rules:
+
+1. `src/ouro_agent/engine/` owns deterministic combat rules.
+2. `src/ouro_agent/providers/` owns provider adapters and must not resolve combat.
+3. `src/ouro_agent/tui/` owns terminal presentation and must not mutate battle state.
+4. `content/` owns structured game data.
+5. `tests/` owns repeatable evidence; tests must not call real model APIs.
+6. `examples/` owns safe sample config and trace files only.
+
 ## Target Commands
 
 ```bash
@@ -59,4 +72,3 @@ Implementation is not complete until the repo contains evidence for:
 2. tests,
 3. local trace sample, or
 4. documented playtest log.
-

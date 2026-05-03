@@ -2,7 +2,7 @@
 
 **Agent Prompt Legend CLI** is a planned command-line AI roguelike. The player configures one hero Agent with skills, equipment, traits, and a battle prompt; combat then runs automatically through model-chosen actions and deterministic local rules.
 
-Current status: **design-ready / implementation handoff**. The repository now contains the product design, implementation gates, AI coding guides, and first-slice requirement matrix. Runtime code is the next step.
+Current status: **design-ready / implementation handoff**. The repository now contains the product design, art direction package, code layout plan, directory rules, AI coding guides, and first-slice requirement matrix. Runtime code is the next step.
 
 ## Product Direction
 
@@ -30,6 +30,17 @@ The first milestone is **Slice 0 + Slice A**:
 - local battle trace.
 
 See [Implementation Handoff](docs/IMPLEMENTATION_HANDOFF.md) and [Requirement Matrix](docs/product/06_需求追踪矩阵_20260503.md).
+
+## Art And Terminal Direction
+
+The art package is now split into executable CLI design files:
+
+- [Terminal Visual Spec](docs/product/art/01_终端视觉规范_20260503.md)
+- [Hero ASCII Styles](docs/product/art/02_角色ASCII样式_20260503.md)
+- [Enemy And Boss Symbols](docs/product/art/03_敌人与Boss符号_20260503.md)
+- [Map Nodes And Status Symbols](docs/product/art/04_地图节点与状态符号_20260503.md)
+- [Screen Snapshot Samples](docs/product/art/05_界面快照样例_20260503.md)
+- [Art Acceptance Checklist](docs/product/art/06_美术任务验收清单_20260503.md)
 
 ## Target Install Flow
 
@@ -86,11 +97,19 @@ The terminal UI should be dark, readable, and fast:
 ```text
 AGENTS.md                     AI implementation rules
 CLAUDE.md                     Claude Code entry guide
+src/ouro_agent/               Python package code, split by runtime responsibility
+content/                      Structured game content data
+tests/                        Unit, integration, and fixture tests
+examples/                     Example config and trace files
+scripts/                      Developer helper scripts
 docs/IMPLEMENTATION_HANDOFF.md First implementation package
+docs/engineering/CODE_LAYOUT.md Code layout and file placement rules
 docs/ai-guides/               Cursor and Claude Code guides
-docs/product/                 Product design and requirement docs
+docs/product/                 Product design, art, and requirement docs
 docs/planning/                Planning and collaboration rules
 ```
+
+Every project directory has its own `README.md` and `_rules.md`. Coding agents should read the closest directory rules before adding or moving files.
 
 ## For Cursor / Claude Code
 
@@ -98,6 +117,7 @@ Start here:
 
 - [AGENTS.md](AGENTS.md)
 - [CLAUDE.md](CLAUDE.md)
+- [Code Layout](docs/engineering/CODE_LAYOUT.md)
 - [Cursor Guide](docs/ai-guides/CURSOR.md)
 - [Claude Code Guide](docs/ai-guides/CLAUDE_CODE.md)
 
