@@ -1,0 +1,15 @@
+# Ouro Agent example config: OpenAI official API.
+# This file MUST NOT contain plaintext API keys.
+# api_key_env stores the NAME of an environment variable, never the key.
+
+[ouro_agent]
+provider = "openai"
+model = "gpt-4o-mini"
+api_key_env = "OPENAI_API_KEY"
+base_url = "https://api.openai.com/v1"
+api_version = ""
+timeout_seconds = 30
+max_retries = 1
+trace_level = "L0"
+unicode_mode = false
+language = "zh"

@@ -17,16 +17,23 @@ build/
 config.local.*
 secrets.*
 
-# Runtime output
-traces/
-runs/
-logs/
+# Runtime output (project root only)
+/traces/
+/runs/
+/logs/
+
+# Trace files anywhere EXCEPT curated example traces
 *.trace.json
 *.trace.jsonl
+!examples/traces/*.trace.jsonl
 
-# OS / editor
+# Local demo / scratch directories
+.demo_home/
+.ouro_agent/
+
+# Editor / agent / OS
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-
+.claude/

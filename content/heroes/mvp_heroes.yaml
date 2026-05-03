@@ -1,0 +1,127 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+heroes:
+  - id: hero_shadow_apprentice
+    display_name:
+      en: Astia
+      zh: 阿斯缇娅
+    class_name:
+      en: Shadow Apprentice
+      zh: 暗影学徒
+    short_tag: "[CNDL]"
+    tags: [shadow, control, risk]
+    avatar_ascii:
+      - "   .^."
+      - "  /_#_\\"
+      - " ( o o)"
+      - "  /|!|\\"
+      - "   / \\ "
+    base_stats:
+      hp: 100
+      mp: 48
+      speed: 12
+      attack: 8
+      defense: 6
+      power: 16
+    skills:
+      - skill_shadow_sting
+      - skill_hex_seal
+      - skill_corrupted_focus
+    default_prompt:
+      en: |-
+        You are Astia, a hooded apprentice of the Black Candle. Trade MP for
+        tempo when an enemy is mid-cast. Avoid wasting Shadow Sting on shielded
+        foes. Save Hex Seal for the most dangerous active threat.
+      zh: |-
+        你是阿斯缇娅，黑烛会的兜帽学徒。当敌人正在施法时，
+        用 MP 换取节奏；不要把暗影刺浪费在带护盾的敌人身上；
+        把禁咒封印留给当前最危险的敌人。
+    description:
+      en: hooded caster with a black-candle staff
+      zh: 持黑烛短杖的兜帽法师
+    default_build:
+      items: [item_cracked_wand, item_black_sun_codex]
+      affixes: [affix_corrupted_focus, affix_candle_smoke]
+
+  - id: hero_ash_guardian
+    display_name:
+      en: Norn
+      zh: 诺恩
+    class_name:
+      en: Ash Guardian
+      zh: 灰烬守卫
+    short_tag: "[SHLD]"
+    tags: [guard, shield, counter, armor]
+    avatar_ascii:
+      - "  /###\\"
+      - " | o o |"
+      - " |[###]|"
+      - " /_| |_\\"
+    base_stats:
+      hp: 140
+      mp: 24
+      speed: 8
+      attack: 12
+      defense: 12
+      power: 4
+    skills:
+      - skill_tower_brace
+      - skill_ember_punish
+      - skill_ash_glare
+    default_prompt:
+      en: |-
+        You are Norn, an Ash Guardian behind a cracked tower shield. Hold HP
+        above 60%. Use Tower Brace before a Boss telegraph. Punish charging
+        casters with Ember Punish. Open with Ash Glare against fast threats.
+      zh: |-
+        你是诺恩，一名灰烬守卫，身后是一面裂痕塔盾。
+        把 HP 维持在 60% 以上；在 Boss 蓄力前先用塔盾防御；
+        对正在咏唱的法师用余烬惩戒；面对高速威胁先用灰烬瞪视压制。
+    description:
+      en: armored frontliner behind a cracked tower shield
+      zh: 持裂痕塔盾的重甲前排
+    default_build:
+      items: [item_iron_bracer, item_warden_aegis]
+      affixes: [affix_iron_will, affix_ember_thorn]
+
+  - id: hero_broken_string_hunter
+    display_name:
+      en: Vela
+      zh: 薇拉
+    class_name:
+      en: Broken String Hunter
+      zh: 裂弦猎手
+    short_tag: "[XBOW]"
+    tags: [bleed, speed, execute, hunter]
+    avatar_ascii:
+      - "  __/->"
+      - " /==\\  "
+      - "  \\_\\  "
+      - "  / \\  "
+    base_stats:
+      hp: 80
+      mp: 30
+      speed: 16
+      attack: 14
+      defense: 4
+      power: 10
+    skills:
+      - skill_pierce_string
+      - skill_hook_break
+      - skill_eclipse_step
+    default_prompt:
+      en: |-
+        You are Vela, a Broken String Hunter with a snapped crossbow string and
+        a hook blade. Stack bleed on the toughest target. Save Hook Break for
+        a mid-HP target. Use Eclipse Step when an enemy is about to release a
+        big chant.
+      zh: |-
+        你是薇拉，断弦猎手，背着断弦弩与钩刃。
+        把流血层数堆在最硬的目标身上；钩刃断魂留给中等血量的敌人；
+        敌人即将释放大招时使用蚀月步躲避。
+    description:
+      en: crossbow hunter with a snapped string and hook blade
+      zh: 持断弦弩与钩刃的猎手
+    default_build:
+      items: [item_quick_string, item_severed_string]
+      affixes: [affix_quickdraw, affix_silent_step]

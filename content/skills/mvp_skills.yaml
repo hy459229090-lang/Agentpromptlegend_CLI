@@ -1,0 +1,203 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+skills:
+  # --- Astia (Shadow Apprentice) ---
+  - id: skill_shadow_sting
+    display_name:
+      en: Shadow Sting
+      zh: 暗影刺
+    mp_cost: 12
+    cooldown: 2
+    target_rule: single_enemy
+    tags: [shadow, damage]
+    effect:
+      kind: damage
+      base: 18
+      power_scale: 1.0
+      damage_type: shadow
+      apply_status:
+        id: status_corruption
+        stacks: 1
+        duration: 3
+    visible_description:
+      en: >-
+        Pierce a single foe with a candle-fed shadow lance, inflicting corruption.
+      zh: >-
+        引动黑烛之力刺穿单个敌人，附加腐化层数。
+  - id: skill_hex_seal
+    display_name:
+      en: Hex Seal
+      zh: 禁咒封印
+    mp_cost: 18
+    cooldown: 4
+    target_rule: single_enemy
+    tags: [shadow, control]
+    effect:
+      kind: status
+      apply_status:
+        id: status_silence
+        stacks: 1
+        duration: 2
+      base: 6
+      power_scale: 0.4
+      damage_type: shadow
+    visible_description:
+      en: >-
+        Brand a foe with a silencing sigil, slowing their next action and
+        dealing minor shadow damage.
+      zh: >-
+        在敌人身上烙下沉默符印，延滞其下一动作并造成少量暗影伤害。
+  - id: skill_corrupted_focus
+    display_name:
+      en: Corrupted Focus
+      zh: 腐化凝神
+    mp_cost: 0
+    cooldown: 3
+    target_rule: self
+    tags: [shadow, buff]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 8
+        duration: 3
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Channel candle smoke into a thin shadow shield around yourself.
+      zh: >-
+        将烛烟凝成一层薄薄的暗影护盾。
+
+  # --- Norn (Ash Guardian) ---
+  - id: skill_tower_brace
+    display_name:
+      en: Tower Brace
+      zh: 塔盾防御
+    mp_cost: 0
+    cooldown: 2
+    target_rule: self
+    tags: [guard, shield]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 14
+        duration: 2
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Plant the tower shield. A heavy shield absorbs the next two rounds.
+      zh: >-
+        立起塔盾。接下来两回合获得沉重护盾。
+  - id: skill_ember_punish
+    display_name:
+      en: Ember Punish
+      zh: 余烬惩戒
+    mp_cost: 12
+    cooldown: 3
+    target_rule: single_enemy
+    tags: [guard, damage, fire]
+    effect:
+      kind: damage
+      base: 22
+      power_scale: 0.8
+      damage_type: fire
+    visible_description:
+      en: >-
+        A heavy retaliatory strike, especially effective against charging foes.
+      zh: >-
+        一记沉重的反击，对正在蓄力的敌人尤为有效。
+  - id: skill_ash_glare
+    display_name:
+      en: Ash Glare
+      zh: 灰烬瞪视
+    mp_cost: 8
+    cooldown: 3
+    target_rule: single_enemy
+    tags: [guard, control]
+    effect:
+      kind: status
+      apply_status:
+        id: status_silence
+        stacks: 1
+        duration: 1
+      base: 4
+      power_scale: 0.3
+      damage_type: physical
+    visible_description:
+      en: >-
+        A cold glare smothered in ash; the foe forgets their next move.
+      zh: >-
+        覆着灰烬的冷视让敌人遗忘下一步动作。
+
+  # --- Vela (Broken String Hunter) ---
+  - id: skill_pierce_string
+    display_name:
+      en: Pierce String
+      zh: 断弦穿心
+    mp_cost: 10
+    cooldown: 1
+    target_rule: single_enemy
+    tags: [hunter, damage, bleed]
+    effect:
+      kind: damage
+      base: 14
+      power_scale: 0.8
+      damage_type: physical
+      apply_status:
+        id: status_bleed
+        stacks: 2
+        duration: 3
+    visible_description:
+      en: >-
+        A snapped string still flies. Inflicts heavy bleed.
+      zh: >-
+        断了的弦依旧能射穿，造成持续流血。
+  - id: skill_hook_break
+    display_name:
+      en: Hook Break
+      zh: 钩刃断魂
+    mp_cost: 14
+    cooldown: 3
+    target_rule: single_enemy
+    tags: [hunter, damage, execute]
+    effect:
+      kind: damage
+      base: 26
+      power_scale: 0.9
+      damage_type: physical
+      apply_status:
+        id: status_bleed
+        stacks: 1
+        duration: 2
+    visible_description:
+      en: >-
+        A hook-blade snap that finishes wounded prey.
+      zh: >-
+        钩刃一击，专为收割负伤的猎物。
+  - id: skill_eclipse_step
+    display_name:
+      en: Eclipse Step
+      zh: 蚀月步
+    mp_cost: 6
+    cooldown: 3
+    target_rule: self
+    tags: [hunter, evade]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 6
+        duration: 1
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Slip beneath a shadow. Brief shield against the next blow.
+      zh: >-
+        悄然没入暗影，对下一次攻击获得短暂护盾。

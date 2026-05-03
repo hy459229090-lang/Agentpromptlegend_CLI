@@ -1,0 +1,14 @@
+# Ouro Agent example config: mock provider only.
+# This file MUST NOT contain plaintext API keys.
+# api_key_env stores the NAME of an environment variable, never the key.
+
+[ouro_agent]
+provider = "mock"
+model = "mock-smart"
+api_key_env = ""
+base_url = ""
+api_version = ""
+timeout_seconds = 30
+max_retries = 2
+trace_level = "L0"
+unicode_mode = false

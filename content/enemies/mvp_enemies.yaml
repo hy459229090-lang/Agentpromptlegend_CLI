@@ -1,0 +1,47 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+enemies:
+  - id: enemy_hungry_cultist
+    display_name:
+      en: Hungry Cultist
+      zh: 饥饿邪教徒
+    short_glyph: "c"
+    base_stats:
+      hp: 50
+      mp: 0
+      speed: 9
+      attack: 10
+      defense: 4
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A starving figure clutching a notched dagger.
+      zh: 一名手持缺口短刀、瘦骨嶙峋的身影。
+    codex_stage_observed:
+      en: Hungry cultists strike low and hard but lack defense.
+      zh: 饥饿邪教徒攻击迅猛凶狠，但防御薄弱。
+  - id: enemy_black_candle_acolyte
+    display_name:
+      en: Black Candle Acolyte
+      zh: 黑烛侍祭
+    short_glyph: "k"
+    base_stats:
+      hp: 70
+      mp: 20
+      speed: 11
+      attack: 7
+      defense: 6
+      power: 12
+    behavior:
+      kind: rule_chant
+      attack_chance: 0.6
+      chant_damage: 14
+      chant_charge_turns: 1
+    codex_stage_unknown:
+      en: A robed acolyte mid-chant, eyes lost in candle smoke.
+      zh: 一名身着长袍、双眼隐没在烛烟中的低声吟唱者。
+    codex_stage_observed:
+      en: Acolytes channel a slow chant that erupts in shadow flame.
+      zh: 侍祭以缓慢吟唱积蓄力量，最终以暗影火焰爆发。

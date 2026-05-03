@@ -1,0 +1,70 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+affixes:
+  - id: affix_corrupted_focus
+    display_name:
+      en: Corrupted Focus
+      zh: 腐化凝神
+    tags: [shadow, corruption]
+    stat_mods:
+      power: 3
+    description:
+      en: Channels corruption inward. Trades clarity for raw power.
+      zh: 把腐化向内引导，以理智换取威能。
+
+  - id: affix_iron_will
+    display_name:
+      en: Iron Will
+      zh: 铁意
+    tags: [guard]
+    stat_mods:
+      hp: 15
+    description:
+      en: Refuses to fall on the first blow.
+      zh: 拒绝在第一击中倒下。
+
+  - id: affix_quickdraw
+    display_name:
+      en: Quickdraw
+      zh: 速射
+    tags: [hunter, speed]
+    stat_mods:
+      speed: 2
+    description:
+      en: First shot is the fastest shot.
+      zh: 第一发就是最快的一发。
+
+  - id: affix_ember_thorn
+    display_name:
+      en: Ember Thorn
+      zh: 余烬棘刺
+    tags: [retribution, guard]
+    stat_mods:
+      defense: 2
+    description:
+      en: Hot embers cling to the shield. Attackers feel them.
+      zh: 余烬粘在盾面，攻击者会被其灼伤。
+
+  - id: affix_silent_step
+    display_name:
+      en: Silent Step
+      zh: 静默步
+    tags: [hunter, stealth]
+    stat_mods:
+      defense: 2
+      speed: 1
+    description:
+      en: Footfalls hidden in candle smoke.
+      zh: 足音消散在烛烟之中。
+
+  - id: affix_candle_smoke
+    display_name:
+      en: Candle Smoke
+      zh: 烛烟笼罩
+    tags: [shadow, control]
+    stat_mods:
+      mp: 6
+      defense: 1
+    description:
+      en: A thin pall of smoke trails behind every gesture.
+      zh: 一缕薄烟跟随每一次手势漂动。

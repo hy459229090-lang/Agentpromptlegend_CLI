@@ -1,0 +1,34 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+resonances:
+  - id: resonance_corruption_school
+    display_name:
+      en: Corruption School
+      zh: 腐化学派
+    required_tag_counts:
+      shadow: 3
+    stat_mods:
+      power: 4
+      mp: 6
+    description:
+      en: When three shadow tags align, the school's residue lingers in every gesture.
+      zh: 当三道暗影标签共鸣，学派的余响留在每个手势中。
+
+  - id: resonance_iron_legion
+    display_name:
+      en: Iron Legion
+      zh: 铁色军团
+    required_tag_counts:
+      guard: 2
+      armor: 2
+    stat_mods:
+      defense: 3
+      hp: 12
+    fixed_effects:
+      - kind: battle_start_status
+        status_id: status_shield
+        stacks: 8
+        duration: 3
+    description:
+      en: Two guard tags and two armor tags lock together; the line holds.
+      zh: 两道守卫标签与两道护甲标签互锁，阵线稳如铁墙。

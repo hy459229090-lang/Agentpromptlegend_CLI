@@ -1,0 +1,18 @@
+# Ouro Agent example config: OpenAI-compatible endpoint.
+# This file MUST NOT contain plaintext API keys.
+# api_key_env stores the NAME of an environment variable, never the key.
+#
+# Use this for any service that speaks the OpenAI Chat Completions wire on a
+# custom base_url (e.g. a self-hosted gateway, a regional bridge, etc.).
+
+[ouro_agent]
+provider = "openai-compatible"
+model = "your-model-name"
+api_key_env = "OURO_API_KEY"
+base_url = "https://your-host.example.com/v1"
+api_version = ""
+timeout_seconds = 30
+max_retries = 1
+trace_level = "L0"
+unicode_mode = false
+language = "zh"

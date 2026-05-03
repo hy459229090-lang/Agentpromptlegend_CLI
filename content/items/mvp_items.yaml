@@ -1,0 +1,93 @@
+schema_version: "0.1"
+content_version: "mvp_a"
+items:
+  # ---- Common (3) ----
+  - id: item_cracked_wand
+    display_name:
+      en: Cracked Wand
+      zh: 裂痕短杖
+    tier: common
+    tags: [shadow]
+    stat_mods:
+      power: 3
+    description:
+      en: A short black-candle wand with a single hairline crack.
+      zh: 一根细缝贯穿的黑烛短杖。
+
+  - id: item_iron_bracer
+    display_name:
+      en: Iron Bracer
+      zh: 铁制护腕
+    tier: common
+    tags: [armor, guard]
+    stat_mods:
+      defense: 3
+      hp: 10
+    description:
+      en: Plain iron bracer. Soaks the first hit so well-bred squires can survive a second.
+      zh: 朴素的铁护腕，能吃下第一击。
+
+  - id: item_quick_string
+    display_name:
+      en: Quick String
+      zh: 速绷弦
+    tier: common
+    tags: [hunter]
+    stat_mods:
+      speed: 2
+      attack: 2
+    description:
+      en: A spare string wound for fast release.
+      zh: 紧绷的备用弓弦，便于快速发射。
+
+  # ---- Heroic (2) ----
+  - id: item_black_sun_codex
+    display_name:
+      en: Black Sun Codex
+      zh: 黑日典籍
+    tier: heroic
+    tags: [shadow, codex]
+    stat_mods:
+      power: 6
+      mp: 12
+    fixed_effects:
+      - kind: passive_tag
+        tag: codex
+    description:
+      en: A handbook on candle hexes. Teaches the bearer to draw on shadow more quickly.
+      zh: 关于黑烛禁咒的手册，让持有者更快引动暗影。
+
+  - id: item_warden_aegis
+    display_name:
+      en: Warden Aegis
+      zh: 守望塔盾
+    tier: heroic
+    tags: [armor, guard]
+    stat_mods:
+      defense: 6
+      hp: 20
+    fixed_effects:
+      - kind: battle_start_status
+        status_id: status_shield
+        stacks: 6
+        duration: 2
+    description:
+      en: Cracked but still tall. Grants a starting shield.
+      zh: 虽有裂痕仍立得住，开战即获得护盾。
+
+  # ---- Legendary (1) ----
+  - id: item_severed_string
+    display_name:
+      en: Severed String
+      zh: 断魂之弦
+    tier: legendary
+    tags: [hunter, execute]
+    stat_mods:
+      attack: 4
+      speed: 3
+    allowed_effects:
+      - kind: bleed_on_hit
+      - kind: shadow_bonus
+    description:
+      en: A string cut from a Boss long dead. The wound it leaves keeps bleeding.
+      zh: 取自久死之 Boss 的弦，所留伤口流血不止。
