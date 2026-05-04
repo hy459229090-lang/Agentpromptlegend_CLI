@@ -1,18 +1,19 @@
 # Ouro Agent 内容扩展、Session 与 Build 改版规划
 
-> 版本：v0.1  
-> 日期：2026-05-03  
+> 版本：v0.3
+> 日期：2026-05-04
 > 用途：承接 Cursor 已完成 Slice 0/A/B 后的下一阶段策划，统一英雄、Build、怪物、图鉴、TUI 和模型 Session 的优先级。
 
 ---
 
 ## 1. 当前判断
 
-Cursor 已完成可运行基础：CLI、mock 战斗、真实 Provider adapter、3 英雄、技能、装备、词条、羁绊和双语 UI。下一阶段不要马上堆副本路线，应先补齐会影响后续所有玩法的三类基础：
+Cursor 已完成可运行基础：CLI、mock 战斗、真实 Provider adapter、3 英雄、技能、装备、词条、羁绊和双语 UI。下一阶段不要马上堆副本路线，应先补齐会影响后续所有玩法的四类基础：
 
 1. BattleLLMSession：降低真实模型重复上下文，提升连续决策。
 2. Build 表达：让装备、词条、羁绊真正影响技能和目标选择。
 3. 内容体系：扩展英雄、怪物家族、怪物三档和图鉴字段。
+4. 游戏化体验：让 CLI 有卡片、图标、动作、背景、胡牌反馈和 context 成长。
 
 ---
 
@@ -26,6 +27,7 @@ Cursor 已完成可运行基础：CLI、mock 战斗、真实 Provider adapter、
 | P1 | 怪物家族三档和图鉴字段 | 完整副本、路线和长期成长依赖 | G07 v0.2、G10 v0.2 |
 | P1 | 新增 3 个英雄规划 | 增加选择，但要等 Build 表达清楚 | G13 v0.3、art/02 v0.3 |
 | P1 | 英雄详情/图鉴/Session UI | 提升游戏感和可读性 | G14 v0.2、art/07 |
+| P1 | CLI 游戏化界面和动作资产 | 避免纯文本日志感，补左右对战、角色/怪物精灵、背景、图鉴卡片、胡牌反馈 | G17、G14、art/02/03/07/08 |
 | P2 | 副本路线、商店、奖励 | 内容基础稳定后再进入 | G04 后续细化 |
 | P2 | 图鉴长期存档和死亡保留 | 完整 run loop 后实现 | G07 + G09 |
 
@@ -73,6 +75,23 @@ Cursor 已完成可运行基础：CLI、mock 战斗、真实 Provider adapter、
 
 不做：完整路线和商店经济。
 
+### Slice C3：CLI 游戏化体验
+
+目标：把英雄、Build、图鉴和战斗表现从文字列表升级为 CLI 游戏界面。
+
+交付：
+
+1. 主菜单和主要入口状态。
+2. 英雄卡、Build 卡、奖励卡、图鉴卡。
+3. 战斗场景背景和图标。
+4. 左右对战主屏、中央弹道/命中效果层。
+5. 英雄/怪物 4-6 行动作精灵。
+6. 武器图标、Build 阶段徽章。
+7. Build 成型阶段和胡牌事件。
+8. 经验升级和 Context 窗口槽位。
+
+不做：GUI、图片资源、大型剧情文本。
+
 ---
 
 ## 4. Cursor / Claude Code 分工建议
@@ -92,4 +111,8 @@ Cursor 已完成可运行基础：CLI、mock 战斗、真实 Provider adapter、
 3. trace 中能看到 BattleLLMSession 字段。
 4. 英雄详情能展示 Build 类型、核心标签、装备、羁绊。
 5. 战斗主屏能展示 Buff/Debuff、怪物 tier、codex stage。
-6. 需求矩阵中新增 REQ 有证据路径或测试说明。
+6. 图鉴详情能展示 locked/fog/unlocked 卡片。
+7. Build 面板能展示 active / near / best next picks。
+8. Context 窗口能展示 Strategy/Codex/Memory/Prompt edit 槽位。
+9. 战斗主屏能展示左英雄右怪物、中央效果层、武器图标和 Build 阶段徽章。
+10. 需求矩阵中新增 REQ 有证据路径或测试说明。

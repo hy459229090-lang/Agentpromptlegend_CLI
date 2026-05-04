@@ -19,8 +19,11 @@ Before coding, read these files in order:
 11. `docs/product/modules/14_命令行美术与TUI设计策划案.md`
 12. `docs/product/modules/15_GitHub发布安装与Provider接入策划案.md`
 13. `docs/product/art/00_美术设计板块索引_20260503.md`
-14. `docs/planning/OuroAgent_AI协作规则_20260503.md`
-15. `docs/planning/OuroAgent_分步实现路线图_20260503.md`
+14. `docs/product/16_玩家可感知体验整改规格_20260504.md`
+15. `docs/product/17_CLI游戏化体验美术Build深化规格_20260504.md`
+16. `docs/product/art/08_战斗界面图形与动作分镜_20260504.md`
+17. `docs/planning/OuroAgent_AI协作规则_20260503.md`
+18. `docs/planning/OuroAgent_分步实现路线图_20260503.md`
 
 ## Current Build Scope
 
@@ -90,6 +93,12 @@ Configuration fields:
    - `Ritual Time` for latency
 3. Main combat screen must show HP, MP, ATB, statuses, model action, judge result, token/latency summary, and recent log.
 4. Animations must be optional and test output must be deterministic.
+5. Playable battle output must show turn-by-turn action frames; a final snapshot alone is not acceptable.
+6. `--no-animation` may remove delays and micro-animation, but must not remove turn frames or battle logs.
+7. CLI style does not mean plain text only; use cards, icons, low-density scene backgrounds, and action states while preserving ASCII-safe fallback.
+8. Codex, rewards, Build, and hero screens should be card-like, with locked/fog states where information is not unlocked.
+9. Default battle screen must be left-hero vs right-enemy, with 4-6 line actor sprites and a center effect lane.
+10. Weapons must use `[W:*]` icons and silhouettes; Build state must use `[SEED]`/`[PAIR]`/`[ONLINE]`/`[HIGH]`/`[LOCK]` badges.
 
 ## Evidence Rules
 

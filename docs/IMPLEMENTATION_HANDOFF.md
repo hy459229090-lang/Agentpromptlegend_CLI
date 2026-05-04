@@ -1,12 +1,12 @@
 # Implementation Handoff
 
-> Current state: design-ready, implementation pending.
+> Current state: Slice 0/A/B may exist in implementation worktrees; next approved planning target is player-visible C-Experience.
 
 ## Goal
 
-Build an installable command-line AI roguelike skeleton that can run a mock-provider battle without API keys.
+Build an installable command-line AI roguelike that feels playable in a terminal: the player can choose a hero, understand weapon/Build/skills/Prompt strategy, watch turn-by-turn automatic combat, and read a useful battle report.
 
-## First Milestone
+## Historical First Milestone
 
 Complete **Slice 0 + Slice A** from `docs/product/06_需求追踪矩阵_20260503.md`.
 
@@ -64,6 +64,42 @@ ouro play --mock
 ouro validate-content
 ```
 
+## Next Milestone: C-Experience
+
+Before expanding more systems, implement:
+
+1. `REQ-EXP-001`: main menu/status screen.
+2. `REQ-EXP-002`: hero/weapon/Build/skill/Prompt configuration display.
+3. `REQ-EXP-003`: semi-auto Prompt strategy templates.
+4. `REQ-EXP-004`: turn-by-turn Battle Frame.
+5. `REQ-EXP-005`: battle report with action mix, skill usage, damage source, and death reason.
+
+## Next Milestone: C-GameUI
+
+After or alongside C-Experience, implement the player-facing game UI layer:
+
+1. `REQ-GAMEUI-001`: CLI cards, icons, and low-density scene backgrounds.
+2. `REQ-GAMEUI-002`: hero and monster action states.
+3. `REQ-GAMEUI-003`: Codex cards with locked/fog/observed/mastered states.
+4. `REQ-BUILDJOY-001`: Build completion stages, resonance events, and best-next-pick hints.
+5. `REQ-CONTEXT-001`: XP-driven Strategy/Codex/Memory/Prompt edit slots.
+6. `REQ-GAMEUI-004`: left-hero vs right-enemy arena with center projectile/impact lane.
+7. `REQ-ART-002`: 4-6 line hero/monster sprites, weapon icons, and Build stage badges.
+
+This milestone is still CLI-first. Do not add GUI/image dependencies; use ASCII-safe and Unicode-enhanced terminal assets.
+
+Target evidence commands:
+
+```bash
+ouro play --mock --seed 1 --delay 0.1
+ouro play --mock --seed 1 --no-animation
+ouro hero-card hero_shadow_apprentice
+```
+
+`--no-animation` must still output turn frames; it only removes delay and micro-animation.
+
+Default player battle output must follow `docs/product/art/08_战斗界面图形与动作分镜_20260504.md`: left hero, right enemy, actor sprites, center effects, HUD, Build badges, and short logs.
+
 ## Evidence Required
 
 Implementation is not complete until the repo contains evidence for:
@@ -71,4 +107,5 @@ Implementation is not complete until the repo contains evidence for:
 1. command output,
 2. tests,
 3. local trace sample, or
-4. documented playtest log.
+4. documented playtest log,
+5. player-visible battle output showing turn frames and battle report.

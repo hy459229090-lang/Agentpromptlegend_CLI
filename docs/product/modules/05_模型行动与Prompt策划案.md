@@ -65,6 +65,29 @@
 5. 新出现的图鉴观察。
 6. 本回合必须决策的行动窗口。
 
+### 4.2.1 战术提醒层
+
+真实模型容易在长战斗中退化为 `basic_attack`，因此每回合 delta 必须包含机器可读的战术提醒，不只给完整状态列表。
+
+```json
+{
+  "tactical_reminder": {
+    "ready_skills": ["Shadow Sting", "Hex Seal"],
+    "highest_threat": "Black Candle Acolyte is chanting at 87 ATB",
+    "basic_attack_damage_estimate": 5,
+    "recommended_priority": "interrupt caster or use highest damage ready skill",
+    "avoid": "do not spend Hex Seal on a silenced target"
+  }
+}
+```
+
+规则：
+
+1. `ready_skills` 只列当前 MP/CD 合法技能。
+2. `highest_threat` 只能引用可见敌人状态和已解锁图鉴。
+3. `recommended_priority` 是提示，不是强制 action。
+4. 提醒必须写入 trace，便于复盘模型为什么仍然选择普攻。
+
 ### 4.3 滚动摘要
 
 当 transcript 过长时，把最近战术历史压缩成：
@@ -121,6 +144,31 @@ SESSION MEMORY
 3. 可注入图鉴条数。
 4. rolling summary 长度。
 
+### 6.1 半自动策略模板
+
+MVP 不优先做自由文本编辑器，先提供可理解、可验证的策略模板：
+
+| 模板 | 倾向 | Prompt 注入摘要 |
+|------|------|----------------|
+| Aggressive | 优先输出、击杀低血目标 | `Use ready damage skills before basic attacks.` |
+| Guarded | 优先生存、护盾、防御 | `Defend or shield when HP is low or enemy burst is near.` |
+| Control | 优先打断、沉默、失衡 | `Interrupt high-ATB casters and preserve control skills for threats.` |
+| Attrition | 毒、流血、消耗 | `Keep damage-over-time effects active before direct attacks.` |
+
+玩家在战斗外选择模板，下一场 BattleLLMSession 开始时生效。战斗中不允许改模板。
+
+### 6.2 输出给玩家的模型解释
+
+模型输出的 `narration` 和 `analysis` 必须被拆成两种展示：
+
+| 字段 | 展示位置 | 规则 |
+|------|----------|------|
+| `narration` | 动作帧 | 角色动作短句，给玩家看 |
+| `analysis` | 可展开详情或 trace | 战术理由，默认不抢占主屏 |
+| `session_notes` | rolling summary 候选 | 不能直接变成状态 |
+
+主屏不应显示大段模型思考，避免游戏变成接口调试。
+
 ---
 
 ## 7. 降级与惩罚
@@ -160,3 +208,4 @@ SESSION MEMORY
 5. Provider 不支持 session 时，系统有本地 transcript fallback。
 6. 模型依然不能决定伤害、掉落、胜负。
 7. 同 seed + mock 的结果仍然可复测。
+8. 长战斗中技能使用率、冷却误用、普攻占比必须能从 trace 和战报统计出来。
