@@ -75,6 +75,21 @@ class MockProvider(Provider):
             "skill_corrupted_focus": _shield_priority(hero),
             "skill_hex_seal": _hex_priority(snap),
             "skill_shadow_sting": _damage_priority(target),
+            "skill_tower_brace": _shield_priority(hero),
+            "skill_ash_glare": _hex_priority(snap),
+            "skill_ember_punish": _damage_priority(target),
+            "skill_eclipse_step": _shield_priority(hero),
+            "skill_hook_break": _execute_priority(target),
+            "skill_pierce_string": _damage_priority(target),
+            "skill_sinking_veil": _shield_priority(hero),
+            "skill_omen_vial": _hex_priority(snap),
+            "skill_mire_needle": _dot_priority(target),
+            "skill_crank_charge": _shield_priority(hero),
+            "skill_burial_engine": _execute_priority(target),
+            "skill_grave_nail": _dot_priority(target),
+            "skill_bell_echo": _shield_priority(hero),
+            "skill_silent_hymn": _hex_priority(snap),
+            "skill_returning_chime": _execute_priority(target),
         }
         usable_skills.sort(
             key=lambda s: (-priorities.get(s["id"], 0.1), s["mp_cost"])
@@ -105,6 +120,18 @@ def _hex_priority(snap: dict) -> float:
 
 def _damage_priority(target: dict) -> float:
     return 0.7 if target["hp"] <= 30 else 0.6
+
+
+def _execute_priority(target: dict) -> float:
+    hp_ratio = target["hp"] / max(1, target["max_hp"])
+    return 0.9 if hp_ratio <= 0.45 else 0.55
+
+
+def _dot_priority(target: dict) -> float:
+    status_ids = {s.get("id") for s in target.get("statuses", [])}
+    if "status_poison" in status_ids or "status_bleed" in status_ids:
+        return 0.45
+    return 0.75
 
 
 def _narrate(snap: dict, action: dict, language: str = DEFAULT_LANGUAGE) -> str:

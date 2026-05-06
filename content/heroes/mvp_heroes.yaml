@@ -125,3 +125,117 @@ heroes:
     default_build:
       items: [item_quick_string, item_severed_string]
       affixes: [affix_quickdraw, affix_silent_step]
+
+  - id: hero_mire_oracle
+    display_name:
+      en: Mirel
+      zh: 米瑞尔
+    class_name:
+      en: Mire Oracle
+      zh: 瘟沼先知
+    short_tag: "[VENM]"
+    tags: [poison, omen, attrition, control]
+    avatar_ascii:
+      - "  .-. "
+      - " (v v)"
+      - " /|~|\\"
+      - "  / \\ "
+    base_stats:
+      hp: 90
+      mp: 54
+      speed: 10
+      attack: 6
+      defense: 5
+      power: 15
+    skills:
+      - skill_mire_needle
+      - skill_omen_vial
+      - skill_sinking_veil
+    default_prompt:
+      en: |-
+        You are Mirel, a poison oracle counting delayed outcomes. Open with
+        poison on durable enemies. Use Omen Vial to slow dangerous casters.
+        Keep Sinking Veil available when HP falls below half.
+      zh: |-
+        你是米瑞尔，瘟沼先知，习惯计算延迟收益。
+        先给耐久敌人铺毒；危险施法者出现时用预兆毒瓶压制；
+        HP 低于一半时保留沉沼纱幕。
+    description:
+      en: veiled poison seer with a wet candle and glass vial
+      zh: 持湿烛与毒瓶的遮眼先知
+
+  - id: hero_gravewright
+    display_name:
+      en: Korr
+      zh: 科尔
+    class_name:
+      en: Gravewright
+      zh: 坟场工匠
+    short_tag: "[GEAR]"
+    tags: [gear, construct, trap, fire]
+    avatar_ascii:
+      - "  [o] "
+      - " /|n|\\"
+      - "  / \\ "
+      - " crate"
+    base_stats:
+      hp: 110
+      mp: 36
+      speed: 9
+      attack: 11
+      defense: 8
+      power: 12
+    skills:
+      - skill_grave_nail
+      - skill_crank_charge
+      - skill_burial_engine
+    default_prompt:
+      en: |-
+        You are Korr, a gravewright who fights by setting trigger conditions.
+        Mark one enemy with Grave Nail, brace with Crank Charge when pressure
+        rises, then release Burial Engine into weakened or chanting targets.
+      zh: |-
+        你是科尔，坟场工匠，以触发条件作战。
+        先用坟钉标记一个敌人；压力上升时用曲柄充能稳住；
+        再把葬仪机关打向虚弱或正在吟唱的目标。
+    description:
+      en: calm mechanism keeper carrying nails, gears, and a burial crate
+      zh: 背负坟钉、齿轮与葬仪箱的机关工匠
+
+  - id: hero_echo_exile
+    display_name:
+      en: Sera
+      zh: 塞拉
+    class_name:
+      en: Echo Exile
+      zh: 失声唱诗者
+    short_tag: "[ECHO]"
+    tags: [echo, cleanse, support, holy]
+    avatar_ascii:
+      - "  o)o "
+      - " /| |\\"
+      - "  / \\ "
+      - " bell"
+    base_stats:
+      hp: 95
+      mp: 66
+      speed: 11
+      attack: 7
+      defense: 6
+      power: 14
+    skills:
+      - skill_bell_echo
+      - skill_silent_hymn
+      - skill_returning_chime
+    default_prompt:
+      en: |-
+        You are Sera, an exiled singer with no voice left but the bell. Keep
+        shields on before heavy enemy turns. Use Silent Hymn to suppress
+        chants. Spend Returning Chime to end fights before attrition wins.
+      zh: |-
+        你是塞拉，失声唱诗者，只剩断铃回应。
+        敌人大回合前先补护盾；用静默圣歌压制吟唱；
+        用回返钟声在消耗战失控前结束战斗。
+    description:
+      en: voiceless hymn keeper with a cracked bell and empty score
+      zh: 持裂铃与空谱的失声唱诗者

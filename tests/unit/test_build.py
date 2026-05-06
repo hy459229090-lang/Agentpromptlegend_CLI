@@ -16,16 +16,19 @@ def bundle(content_root: Path):
     return load_content_bundle(content_root)
 
 
-def test_three_heroes_loaded(bundle):
+def test_six_heroes_loaded(bundle):
     assert {
         "hero_shadow_apprentice",
         "hero_ash_guardian",
         "hero_broken_string_hunter",
+        "hero_mire_oracle",
+        "hero_gravewright",
+        "hero_echo_exile",
     } == set(bundle.heroes)
 
 
-def test_nine_skills_loaded(bundle):
-    assert len(bundle.skills) >= 9
+def test_eighteen_skills_loaded(bundle):
+    assert len(bundle.skills) >= 18
     for hero in bundle.heroes.values():
         for sid in hero.skills:
             assert sid in bundle.skills
@@ -151,8 +154,8 @@ def test_validation_report_includes_b_counts(bundle, content_root):
 
     report = validate_content_dir(content_root)
     assert report.ok
-    assert report.heroes == 3
-    assert report.skills == 9
+    assert report.heroes == 6
+    assert report.skills == 18
     assert report.items == 6
     assert report.affixes == 6
     assert report.resonances == 2
@@ -178,3 +181,48 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Astia" in text
     assert "Norn" in text
     assert "Vela" in text
+    assert "Build:" in text
+    assert "Weapon:" in text
+    assert "Risk:" in text
+
+
+def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        prompt_style="control",
+    )
+    assert text.isascii()
+    assert "Build: Black Candle Interrupt" in text
+    assert "Weapon: [W:STF]" in text
+    assert "AI Bias:" in text
+    assert "Prompt Template: control" in text
+    assert "interrupt high-ATB" in text
+
+
+def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    for hero_id in (
+        "hero_shadow_apprentice",
+        "hero_ash_guardian",
+        "hero_broken_string_hunter",
+        "hero_mire_oracle",
+        "hero_gravewright",
+        "hero_echo_exile",
+    ):
+        hero = bundle.get_hero(hero_id)
+        build = resolve_build(hero, bundle)
+        text = render_hero_card(hero, bundle, build, language="en")
+        assert "Build:" in text
+        assert "Weapon:" in text
+        assert "Risk:" in text
+        assert "AI Bias:" in text
+        assert "MP " in text
+        assert "cd " in text

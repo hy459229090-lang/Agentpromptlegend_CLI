@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import pytest
 
+from ouro_agent.cli.main import main
 from ouro_agent.config import (
     OuroConfig,
     SUPPORTED_PROVIDERS,
@@ -75,3 +76,45 @@ def test_load_rejects_legacy_plaintext_key(isolated_home, tmp_path):
     )
     with pytest.raises(ConfigError):
         load_config(bad)
+
+
+def test_config_setup_prompts_step_by_step(isolated_home, monkeypatch, capsys):
+    answers = iter(["2", "gpt-test", "OPENAI_API_KEY", "", "en"])
+    monkeypatch.setattr("builtins.input", lambda _prompt: next(answers))
+
+    rc = main(["--lang", "en", "config", "setup"])
+
+    out = capsys.readouterr().out
+    cfg = load_config()
+    assert rc == 0
+    assert cfg.provider == "openai"
+    assert cfg.model == "gpt-test"
+    assert cfg.api_key_env == "OPENAI_API_KEY"
+    assert cfg.base_url == ""
+    assert cfg.language == "en"
+    assert "Configuration saved." in out
+    assert "OPENAI_API_KEY is not set yet" in out
+    assert "sk-" not in config_path().read_text(encoding="utf-8")
+
+
+def test_config_setup_rejects_plaintext_api_key_env(isolated_home, monkeypatch, capsys):
+    answers = iter(["openai", "gpt-test", "sk-test"])
+    monkeypatch.setattr("builtins.input", lambda _prompt: next(answers))
+
+    rc = main(["--lang", "en", "config", "wizard"])
+
+    err = capsys.readouterr().err
+    assert rc == 2
+    assert "api_key_env stores a variable NAME" in err
+
+
+def test_cli_default_shows_main_menu(isolated_home, capsys):
+    rc = main(["--lang", "en"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "OURO AGENT :: PROMPT LEGEND" in out
+    assert "Provider : mock" in out
+    assert "New Run" in out
+    assert "Hero Card" in out
+    assert "Prompt Style" in out

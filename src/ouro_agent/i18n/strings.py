@@ -119,6 +119,25 @@ _LABELS: dict[str, dict[str, str]] = {
     "content_items": {"en": "items", "zh": "装备"},
     "content_affixes": {"en": "affixes", "zh": "词条"},
     "content_resonances": {"en": "resonances", "zh": "羁绊"},
+    "battle_report_title": {"en": "BATTLE REPORT", "zh": "战斗报告"},
+    "battle_report_duration": {"en": "Duration", "zh": "持续时间"},
+    "battle_report_actions": {"en": "Hero action mix", "zh": "英雄行动构成"},
+    "battle_report_skills": {"en": "Skill usage", "zh": "技能使用"},
+    "battle_report_basic_skill_ratio": {
+        "en": "Basic:Skill ratio",
+        "zh": "普攻:技能比例",
+    },
+    "battle_report_damage_dealt": {"en": "Damage dealt", "zh": "造成伤害"},
+    "battle_report_damage_taken": {"en": "Damage taken", "zh": "承受伤害"},
+    "battle_report_fallbacks": {"en": "Fallbacks", "zh": "降级次数"},
+    "battle_report_death_reason": {"en": "Death reason", "zh": "失败原因"},
+    "battle_report_build_note": {"en": "Build note", "zh": "Build 备注"},
+    "battle_report_build_note_value": {
+        "en": "MVP build resolver active; rewards and codex notes are not unlocked yet.",
+        "zh": "MVP 构筑结算已启用；奖励与图鉴记录尚未解锁。",
+    },
+    "battle_report_none": {"en": "(none)", "zh": "(无)"},
+    "battle_report_unknown": {"en": "(unknown)", "zh": "(未知)"},
 }
 
 

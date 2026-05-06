@@ -33,6 +33,7 @@ from ouro_agent.i18n import DEFAULT_LANGUAGE
 from ouro_agent.llm.actions import HeroAction, FallbackReason
 from ouro_agent.llm.validator import ValidationResult, parse_model_output
 from ouro_agent.providers.base import ModelTurnResult, Provider
+from ouro_agent.sessions import BattleLLMSession
 
 ATB_THRESHOLD = 100
 DEFAULT_MAX_TICKS = 600
@@ -50,6 +51,10 @@ class TurnRecord:
     usage_total_tokens: int = 0
     usage_latency_ms: int = 0
     enemy_action: dict | None = None
+    battle_session_id: str | None = None
+    static_context_hash: str | None = None
+    delta_context_id: str | None = None
+    delta_context: dict | None = None
 
 
 HeroTurnHook = Callable[[BattleState, "TurnRecord"], None]
@@ -64,12 +69,19 @@ class BattleLoop:
         seed: int = 0,
         max_ticks: int = DEFAULT_MAX_TICKS,
         language: str = DEFAULT_LANGUAGE,
+        battle_session_id: str | None = None,
+        hero_prompt_override: str | None = None,
+        prompt_style: str | None = None,
     ):
         self.bundle = bundle
         self.provider = provider
         self.seed = seed
         self.max_ticks = max_ticks
         self.language = language
+        self.battle_session_id = battle_session_id or f"be_seed_{seed:04d}"
+        self.battle_llm_session: BattleLLMSession | None = None
+        self.hero_prompt_override = hero_prompt_override
+        self.prompt_style = prompt_style
         self._rng = random.Random(seed)
         self.judge = Judge(bundle.skills)
         self.records: list[TurnRecord] = []
@@ -111,6 +123,12 @@ class BattleLoop:
                 resonance_id=resonance.id,
                 tags=list(build.tags),
             )
+        from ouro_agent.llm.prompt import compose_static_context
+
+        self.battle_llm_session = BattleLLMSession.start(
+            self.battle_session_id,
+            compose_static_context(state, self.bundle, self.hero_prompt_override),
+        )
         return state
 
     def run(
@@ -180,7 +198,12 @@ class BattleLoop:
     def _take_hero_turn(self, state: BattleState) -> TurnRecord:
         from ouro_agent.llm.prompt import compose_prompt
 
-        prompt = compose_prompt(state, self.bundle)
+        prompt = compose_prompt(
+            state,
+            self.bundle,
+            hero_prompt_override=self.hero_prompt_override,
+            battle_session=self.battle_llm_session,
+        )
         try:
             turn_result: ModelTurnResult = self.provider.request_turn(prompt)
         except Exception as err:  # pragma: no cover - defensive fallback path
@@ -210,6 +233,10 @@ class BattleLoop:
             judge=outcome,
             usage_total_tokens=turn_result.usage.total_tokens,
             usage_latency_ms=turn_result.usage.latency_ms,
+            battle_session_id=prompt.battle_session_id,
+            static_context_hash=prompt.static_context_hash,
+            delta_context_id=prompt.delta_context_id,
+            delta_context=prompt.delta_context,
         )
         return record
 
@@ -225,6 +252,16 @@ class BattleLoop:
             action=None,
             judge=None,
             enemy_action=action,
+            battle_session_id=(
+                self.battle_llm_session.battle_session_id
+                if self.battle_llm_session
+                else self.battle_session_id
+            ),
+            static_context_hash=(
+                self.battle_llm_session.static_context_hash
+                if self.battle_llm_session
+                else None
+            ),
         )
 
     def _check_end(self, state: BattleState) -> None:
