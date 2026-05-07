@@ -138,6 +138,56 @@ _LABELS: dict[str, dict[str, str]] = {
     },
     "battle_report_none": {"en": "(none)", "zh": "(无)"},
     "battle_report_unknown": {"en": "(unknown)", "zh": "(未知)"},
+    # Run / Dungeon
+    "run_title": {"en": "ROGUE RUN", "zh": "肉鸽运行"},
+    "run_dungeon": {"en": "Dungeon", "zh": "副本"},
+    "run_floor": {"en": "Floor", "zh": "楼层"},
+    "run_gold": {"en": "Gold", "zh": "金币"},
+    "run_xp": {"en": "XP", "zh": "经验"},
+    "run_battles_won": {"en": "Battles Won", "zh": "胜利场次"},
+    "run_battles_lost": {"en": "Battles Lost", "zh": "失败场次"},
+    # Route Choice
+    "route_choice_title": {"en": "CHOOSE YOUR PATH", "zh": "选择你的道路"},
+    "route_choice_prompt": {"en": "Select a node (enter number)", "zh": "选择一个节点（输入编号）"},
+    "route_node_normal": {"en": "Combat", "zh": "战斗"},
+    "route_node_elite": {"en": "Elite Combat", "zh": "精英战斗"},
+    "route_node_boss": {"en": "Boss", "zh": "Boss"},
+    "route_node_shop": {"en": "Shop", "zh": "商店"},
+    "route_node_event": {"en": "Event", "zh": "事件"},
+    "route_node_rest": {"en": "Rest", "zh": "休息"},
+    "route_risk_low": {"en": "Risk: Low", "zh": "风险：低"},
+    "route_risk_medium": {"en": "Risk: Medium", "zh": "风险：中"},
+    "route_risk_high": {"en": "Risk: High", "zh": "风险：高"},
+    "route_risk_safe": {"en": "Risk: Safe", "zh": "风险：安全"},
+    # Reward Choice
+    "reward_choice_title": {"en": "CHOOSE YOUR REWARD", "zh": "选择你的奖励"},
+    "reward_choice_prompt": {"en": "Select a reward (enter number)", "zh": "选择一个奖励（输入编号）"},
+    "reward_type_item": {"en": "Item", "zh": "装备"},
+    "reward_type_affix": {"en": "Affix", "zh": "词条"},
+    "reward_type_codex": {"en": "Codex Progress", "zh": "图鉴进度"},
+    "reward_type_gold": {"en": "Gold", "zh": "金币"},
+    "reward_type_heal": {"en": "Heal", "zh": "治疗"},
+    # Shop
+    "shop_title": {"en": "SHOP", "zh": "商店"},
+    "shop_prompt": {"en": "Select an item to buy, or 'l' to leave", "zh": "选择物品购买，或输入 'l' 离开"},
+    "shop_cannot_afford": {"en": "Cannot afford this item!", "zh": "金币不足！"},
+    "shop_item_bought": {"en": "Purchased!", "zh": "已购买！"},
+    "shop_leave": {"en": "Leaving shop...", "zh": "离开商店..."},
+    # Rest
+    "rest_title": {"en": "REST", "zh": "休息"},
+    "rest_prompt": {"en": "Rest here? (y/n)", "zh": "在此休息？(y/n)"},
+    "rest_heal_amount": {"en": "Heal {percent}% HP", "zh": "恢复 {percent}% 生命值"},
+    "rest_mp_restore": {"en": "Restore full MP", "zh": "完全恢复魔力"},
+    "rest_confirmed": {"en": "Resting...", "zh": "休息中..."},
+    "rest_skipped": {"en": "Skipping rest...", "zh": "跳过休息..."},
+    # Event
+    "event_title": {"en": "EVENT", "zh": "事件"},
+    "event_prompt": {"en": "Make a choice (enter number)", "zh": "做出选择（输入编号）"},
+    "event_choice_confirmed": {"en": "Choice made!", "zh": "已做出选择！"},
+    # Run Complete / Dead
+    "run_complete_title": {"en": "RUN COMPLETE", "zh": "运行完成"},
+    "run_dead_title": {"en": "YOU DIED", "zh": "你倒下了"},
+    "run_summary": {"en": "Run Summary", "zh": "运行总结"},
 }
 
 

@@ -40,6 +40,46 @@ items:
       en: A spare string wound for fast release.
       zh: 紧绷的备用弓弦，便于快速发射。
 
+  # ---- Common (Additional for new heroes) ----
+  - id: item_omen_vial
+    display_name:
+      en: Omen Vial
+      zh: 预兆毒瓶
+    tier: common
+    tags: [poison, omen]
+    stat_mods:
+      power: 3
+      mp: 4
+    description:
+      en: A glass vial containing swirling dark mist that poisons on contact.
+      zh: 装有旋动暗雾的玻璃瓶，触碰即中毒。
+
+  - id: item_grave_nail
+    display_name:
+      en: Grave Nail
+      zh: 坟钉
+    tier: common
+    tags: [gear, trap]
+    stat_mods:
+      attack: 3
+      defense: 1
+    description:
+      en: A rusted iron nail used to secure coffin lids. Doubles as a trap trigger.
+      zh: 用于固定棺盖的生锈铁钉，兼作陷阱触发。
+
+  - id: item_cracked_bell
+    display_name:
+      en: Cracked Bell
+      zh: 裂铃
+    tier: common
+    tags: [echo, holy]
+    stat_mods:
+      power: 3
+      mp: 6
+    description:
+      en: A bell with a deep crack running through its side. Still echoes faintly.
+      zh: 侧边有深裂痕的铃铛，仍能微弱回响。
+
   # ---- Heroic (2) ----
   - id: item_black_sun_codex
     display_name:
@@ -75,6 +115,51 @@ items:
       en: Cracked but still tall. Grants a starting shield.
       zh: 虽有裂痕仍立得住，开战即获得护盾。
 
+  # ---- Heroic (Additional for new heroes) ----
+  - id: item_mire_grimoire
+    display_name:
+      en: Mire Grimoire
+      zh: 沼毒典籍
+    tier: heroic
+    tags: [poison, attrition]
+    stat_mods:
+      power: 5
+      mp: 10
+    description:
+      en: A water-stained tome of slow-acting poisons and attrition tactics.
+      zh: 水渍斑驳的典籍，记载着慢效毒素与消耗战术。
+
+  - id: item_burial_crank
+    display_name:
+      en: Burial Crank
+      zh: 葬仪曲柄
+    tier: heroic
+    tags: [gear, fire]
+    stat_mods:
+      attack: 5
+      power: 4
+    description:
+      en: A heavy iron crank used to lower coffins. Can be spun to ignite traps.
+      zh: 用于降下棺木的沉重铁曲柄，可旋转点燃陷阱。
+
+  - id: item_empty_score
+    display_name:
+      en: Empty Score
+      zh: 空谱
+    tier: heroic
+    tags: [echo, cleanse]
+    stat_mods:
+      power: 5
+      mp: 12
+    fixed_effects:
+      - kind: battle_start_status
+        status_id: status_shield
+        stacks: 5
+        duration: 2
+    description:
+      en: A music score with no notes written. The silence itself is protective.
+      zh: 没有音符的乐谱，寂静本身就是保护。
+
   # ---- Legendary (1) ----
   - id: item_severed_string
     display_name:
@@ -91,3 +176,55 @@ items:
     description:
       en: A string cut from a Boss long dead. The wound it leaves keeps bleeding.
       zh: 取自久死之 Boss 的弦，所留伤口流血不止。
+
+  # ---- Legendary (Additional for new heroes) ----
+  - id: item_mire_heart
+    display_name:
+      en: Mire Heart
+      zh: 沼核
+    tier: legendary
+    tags: [poison, omen]
+    stat_mods:
+      power: 8
+      mp: 15
+    allowed_effects:
+      - kind: shadow_bonus
+    description:
+      en: A pulsing organ taken from a mire elemental. Its toxins never truly fade.
+      zh: 取自沼元素的搏动器官，其毒素永不消退。
+
+  - id: item_gears_of_the_fallen
+    display_name:
+      en: Gears of the Fallen
+      zh: 亡者齿轮
+    tier: legendary
+    tags: [gear, trap]
+    stat_mods:
+      attack: 6
+      power: 5
+    allowed_effects:
+      - kind: double_strike
+      - kind: bleed_on_hit
+    description:
+      en: Interlocking gears taken from a fallen clockwork guardian. Never stops turning.
+      zh: 取自倒下发条守护者的互锁齿轮，永不停转。
+
+  - id: item_hymnal_of_the_voiceless
+    display_name:
+      en: Hymnal of the Voiceless
+      zh: 无声圣咏集
+    tier: legendary
+    tags: [echo, holy]
+    stat_mods:
+      power: 7
+      mp: 14
+    fixed_effects:
+      - kind: battle_start_status
+        status_id: status_shield
+        stacks: 8
+        duration: 3
+    allowed_effects:
+      - kind: shield_on_low_hp
+    description:
+      en: A hymnal bound in silent song. The voiceless choir still protects its bearer.
+      zh: 以无声歌谣装订的圣咏集，无声唱诗班仍在保护持有者。

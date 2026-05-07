@@ -68,3 +68,75 @@ affixes:
     description:
       en: A thin pall of smoke trails behind every gesture.
       zh: 一缕薄烟跟随每一次手势漂动。
+
+  - id: affix_mire_touch
+    display_name:
+      en: Mire Touch
+      zh: 沼触
+    tags: [poison, attrition]
+    stat_mods:
+      power: 3
+      mp: 4
+    description:
+      en: Every gesture leaves a trace of toxic mist.
+      zh: 每一个手势都留下毒雾痕迹。
+
+  - id: affix_omen_sense
+    display_name:
+      en: Omen Sense
+      zh: 预兆感知
+    tags: [omen, control]
+    stat_mods:
+      speed: 2
+      defense: 1
+    description:
+      en: Senses incoming threats before they fully manifest.
+      zh: 在威胁完全显现前感知到它们。
+
+  - id: affix_trap_sense
+    display_name:
+      en: Trap Sense
+      zh: 陷阱感知
+    tags: [trap, gear]
+    stat_mods:
+      attack: 3
+      defense: 1
+    description:
+      en: Every mechanical trigger feels like an extension of the body.
+      zh: 每一个机关扳机都像是身体的延伸。
+
+  - id: affix_ignition_ward
+    display_name:
+      en: Ignition Ward
+      zh: 燃点护符
+    tags: [fire, gear]
+    stat_mods:
+      power: 3
+      attack: 2
+    description:
+      en: Gears run hot enough to ignite nearby flammables.
+      zh: 齿轮运转时温度高到能点燃附近可燃物。
+
+  - id: affix_echo_resonance
+    display_name:
+      en: Echo Resonance
+      zh: 回声共鸣
+    tags: [echo, holy]
+    stat_mods:
+      power: 3
+      mp: 5
+    description:
+      en: Even the faintest sound returns amplified.
+      zh: 即使最微弱的声音也会被放大返回。
+
+  - id: affix_cleansing_tone
+    display_name:
+      en: Cleansing Tone
+      zh: 净化音
+    tags: [cleanse, holy]
+    stat_mods:
+      defense: 2
+      mp: 3
+    description:
+      en: A pure tone that burns away corruption.
+      zh: 燃烧腐化的纯净音调。

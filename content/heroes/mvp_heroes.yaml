@@ -163,6 +163,9 @@ heroes:
     description:
       en: veiled poison seer with a wet candle and glass vial
       zh: 持湿烛与毒瓶的遮眼先知
+    default_build:
+      items: [item_omen_vial, item_mire_grimoire]
+      affixes: [affix_mire_touch, affix_omen_sense]
 
   - id: hero_gravewright
     display_name:
@@ -201,6 +204,9 @@ heroes:
     description:
       en: calm mechanism keeper carrying nails, gears, and a burial crate
       zh: 背负坟钉、齿轮与葬仪箱的机关工匠
+    default_build:
+      items: [item_grave_nail, item_burial_crank]
+      affixes: [affix_trap_sense, affix_ignition_ward]
 
   - id: hero_echo_exile
     display_name:
@@ -239,3 +245,6 @@ heroes:
     description:
       en: voiceless hymn keeper with a cracked bell and empty score
       zh: 持裂铃与空谱的失声唱诗者
+    default_build:
+      items: [item_cracked_bell, item_empty_score]
+      affixes: [affix_echo_resonance, affix_cleansing_tone]

@@ -20,14 +20,82 @@
 | i18n | Bilingual UI / content / mock narration (zh default, --lang en) | done |
 | Provider | Real `openai`, `anthropic`, `openai-compatible` adapters + auto fallback | done |
 | B | 3 heroes, 9 skills, 6 items, 6 affixes, 2 resonances, build resolver | done |
-| C0 | BattleLLMSession, static context, turn delta, session trace | next |
+| D | Dungeon, route, shop, rewards (full roguelike loop playable) | done |
+| C0 | BattleLLMSession, static context / turn delta, session trace | next |
 | C1 | Build panel, Buff/Debuff UI, monster tier, codex stage | next |
 | C2 | 6 heroes, monster families, tiered codex/content schema | planned |
-| D | Dungeon, route, shop, rewards | planned |
 | E | Codex, run save, death persistence | planned |
 | F | Batch playtest + balance stats | planned |
 
-`65 tests passing`. No real network calls in any test.
+`76 tests passing`. No real network calls in any test.
+
+---
+
+## Recent Development (2026-05-06)
+
+### Slice D - Full Roguelelike Loop (Completed)
+
+**What was implemented:**
+
+1. **Content Data** (`content/dungeons/mvp_dungeons.yaml`)
+   - Created the first dungeon: "Ember Crypt" (灰烬墓室)
+   - 3 floors with 5 nodes: normal combat, shop, boss
+   - Reward choices and shop items defined
+
+2. **Schema Extensions** (`src/ouro_agent/content/schema.py`)
+   - Added `DungeonData`, `DungeonFloor`, `NodeData`, `NodeRewards`, `RewardChoice`, `ShopItem`
+   - Added `ID_PREFIXES` for dungeon and node
+   - Extended `ContentBundle` to include `dungeons` and `nodes`
+
+3. **Content Loader** (`src/ouro_agent/content/loader.py`)
+   - Added loading logic for dungeons and nodes
+   - Added reference validation: enemy IDs, item IDs, affix IDs
+
+4. **Run State Management** (`src/ouro_agent/sessions/run_state.py`)
+   - `RunPhase` enum: START, ROUTE_CHOICE, NODE_ACTION, REWARD_CHOICE, SHOP, REST, EVENT, COMPLETE, DEAD
+   - `RunState` class: tracks dungeon progress, hero state, resources, history
+   - `create_run_state()`: factory function for initializing runs
+
+5. **CLI Run Command** (`src/ouro_agent/cli/main.py`)
+   - New `run` command for full roguelike gameplay
+   - Arguments: `--mock`, `--seed`, `--hero`, `--dungeon`, `--auto`, `--no-animation`, `--delay`, `--no-trace`, `--prompt-style`
+   - Integrated with existing battle loop
+
+6. **TUI Screens** (`src/ouro_agent/tui/screens.py`)
+   - `render_route_choice()`: displays available nodes to choose from
+   - `render_reward_choice()`: displays rewards after victory
+   - `render_shop()`: displays shop items for purchase
+   - `render_run_summary()`: displays final run stats
+
+7. **Enhanced Action System** (`src/ouro_agent/tui/screens.py`)
+   - Extended `_actor_pose()`: supports attack, skill_shadow, skill_fire, skill_physical, skill_holy, skill_poison, defend, observe
+   - Enhanced `_effect_lane()`: shows damage numbers, miss, status effects (SILENCE, CORRUPT, POISON, BLEED, FIRE, SHIELD)
+   - Rewrote `_hero_sprite()`: 6 heroes × 12 poses each
+   - Rewrote `_enemy_sprite()`: 2 enemies × 7 poses each
+
+8. **Enhanced Bars** (`src/ouro_agent/art/glyphs.py`)
+   - `hp_bar()`: state indicators (healthy/wounded/critical), different borders/shapes, percentage display
+   - `mp_bar()`: low/empty indicators, different borders
+   - `atb_bar()`: ready indicator, charging display
+   - `shield_indicator()`: compact shield display
+   - `status_indicator()`: compact status effect display
+
+9. **Terminal Control** (`src/ouro_agent/tui/terminal.py`)
+   - `Terminal` class: ANSI escape code helpers for clearing, cursor control, refresh mode
+   - `get_terminal()`: factory function
+
+**How to Play:**
+
+```bash
+# Auto-run with mock (for testing)
+ouro --lang zh run --mock --auto
+
+# Interactive run
+ouro --lang zh run --mock
+
+# Run with real LLM (requires provider config)
+ouro --lang zh run --auto
+```
 
 ---
 

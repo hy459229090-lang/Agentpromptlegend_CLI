@@ -40,6 +40,306 @@ DEFAULT_MAX_TICKS = 600
 
 
 @dataclass
+class BattleReport:
+    result: str
+    total_ticks: int
+    hero_turn_count: int
+    enemy_turn_count: int
+    
+    basic_attack_count: int
+    skill_cast_count: int
+    defend_count: int
+    observe_count: int
+    stance_count: int
+    
+    hero_damage_dealt: int
+    enemy_damage_dealt: int
+    
+    skill_usage: dict[str, int]
+    fallback_count: int
+    invalid_action_count: int
+    
+    killed_by: str | None
+    last_enemy_attacker: str | None
+    
+    hero_hp_remaining: int
+    hero_mp_remaining: int
+    enemies_remaining: int
+
+    @property
+    def total_hero_actions(self) -> int:
+        return (
+            self.basic_attack_count
+            + self.skill_cast_count
+            + self.defend_count
+            + self.observe_count
+            + self.stance_count
+        )
+
+    @property
+    def skill_usage_ratio(self) -> float:
+        if self.total_hero_actions == 0:
+            return 0.0
+        return self.skill_cast_count / self.total_hero_actions
+
+    @property
+    def basic_attack_ratio(self) -> float:
+        if self.total_hero_actions == 0:
+            return 0.0
+        return self.basic_attack_count / self.total_hero_actions
+
+    def summary(self, language: str = "en") -> list[str]:
+        lines: list[str] = []
+        
+        header = {
+            "en": f"=== BATTLE REPORT :: {self.result.upper()} ===",
+            "zh": f"=== 战斗报告 :: {_result_display(self.result, 'zh').upper()} ===",
+        }.get(language, f"=== BATTLE REPORT :: {self.result.upper()} ===")
+        lines.append(header)
+        lines.append("")
+        
+        stats_label = {
+            "en": "Battle Stats",
+            "zh": "战斗统计",
+        }.get(language, "Battle Stats")
+        lines.append(f"{stats_label}:")
+        ticks_label = {
+            "en": f"  Total ticks: {self.total_ticks}",
+            "zh": f"  总刻度数: {self.total_ticks}",
+        }.get(language, f"  Total ticks: {self.total_ticks}")
+        lines.append(ticks_label)
+        
+        hero_turns_label = {
+            "en": f"  Hero turns: {self.hero_turn_count}",
+            "zh": f"  英雄回合: {self.hero_turn_count}",
+        }.get(language, f"  Hero turns: {self.hero_turn_count}")
+        lines.append(hero_turns_label)
+        
+        enemy_turns_label = {
+            "en": f"  Enemy turns: {self.enemy_turn_count}",
+            "zh": f"  敌人回合: {self.enemy_turn_count}",
+        }.get(language, f"  Enemy turns: {self.enemy_turn_count}")
+        lines.append(enemy_turns_label)
+        lines.append("")
+        
+        actions_label = {
+            "en": "Hero Action Breakdown",
+            "zh": "英雄行动分布",
+        }.get(language, "Hero Action Breakdown")
+        lines.append(f"{actions_label}:")
+        basic_label = {
+            "en": f"  Basic Attack: {self.basic_attack_count} ({self.basic_attack_ratio:.0%})",
+            "zh": f"  普通攻击: {self.basic_attack_count} ({self.basic_attack_ratio:.0%})",
+        }.get(language, f"  Basic Attack: {self.basic_attack_count} ({self.basic_attack_ratio:.0%})")
+        lines.append(basic_label)
+        
+        skill_label = {
+            "en": f"  Skill Cast: {self.skill_cast_count} ({self.skill_usage_ratio:.0%})",
+            "zh": f"  技能释放: {self.skill_cast_count} ({self.skill_usage_ratio:.0%})",
+        }.get(language, f"  Skill Cast: {self.skill_cast_count} ({self.skill_usage_ratio:.0%})")
+        lines.append(skill_label)
+        
+        defend_label = {
+            "en": f"  Defend: {self.defend_count}",
+            "zh": f"  防御: {self.defend_count}",
+        }.get(language, f"  Defend: {self.defend_count}")
+        lines.append(defend_label)
+        
+        if self.skill_usage:
+            lines.append("")
+            skill_detail_label = {
+                "en": "Skill Usage Detail",
+                "zh": "技能使用详情",
+            }.get(language, "Skill Usage Detail")
+            lines.append(f"{skill_detail_label}:")
+            for skill_id, count in self.skill_usage.items():
+                lines.append(f"  {skill_id}: {count}")
+        
+        lines.append("")
+        damage_label = {
+            "en": "Damage Summary",
+            "zh": "伤害统计",
+        }.get(language, "Damage Summary")
+        lines.append(f"{damage_label}:")
+        hero_dealt_label = {
+            "en": f"  Hero dealt: {self.hero_damage_dealt}",
+            "zh": f"  英雄输出: {self.hero_damage_dealt}",
+        }.get(language, f"  Hero dealt: {self.hero_damage_dealt}")
+        lines.append(hero_dealt_label)
+        
+        enemy_dealt_label = {
+            "en": f"  Enemy dealt: {self.enemy_damage_dealt}",
+            "zh": f"  敌人输出: {self.enemy_damage_dealt}",
+        }.get(language, f"  Enemy dealt: {self.enemy_damage_dealt}")
+        lines.append(enemy_dealt_label)
+        
+        if self.fallback_count > 0 or self.invalid_action_count > 0:
+            lines.append("")
+            issues_label = {
+                "en": "Action Issues",
+                "zh": "行动问题",
+            }.get(language, "Action Issues")
+            lines.append(f"{issues_label}:")
+            if self.fallback_count > 0:
+                fallback_label = {
+                    "en": f"  Fallback actions: {self.fallback_count}",
+                    "zh": f"  回退行动: {self.fallback_count}",
+                }.get(language, f"  Fallback actions: {self.fallback_count}")
+                lines.append(fallback_label)
+            if self.invalid_action_count > 0:
+                invalid_label = {
+                    "en": f"  Invalid actions: {self.invalid_action_count}",
+                    "zh": f"  无效行动: {self.invalid_action_count}",
+                }.get(language, f"  Invalid actions: {self.invalid_action_count}")
+                lines.append(invalid_label)
+        
+        if self.result == "defeat" and self.killed_by:
+            lines.append("")
+            defeat_label = {
+                "en": "Defeat Analysis",
+                "zh": "战败分析",
+            }.get(language, "Defeat Analysis")
+            lines.append(f"{defeat_label}:")
+            killed_label = {
+                "en": f"  Killed by: {self.killed_by}",
+                "zh": f"  击败者: {self.killed_by}",
+            }.get(language, f"  Killed by: {self.killed_by}")
+            lines.append(killed_label)
+            if self.last_enemy_attacker:
+                last_attacker_label = {
+                    "en": f"  Last attacker: {self.last_enemy_attacker}",
+                    "zh": f"  最后攻击者: {self.last_enemy_attacker}",
+                }.get(language, f"  Last attacker: {self.last_enemy_attacker}")
+                lines.append(last_attacker_label)
+        
+        lines.append("")
+        final_label = {
+            "en": "Final State",
+            "zh": "最终状态",
+        }.get(language, "Final State")
+        lines.append(f"{final_label}:")
+        hp_label = {
+            "en": f"  Hero HP: {self.hero_hp_remaining}",
+            "zh": f"  英雄HP: {self.hero_hp_remaining}",
+        }.get(language, f"  Hero HP: {self.hero_hp_remaining}")
+        lines.append(hp_label)
+        
+        mp_label = {
+            "en": f"  Hero MP: {self.hero_mp_remaining}",
+            "zh": f"  英雄MP: {self.hero_mp_remaining}",
+        }.get(language, f"  Hero MP: {self.hero_mp_remaining}")
+        lines.append(mp_label)
+        
+        enemies_label = {
+            "en": f"  Enemies alive: {self.enemies_remaining}",
+            "zh": f"  存活敌人: {self.enemies_remaining}",
+        }.get(language, f"  Enemies alive: {self.enemies_remaining}")
+        lines.append(enemies_label)
+        
+        return lines
+
+
+def _result_display(result: str, lang: str) -> str:
+    mapping = {
+        "en": {
+            "victory": "Victory",
+            "defeat": "Defeat",
+            "timeout": "Timeout",
+            "ongoing": "Ongoing",
+        },
+        "zh": {
+            "victory": "胜利",
+            "defeat": "战败",
+            "timeout": "超时",
+            "ongoing": "进行中",
+        },
+    }
+    return mapping.get(lang, mapping["en"]).get(result, result)
+
+
+def generate_battle_report(
+    state: BattleState,
+    records: list[TurnRecord],
+) -> BattleReport:
+    hero_turn_count = sum(1 for r in records if r.side == "hero")
+    enemy_turn_count = sum(1 for r in records if r.side == "enemy")
+    
+    basic_attack_count = 0
+    skill_cast_count = 0
+    defend_count = 0
+    observe_count = 0
+    stance_count = 0
+    skill_usage: dict[str, int] = {}
+    hero_damage_dealt = 0
+    enemy_damage_dealt = 0
+    fallback_count = 0
+    invalid_action_count = 0
+    last_enemy_attacker: str | None = None
+    killed_by: str | None = None
+    
+    for record in records:
+        if record.side == "hero":
+            action_kind = None
+            if record.judge and record.judge.action_kind:
+                action_kind = record.judge.action_kind
+            elif record.action:
+                action_kind = record.action.type
+            
+            if action_kind == "basic_attack":
+                basic_attack_count += 1
+            elif action_kind == "cast_skill":
+                skill_cast_count += 1
+                if record.judge and record.judge.skill_id:
+                    skill_usage[record.judge.skill_id] = skill_usage.get(record.judge.skill_id, 0) + 1
+            elif action_kind == "defend":
+                defend_count += 1
+            elif action_kind == "observe":
+                observe_count += 1
+            elif action_kind == "change_stance":
+                stance_count += 1
+            
+            if record.judge and record.judge.damage:
+                hero_damage_dealt += record.judge.damage
+            
+            if record.validation:
+                if record.validation.fallback_reason.value != "none":
+                    fallback_count += 1
+                    invalid_action_count += 1
+        
+        else:
+            if record.enemy_action:
+                last_enemy_attacker = record.actor_id
+                dmg = record.enemy_action.get("damage", 0)
+                if isinstance(dmg, int) and dmg > 0:
+                    enemy_damage_dealt += dmg
+    
+    if state.result == "defeat":
+        killed_by = last_enemy_attacker
+    
+    return BattleReport(
+        result=state.result,
+        total_ticks=state.tick,
+        hero_turn_count=hero_turn_count,
+        enemy_turn_count=enemy_turn_count,
+        basic_attack_count=basic_attack_count,
+        skill_cast_count=skill_cast_count,
+        defend_count=defend_count,
+        observe_count=observe_count,
+        stance_count=stance_count,
+        hero_damage_dealt=hero_damage_dealt,
+        enemy_damage_dealt=enemy_damage_dealt,
+        skill_usage=skill_usage,
+        fallback_count=fallback_count,
+        invalid_action_count=invalid_action_count,
+        killed_by=killed_by,
+        last_enemy_attacker=last_enemy_attacker,
+        hero_hp_remaining=state.hero.hp,
+        hero_mp_remaining=state.hero.mp,
+        enemies_remaining=len(state.alive_enemies()),
+    )
+
+
+@dataclass
 class TurnRecord:
     tick: int
     actor_id: str

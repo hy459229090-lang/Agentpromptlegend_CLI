@@ -34,12 +34,12 @@ def test_eighteen_skills_loaded(bundle):
             assert sid in bundle.skills
 
 
-def test_six_items_with_tier_breakdown(bundle):
-    assert len(bundle.items) == 6
+def test_items_with_tier_breakdown(bundle):
+    assert len(bundle.items) >= 6
     tiers = [item.tier for item in bundle.items.values()]
-    assert tiers.count("common") == 3
-    assert tiers.count("heroic") == 2
-    assert tiers.count("legendary") == 1
+    assert tiers.count("common") >= 3
+    assert tiers.count("heroic") >= 2
+    assert tiers.count("legendary") >= 1
 
 
 def test_legendary_item_has_allowed_effects(bundle):
@@ -49,8 +49,8 @@ def test_legendary_item_has_allowed_effects(bundle):
         assert item.allowed_effects, "legendary must declare allowed_effects"
 
 
-def test_six_affixes(bundle):
-    assert len(bundle.affixes) == 6
+def test_affixes_loaded(bundle):
+    assert len(bundle.affixes) >= 6
 
 
 def test_two_resonances(bundle):
@@ -156,9 +156,9 @@ def test_validation_report_includes_b_counts(bundle, content_root):
     assert report.ok
     assert report.heroes == 6
     assert report.skills == 18
-    assert report.items == 6
-    assert report.affixes == 6
-    assert report.resonances == 2
+    assert report.items >= 6
+    assert report.affixes >= 6
+    assert report.resonances >= 2
 
 
 def test_render_hero_card_zh(bundle):

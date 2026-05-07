@@ -43,6 +43,28 @@ ID_PREFIXES = {
     "skill": "skill_",
     "enemy": "enemy_",
     "status": "status_",
+    "dungeon": "dungeon_",
+    "node": "node_",
+}
+
+VALID_NODE_TYPES = {
+    "normal_combat",
+    "elite_combat",
+    "mimic_chest",
+    "shop",
+    "event",
+    "rest",
+    "boss",
+}
+
+VALID_REWARD_TYPES = {
+    "item",
+    "affix",
+    "codex",
+    "gold",
+    "xp",
+    "strategy",
+    "heal",
 }
 
 
@@ -572,6 +594,8 @@ class ContentBundle:
     items: dict[str, ItemData] = field(default_factory=dict)
     affixes: dict[str, AffixData] = field(default_factory=dict)
     resonances: dict[str, ResonanceData] = field(default_factory=dict)
+    dungeons: dict[str, "DungeonData"] = field(default_factory=dict)
+    nodes: dict[str, "NodeData"] = field(default_factory=dict)
 
     def get_hero(self, hero_id: str) -> HeroData:
         if hero_id not in self.heroes:
@@ -597,6 +621,205 @@ class ContentBundle:
         if affix_id not in self.affixes:
             raise SchemaError(f"unknown affix id '{affix_id}'")
         return self.affixes[affix_id]
+
+    def get_dungeon(self, dungeon_id: str) -> "DungeonData":
+        if not hasattr(self, "dungeons") or dungeon_id not in self.dungeons:
+            raise SchemaError(f"unknown dungeon id '{dungeon_id}'")
+        return self.dungeons[dungeon_id]
+
+    def get_node(self, node_id: str) -> "NodeData":
+        if not hasattr(self, "nodes") or node_id not in self.nodes:
+            raise SchemaError(f"unknown node id '{node_id}'")
+        return self.nodes[node_id]
+
+
+@dataclass(frozen=True)
+class RewardChoice:
+    type: str
+    item_id: str | None = None
+    affix_id: str | None = None
+    progress: int | None = None
+    strategy_style: str | None = None
+    gold: int | None = None
+    heal_percent: int | None = None
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object], where: str) -> "RewardChoice":
+        reward_type = raw.get("type")
+        if not isinstance(reward_type, str) or reward_type not in VALID_REWARD_TYPES:
+            raise SchemaError(f"{where}: invalid reward type '{reward_type}'")
+        return cls(
+            type=str(reward_type),
+            item_id=str(raw.get("item_id")) if raw.get("item_id") else None,
+            affix_id=str(raw.get("affix_id")) if raw.get("affix_id") else None,
+            progress=int(raw.get("progress")) if raw.get("progress") is not None else None,
+            strategy_style=str(raw.get("strategy_style")) if raw.get("strategy_style") else None,
+            gold=int(raw.get("gold")) if raw.get("gold") is not None else None,
+            heal_percent=int(raw.get("heal_percent")) if raw.get("heal_percent") is not None else None,
+        )
+
+
+@dataclass(frozen=True)
+class ShopItem:
+    type: str
+    price: int
+    item_id: str | None = None
+    affix_id: str | None = None
+    strategy_style: str | None = None
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object], where: str) -> "ShopItem":
+        item_type = raw.get("type")
+        if not isinstance(item_type, str) or item_type not in {"item", "affix", "strategy"}:
+            raise SchemaError(f"{where}: invalid shop item type '{item_type}'")
+        price = raw.get("price", 0)
+        if not isinstance(price, int) or price < 0:
+            raise SchemaError(f"{where}: price must be a non-negative int")
+        return cls(
+            type=str(item_type),
+            price=int(price),
+            item_id=str(raw.get("item_id")) if raw.get("item_id") else None,
+            affix_id=str(raw.get("affix_id")) if raw.get("affix_id") else None,
+            strategy_style=str(raw.get("strategy_style")) if raw.get("strategy_style") else None,
+        )
+
+
+@dataclass(frozen=True)
+class NodeRewards:
+    gold: int = 0
+    xp: int = 0
+    reward_choices: tuple[RewardChoice, ...] = ()
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object] | None, where: str) -> "NodeRewards":
+        if raw is None:
+            return cls()
+        gold = int(raw.get("gold", 0))
+        xp = int(raw.get("xp", 0))
+        choices_raw = raw.get("reward_choices", []) or []
+        if not isinstance(choices_raw, list):
+            raise SchemaError(f"{where}: reward_choices must be a list")
+        choices = tuple(
+            RewardChoice.from_dict(choice, f"{where}.reward_choices[{i}]")
+            for i, choice in enumerate(choices_raw)
+        )
+        return cls(gold=gold, xp=xp, reward_choices=choices)
+
+
+@dataclass(frozen=True)
+class NodeData:
+    id: str
+    node_type: str
+    display_name: LocalizedText
+    description: LocalizedText
+    enemy_ids: tuple[str, ...] = ()
+    shop_items: tuple[ShopItem, ...] = ()
+    rewards: NodeRewards | None = None
+    risk_level: str | None = None
+    is_boss: bool = False
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object], where: str) -> "NodeData":
+        nid = raw.get("id")
+        if not isinstance(nid, str) or not nid.startswith(ID_PREFIXES["node"]):
+            raise SchemaError(f"{where}: node id must start with 'node_', got {nid!r}")
+        node_type = raw.get("node_type")
+        if not isinstance(node_type, str) or node_type not in VALID_NODE_TYPES:
+            raise SchemaError(f"{where}: invalid node type '{node_type}'")
+        enemy_ids = tuple(str(e) for e in raw.get("enemy_ids", ()) or ())
+        shop_raw = raw.get("shop_items", []) or []
+        if not isinstance(shop_raw, list):
+            raise SchemaError(f"{where}: shop_items must be a list")
+        shop_items = tuple(
+            ShopItem.from_dict(item, f"{where}.shop_items[{i}]")
+            for i, item in enumerate(shop_raw)
+        )
+        rewards_raw = raw.get("rewards")
+        rewards = (
+            NodeRewards.from_dict(rewards_raw, f"{where}.rewards")
+            if rewards_raw is not None
+            else None
+        )
+        return cls(
+            id=str(nid),
+            node_type=str(node_type),
+            display_name=LocalizedText.from_value(
+                raw.get("display_name", nid), f"{where}.display_name"
+            ),
+            description=LocalizedText.from_value(
+                raw.get("description", ""), f"{where}.description"
+            ),
+            enemy_ids=enemy_ids,
+            shop_items=shop_items,
+            rewards=rewards,
+            risk_level=str(raw.get("risk_level")) if raw.get("risk_level") else None,
+            is_boss=bool(raw.get("is_boss", False)),
+        )
+
+
+@dataclass(frozen=True)
+class DungeonFloor:
+    floor_number: int
+    display_name: LocalizedText
+    nodes: tuple[str, ...]
+    is_start: bool = False
+    is_boss_floor: bool = False
+    route_choice: bool = False
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object], where: str) -> "DungeonFloor":
+        floor_num = raw.get("floor_number")
+        if not isinstance(floor_num, int) or floor_num < 1:
+            raise SchemaError(f"{where}: floor_number must be a positive int")
+        nodes_raw = raw.get("nodes", []) or []
+        if not isinstance(nodes_raw, list) or not nodes_raw:
+            raise SchemaError(f"{where}: floor must have at least one node")
+        nodes = tuple(str(n) for n in nodes_raw)
+        return cls(
+            floor_number=int(floor_num),
+            display_name=LocalizedText.from_value(
+                raw.get("display_name", f"Floor {floor_num}"), f"{where}.display_name"
+            ),
+            nodes=nodes,
+            is_start=bool(raw.get("is_start", False)),
+            is_boss_floor=bool(raw.get("is_boss_floor", False)),
+            route_choice=bool(raw.get("route_choice", False)),
+        )
+
+
+@dataclass(frozen=True)
+class DungeonData:
+    id: str
+    display_name: LocalizedText
+    description: LocalizedText
+    scene_text: LocalizedText
+    floors: tuple[DungeonFloor, ...]
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, object], where: str) -> "DungeonData":
+        did = raw.get("id")
+        if not isinstance(did, str) or not did.startswith(ID_PREFIXES["dungeon"]):
+            raise SchemaError(f"{where}: dungeon id must start with 'dungeon_', got {did!r}")
+        floors_raw = raw.get("floors", []) or []
+        if not isinstance(floors_raw, list) or not floors_raw:
+            raise SchemaError(f"{where}: dungeon must have at least one floor")
+        floors = tuple(
+            DungeonFloor.from_dict(floor, f"{where}.floors[{i}]")
+            for i, floor in enumerate(floors_raw)
+        )
+        return cls(
+            id=str(did),
+            display_name=LocalizedText.from_value(
+                raw.get("display_name", did), f"{where}.display_name"
+            ),
+            description=LocalizedText.from_value(
+                raw.get("description", ""), f"{where}.description"
+            ),
+            scene_text=LocalizedText.from_value(
+                raw.get("scene_text", ""), f"{where}.scene_text"
+            ),
+            floors=floors,
+        )
 
 
 class SchemaError(ValueError):
