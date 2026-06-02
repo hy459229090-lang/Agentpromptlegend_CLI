@@ -124,7 +124,7 @@ skills:
       apply_status:
         id: status_silence
         stacks: 1
-        duration: 1
+        duration: 2
       base: 4
       power_scale: 0.3
       damage_type: physical

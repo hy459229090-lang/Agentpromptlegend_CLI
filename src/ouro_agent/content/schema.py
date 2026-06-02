@@ -6,10 +6,47 @@ whose IDs, references, or required fields are missing or malformed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import IntEnum, auto
 from typing import Iterable, Mapping
 
 from ouro_agent.i18n import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
 
+
+class CodexStage(IntEnum):
+    """Codex unlock stage for a monster family/tier.
+
+    Order matters: higher stages include information from lower stages.
+    Values are ordered for comparison operations.
+    """
+    UNKNOWN = 0
+    OBSERVED = 1
+    FAMILIAR = 2
+    MASTERED = 3
+    HUNTED = 4
+
+    @classmethod
+    def from_encounters(cls, encounters: int, defeats: int) -> "CodexStage":
+        """Calculate codex stage from encounter and defeat counts.
+
+        Based on G07:
+        - OBSERVED: 1+ encounters
+        - FAMILIAR: 2+ defeats
+        - MASTERED: 5+ defeats
+        - HUNTED: 10+ defeats
+        """
+        if defeats >= 10:
+            return cls.HUNTED
+        if defeats >= 5:
+            return cls.MASTERED
+        if defeats >= 2:
+            return cls.FAMILIAR
+        if encounters >= 1:
+            return cls.OBSERVED
+        return cls.UNKNOWN
+
+
+VALID_CODEX_STAGES = {stage.name.lower() for stage in CodexStage}
+VALID_MONSTER_TIERS = {"trace", "ritebound", "archive_bound"}
 VALID_TIERS = {"common", "heroic", "legendary"}
 VALID_STAT_FIELDS = {"hp", "mp", "speed", "attack", "defense", "power"}
 VALID_FIXED_EFFECT_KINDS = {"battle_start_status", "passive_tag"}
@@ -313,8 +350,23 @@ class EnemyData:
     short_glyph: str
     base_stats: BaseStats
     behavior: EnemyBehavior
-    codex_stage_unknown: LocalizedText
-    codex_stage_observed: LocalizedText
+    family_id: str = ""
+    tier: str = "trace"
+    codex_stage_unknown: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
+    codex_stage_observed: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
+    codex_stage_familiar: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
+    codex_stage_mastered: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
+    codex_stage_hunted: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, object], where: str) -> "EnemyData":
@@ -327,6 +379,17 @@ class EnemyData:
         behavior_raw = raw.get("behavior")
         if not isinstance(behavior_raw, Mapping):
             raise SchemaError(f"{where}: missing behavior block")
+
+        family_id = raw.get("family_id", "")
+        if not isinstance(family_id, str):
+            raise SchemaError(f"{where}: family_id must be string")
+
+        tier = raw.get("tier", "trace")
+        if tier and tier not in VALID_MONSTER_TIERS:
+            raise SchemaError(
+                f"{where}: invalid tier '{tier}', must be one of {sorted(VALID_MONSTER_TIERS)}"
+            )
+
         return cls(
             id=str(eid),
             display_name=LocalizedText.from_value(
@@ -335,6 +398,8 @@ class EnemyData:
             short_glyph=str(raw.get("short_glyph", "?")),
             base_stats=BaseStats.from_dict(stats_raw, f"{where}.base_stats"),
             behavior=EnemyBehavior.from_dict(behavior_raw, f"{where}.behavior"),
+            family_id=str(family_id),
+            tier=str(tier or "trace"),
             codex_stage_unknown=LocalizedText.from_value(
                 raw.get("codex_stage_unknown", ""),
                 f"{where}.codex_stage_unknown",
@@ -343,7 +408,43 @@ class EnemyData:
                 raw.get("codex_stage_observed", ""),
                 f"{where}.codex_stage_observed",
             ),
+            codex_stage_familiar=LocalizedText.from_value(
+                raw.get("codex_stage_familiar", ""),
+                f"{where}.codex_stage_familiar",
+            ),
+            codex_stage_mastered=LocalizedText.from_value(
+                raw.get("codex_stage_mastered", ""),
+                f"{where}.codex_stage_mastered",
+            ),
+            codex_stage_hunted=LocalizedText.from_value(
+                raw.get("codex_stage_hunted", ""),
+                f"{where}.codex_stage_hunted",
+            ),
         )
+
+    def codex_text_for_stage(self, stage: CodexStage, lang: str = DEFAULT_LANGUAGE) -> str:
+        """Get the codex description for a given stage.
+
+        Returns the highest available stage description that is <= the given stage.
+        """
+        if stage == CodexStage.HUNTED and self.codex_stage_hunted.get(lang):
+            return self.codex_stage_hunted.get(lang)
+        if stage == CodexStage.MASTERED and self.codex_stage_mastered.get(lang):
+            return self.codex_stage_mastered.get(lang)
+        if stage == CodexStage.FAMILIAR and self.codex_stage_familiar.get(lang):
+            return self.codex_stage_familiar.get(lang)
+        if stage == CodexStage.OBSERVED and self.codex_stage_observed.get(lang):
+            return self.codex_stage_observed.get(lang)
+        return self.codex_stage_unknown.get(lang)
+
+    def tier_display(self, lang: str = DEFAULT_LANGUAGE) -> str:
+        """Get display name for monster tier."""
+        tier_names = {
+            "trace": {"en": "I: Trace", "zh": "I: 碎影"},
+            "ritebound": {"en": "II: Ritebound", "zh": "II: 仪式"},
+            "archive_bound": {"en": "III: Archive-Bound", "zh": "III: 档案化"},
+        }
+        return tier_names.get(self.tier, {}).get(lang, self.tier)
 
 
 @dataclass(frozen=True)
@@ -666,21 +767,40 @@ class ShopItem:
     item_id: str | None = None
     affix_id: str | None = None
     strategy_style: str | None = None
+    heal_percent: int | None = None
+    restore_mp: bool = False
+    scout_hint: LocalizedText | None = None
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, object], where: str) -> "ShopItem":
         item_type = raw.get("type")
-        if not isinstance(item_type, str) or item_type not in {"item", "affix", "strategy"}:
+        if not isinstance(item_type, str) or item_type not in {"item", "affix", "strategy", "heal", "scout"}:
             raise SchemaError(f"{where}: invalid shop item type '{item_type}'")
         price = raw.get("price", 0)
         if not isinstance(price, int) or price < 0:
             raise SchemaError(f"{where}: price must be a non-negative int")
+        heal_percent = raw.get("heal_percent")
+        if heal_percent is not None and (
+            not isinstance(heal_percent, int) or heal_percent < 0
+        ):
+            raise SchemaError(f"{where}: heal_percent must be a non-negative int")
+        restore_mp = raw.get("restore_mp", False)
+        if not isinstance(restore_mp, bool):
+            raise SchemaError(f"{where}: restore_mp must be bool")
+        scout_hint = (
+            LocalizedText.from_value(raw.get("scout_hint"), f"{where}.scout_hint")
+            if raw.get("scout_hint") is not None
+            else None
+        )
         return cls(
             type=str(item_type),
             price=int(price),
             item_id=str(raw.get("item_id")) if raw.get("item_id") else None,
             affix_id=str(raw.get("affix_id")) if raw.get("affix_id") else None,
             strategy_style=str(raw.get("strategy_style")) if raw.get("strategy_style") else None,
+            heal_percent=int(heal_percent) if heal_percent is not None else None,
+            restore_mp=restore_mp,
+            scout_hint=scout_hint,
         )
 
 
@@ -717,6 +837,12 @@ class NodeData:
     rewards: NodeRewards | None = None
     risk_level: str | None = None
     is_boss: bool = False
+    encounter_intro: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
+    boss_intro: LocalizedText = field(
+        default_factory=lambda: LocalizedText(en="", zh="")
+    )
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, object], where: str) -> "NodeData":
@@ -754,6 +880,14 @@ class NodeData:
             rewards=rewards,
             risk_level=str(raw.get("risk_level")) if raw.get("risk_level") else None,
             is_boss=bool(raw.get("is_boss", False)),
+            encounter_intro=LocalizedText.from_value(
+                raw.get("encounter_intro", ""),
+                f"{where}.encounter_intro",
+            ),
+            boss_intro=LocalizedText.from_value(
+                raw.get("boss_intro", ""),
+                f"{where}.boss_intro",
+            ),
         )
 
 

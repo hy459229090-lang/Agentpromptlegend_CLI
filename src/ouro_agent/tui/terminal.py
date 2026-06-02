@@ -44,17 +44,17 @@ ANSI_RESTORE_SCREEN = "\x1b[?47l"
 
 class Terminal:
     """Terminal control for refreshing displays.
-    
+
     This class provides a high-level interface for terminal control,
     with support for refreshing displays and handling animations.
-    
+
     Usage:
         with Terminal(refresh=True) as term:
             for frame in frames:
                 term.render(frame)
                 time.sleep(0.1)
     """
-    
+
     def __init__(
         self,
         refresh: bool = False,
@@ -78,7 +78,7 @@ class Terminal:
         self._cursor_hidden = False
         self._screen_saved = False
         self._last_frame_lines: int = 0
-    
+
     def __enter__(self) -> "Terminal":
         """Enter context manager."""
         if self.save_screen:
@@ -103,11 +103,10 @@ class Terminal:
     def clear(self) -> None:
         """Clear the screen and move cursor to home position."""
         if self._is_terminal():
-            sys.stdout.write(ANSI_CLEAR_SCREEN)
             sys.stdout.write(ANSI_MOVE_HOME)
+            sys.stdout.write(ANSI_CLEAR_TO_END)
             sys.stdout.flush()
         else:
-            # Non-terminal fallback: print blank lines
             sys.stdout.write("\n" * 100)
             sys.stdout.flush()
     
@@ -144,10 +143,15 @@ class Terminal:
         return sys.stdout.isatty()
     
     def _move_up(self, lines: int) -> None:
-        """Move cursor up N lines."""
+        """Move cursor up N lines to the start of the frame."""
         if self._is_terminal() and lines > 0:
             sys.stdout.write(ANSI_MOVE_UP.format(n=lines))
-            sys.stdout.write(ANSI_CLEAR_LINE_TO_BEGINNING)
+            sys.stdout.flush()
+
+    def _clear_from_cursor(self) -> None:
+        """Clear from cursor position to end of screen."""
+        if self._is_terminal():
+            sys.stdout.write(ANSI_CLEAR_TO_END)
             sys.stdout.flush()
     
     def _count_lines(self, text: str) -> int:
@@ -157,9 +161,13 @@ class Terminal:
         width = self._get_terminal_width()
         for line in lines:
             if width > 0:
-                # Account for wrapped lines
                 line_length = len(line)
-                total += max(1, (line_length + width - 1) // width)
+                if line_length == 0:
+                    total += 1
+                elif line_length % width == 0:
+                    total += line_length // width
+                else:
+                    total += (line_length + width - 1) // width
             else:
                 total += 1
         return total
@@ -184,21 +192,19 @@ class Terminal:
             clear_previous: If True, clear the previous frame (only in refresh mode)
         """
         if self.refresh and self._is_terminal():
-            # Refresh mode: clear previous frame and render in place
+            new_lines = self._count_lines(content)
+
             if clear_previous and self._last_frame_lines > 0:
-                # Move cursor up to the start of the previous frame
                 self._move_up(self._last_frame_lines)
-            
-            # Count lines in this frame
-            self._last_frame_lines = self._count_lines(content)
-            
-            # Render the content
+                self._clear_from_cursor()
+
+            self._last_frame_lines = new_lines
+
             sys.stdout.write(content)
             if not content.endswith("\n"):
                 sys.stdout.write("\n")
             sys.stdout.flush()
         else:
-            # Non-refresh mode: just print the content (scrolling)
             sys.stdout.write(content)
             if not content.endswith("\n"):
                 sys.stdout.write("\n")

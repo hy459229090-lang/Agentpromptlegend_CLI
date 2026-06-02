@@ -102,6 +102,8 @@ class Enemy(Unit):
     chant_charge_turns: int = 0
     chant_progress: int = 0
     short_glyph: str = "?"
+    family_id: str = ""
+    tier: str = "trace"
 
 
 @dataclass

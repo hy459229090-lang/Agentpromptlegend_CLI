@@ -1,11 +1,13 @@
 schema_version: "0.1"
-content_version: "mvp_a"
+content_version: "mvp_c2"
 enemies:
   - id: enemy_hungry_cultist
     display_name:
       en: Hungry Cultist
       zh: 饥饿邪教徒
     short_glyph: "c"
+    family_id: family_hungry_cultist
+    tier: trace
     base_stats:
       hp: 50
       mp: 0
@@ -20,13 +22,52 @@ enemies:
       en: A starving figure clutching a notched dagger.
       zh: 一名手持缺口短刀、瘦骨嶙峋的身影。
     codex_stage_observed:
-      en: Hungry cultists strike low and hard but lack defense.
-      zh: 饥饿邪教徒攻击迅猛凶狠，但防御薄弱。
+      en: Hungry cultists strike low and hard but lack defense. Low HP triggers rage.
+      zh: 饥饿邪教徒攻击迅猛凶狠，但防御薄弱。低血量时进入狂暴状态。
+    codex_stage_familiar:
+      en: "Resist: physical 5%. Weak: bleed, execute. Rage at less than 30% HP."
+      zh: "抗性：物理 5%。弱点：流血、处决。血量低于 30% 时狂暴。"
+    codex_stage_mastered:
+      en: "Family: Hungry Cultist. Build hint: bleed-focused builds excel here."
+      zh: "家族：饥饿信徒。Build 提示：流血流派在此表现优异。"
+
+  - id: enemy_hungry_cultist_rite
+    display_name:
+      en: Ravenous Zealot
+      zh: 饥渴狂信者
+    short_glyph: "C"
+    family_id: family_hungry_cultist
+    tier: ritebound
+    base_stats:
+      hp: 80
+      mp: 0
+      speed: 11
+      attack: 14
+      defense: 6
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A frenzied figure with blood-stained robes.
+      zh: 一个身穿血污长袍的疯狂身影。
+    codex_stage_observed:
+      en: Ritual-bound cultists hit harder and start enraged. They ignore pain.
+      zh: 仪式化的狂信者攻击力更强，且开局即狂暴。他们无视痛苦。
+    codex_stage_familiar:
+      en: "Resist: physical 10%, bleed 5%. Weak: fire, holy. Always enraged."
+      zh: "抗性：物理 10%、流血 5%。弱点：火焰、神圣。始终处于狂暴状态。"
+    codex_stage_mastered:
+      en: "Family: Hungry Cultist. Ritebound tier. Strategy: burst before they stack too much damage."
+      zh: "家族：饥饿信徒。II 档。策略：在他们累积过多伤害前爆发击杀。"
+
   - id: enemy_black_candle_acolyte
     display_name:
       en: Black Candle Acolyte
       zh: 黑烛侍祭
     short_glyph: "k"
+    family_id: family_black_candle
+    tier: trace
     base_stats:
       hp: 70
       mp: 20
@@ -43,5 +84,198 @@ enemies:
       en: A robed acolyte mid-chant, eyes lost in candle smoke.
       zh: 一名身着长袍、双眼隐没在烛烟中的低声吟唱者。
     codex_stage_observed:
-      en: Acolytes channel a slow chant that erupts in shadow flame.
-      zh: 侍祭以缓慢吟唱积蓄力量，最终以暗影火焰爆发。
+      en: Acolytes channel a slow chant that erupts in shadow flame. Interrupt works.
+      zh: 侍祭以缓慢吟唱积蓄力量，最终以暗影火焰爆发。打断有效。
+    codex_stage_familiar:
+      en: "Resist: shadow 10%. Weak: interrupt, silence. Chant takes 1 turn."
+      zh: "抗性：暗影 10%。弱点：打断、沉默。吟唱需 1 回合。"
+    codex_stage_mastered:
+      en: "Family: Black Candle. Build hint: control/interrupt builds neutralize them."
+      zh: "家族：黑烛。Build 提示：控制/打断流派对其有效。"
+
+  - id: enemy_black_candle_priest_rite
+    display_name:
+      en: Black Candle Priest
+      zh: 黑烛祭司
+    short_glyph: "K"
+    family_id: family_black_candle
+    tier: ritebound
+    base_stats:
+      hp: 100
+      mp: 40
+      speed: 9
+      attack: 8
+      defense: 8
+      power: 18
+    behavior:
+      kind: rule_chant
+      attack_chance: 0.4
+      chant_damage: 22
+      chant_charge_turns: 2
+    codex_stage_unknown:
+      en: A taller figure with multiple black candles circling them.
+      zh: 一个更高大的身影，周围环绕着多根黑烛。
+    codex_stage_observed:
+      en: Priests cast longer, more devastating shadow chants. They sometimes shield themselves.
+      zh: 祭司吟唱时间更长，但暗影法术更具毁灭性。他们有时会自我护盾。
+    codex_stage_familiar:
+      en: "Resist: shadow 20%, physical 5%. Weak: interrupt, holy. Chant takes 2 turns for heavy damage."
+      zh: "抗性：暗影 20%、物理 5%。弱点：打断、神圣。吟唱需 2 回合，伤害极高。"
+    codex_stage_mastered:
+      en: "Family: Black Candle. Ritebound tier. Strategy: interrupt their 2-turn charge before it fires."
+      zh: "家族：黑烛。II 档。策略：在 2 回合吟唱完成前打断。"
+
+  - id: enemy_black_candle_high_priest_archive
+    display_name:
+      en: Black Candle High Priest
+      zh: 黑烛主祭
+    short_glyph: "B"
+    family_id: family_black_candle
+    tier: archive_bound
+    base_stats:
+      hp: 200
+      mp: 80
+      speed: 8
+      attack: 12
+      defense: 12
+      power: 28
+    behavior:
+      kind: rule_chant
+      attack_chance: 0.3
+      chant_damage: 35
+      chant_charge_turns: 2
+    codex_stage_unknown:
+      en: A towering figure clad in black candles and void-purple robes. The air warps around them.
+      zh: 一个高大的身影，身披黑烛与深紫长袍。周围的空气都在扭曲。
+    codex_stage_observed:
+      en: The High Priest reads your movements. Their chants are devastating and they can curse your MP.
+      zh: 主祭能预判你的行动。他们的吟唱极具毁灭性，还能诅咒你的 MP。
+    codex_stage_familiar:
+      en: "Resist: shadow 40%, physical 15%. Weak: holy, bleed. Chant: 2-turn, 35+ damage. May apply corruption."
+      zh: "抗性：暗影 40%、物理 15%。弱点：神圣、流血。吟唱：2 回合，35+ 伤害。可能施加腐化。"
+    codex_stage_mastered:
+      en: "Family: Black Candle. Archive-Bound Boss. Strategy: interrupt every 2nd turn, use holy damage, watch corruption stacks."
+      zh: "家族：黑烛。III 档 Boss。策略：每 2 回合打断一次，使用神圣伤害，注意腐化层数。"
+    codex_stage_hunted:
+      en: "You have hunted the High Priest. You know their chant rhythm by heart: strike on turn 2, 4, 6..."
+      zh: "你已猎杀主祭。你熟知他们的吟唱节奏：第 2、4、6 回合出击..."
+
+  - id: enemy_mire_rat
+    display_name:
+      en: Mire Rat
+      zh: 瘟鼠
+    short_glyph: "r"
+    family_id: family_mire_vermin
+    tier: trace
+    base_stats:
+      hp: 35
+      mp: 0
+      speed: 14
+      attack: 8
+      defense: 2
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A twitching rat covered in greenish muck.
+      zh: 一只抽搐的老鼠，身上覆盖着绿色黏液。
+    codex_stage_observed:
+      en: Mire rats are fast and their bites carry poison. They attack in packs.
+      zh: 瘟鼠速度很快，它们的撕咬带有毒素。它们成群攻击。
+    codex_stage_familiar:
+      en: "Resist: poison 100%. Weak: fire, physical. Bite applies 1 poison stack."
+      zh: "抗性：毒素 100%。弱点：火焰、物理。撕咬施加 1 层中毒。"
+    codex_stage_mastered:
+      en: "Family: Mire Vermin. Build hint: fire-based AoE excels here."
+      zh: "家族：瘟沼毒虫。Build 提示：火焰范围伤害流派在此表现优异。"
+
+  - id: enemy_mire_scorpion_rite
+    display_name:
+      en: Mire Scorpion
+      zh: 毒蝎
+    short_glyph: "S"
+    family_id: family_mire_vermin
+    tier: ritebound
+    base_stats:
+      hp: 70
+      mp: 0
+      speed: 12
+      attack: 12
+      defense: 5
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A large scorpion with glowing green venom sacs.
+      zh: 一只大型蝎子，毒液囊发出绿色荧光。
+    codex_stage_observed:
+      en: Ritebound scorpions have thick armor and their stinger inflicts heavy poison.
+      zh: 仪式化毒蝎有厚重护甲，尾刺能施加剧毒。
+    codex_stage_familiar:
+      en: "Resist: poison 100%, physical 10%. Weak: fire, ice. Sting applies 2 poison stacks + slow."
+      zh: "抗性：毒素 100%、物理 10%。弱点：火焰、冰霜。尾刺施加 2 层中毒 + 减速。"
+    codex_stage_mastered:
+      en: "Family: Mire Vermin. Ritebound tier. Strategy: cleanse poison often, focus fire before stacks overwhelm."
+      zh: "家族：瘟沼毒虫。II 档。策略：频繁清除中毒，在毒层累积过深前集火击杀。"
+
+  - id: enemy_ash_wraith
+    display_name:
+      en: Ash Wraith
+      zh: 灰烬幽灵
+    short_glyph: "w"
+    family_id: family_ash_warden
+    tier: trace
+    base_stats:
+      hp: 45
+      mp: 0
+      speed: 13
+      attack: 9
+      defense: 3
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A flickering figure made of ash and embers.
+      zh: 一个由灰烬和余烬组成的闪烁身影。
+    codex_stage_observed:
+      en: Ash wraiths phase through attacks occasionally. Their touch burns.
+      zh: 灰烬幽灵偶尔会相位穿越攻击。它们的触碰会造成灼烧。
+    codex_stage_familiar:
+      en: "Resist: fire 50%, physical 5%. Weak: ice, holy. 20% dodge chance. Attack burns."
+      zh: "抗性：火焰 50%、物理 5%。弱点：冰霜、神圣。20% 闪避几率。攻击附带灼烧。"
+    codex_stage_mastered:
+      en: "Family: Ash Warden. Build hint: ice/holy builds bypass their fire resistance."
+      zh: "家族：灰烬守卫。Build 提示：冰霜/神圣流派可绕过火焰抗性。"
+
+  - id: enemy_ash_golem_rite
+    display_name:
+      en: Ash Golem
+      zh: 灰烬魔像
+    short_glyph: "G"
+    family_id: family_ash_warden
+    tier: ritebound
+    base_stats:
+      hp: 120
+      mp: 0
+      speed: 6
+      attack: 15
+      defense: 14
+      power: 0
+    behavior:
+      kind: rule_basic
+      attack_chance: 1.0
+    codex_stage_unknown:
+      en: A towering construct of compacted ash and heated metal.
+      zh: 一个由压实灰烬和炽热金属构成的巨大构造体。
+    codex_stage_observed:
+      en: Ash golems are slow but nearly indestructible. Their fists erupt in flame.
+      zh: 灰烬魔像行动缓慢但几乎不可摧毁。它们的拳头会爆发出火焰。
+    codex_stage_familiar:
+      en: "Resist: fire 75%, physical 20%. Weak: ice (damage x1.5), holy. High defense, low speed."
+      zh: "抗性：火焰 75%、物理 20%。弱点：冰霜（伤害 x1.5）、神圣。高防御，低速度。"
+    codex_stage_mastered:
+      en: "Family: Ash Warden. Ritebound tier. Strategy: use ice damage, exploit their slow speed with hit-and-run."
+      zh: "家族：灰烬守卫。II 档。策略：使用冰霜伤害，利用它们的低速打游击。"

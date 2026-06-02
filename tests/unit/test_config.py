@@ -1,9 +1,11 @@
 """REQ-PROV-001/002/003: provider config rules and key handling."""
 from __future__ import annotations
 
+from argparse import Namespace
+
 import pytest
 
-from ouro_agent.cli.main import main
+from ouro_agent.cli.main import _effective_game_config, main
 from ouro_agent.config import (
     OuroConfig,
     SUPPORTED_PROVIDERS,
@@ -68,6 +70,45 @@ def test_redacted_view_never_includes_secret(isolated_home):
     assert "sk-" not in " ".join(view_zh.values())
 
 
+def test_game_config_uses_saved_provider_unless_mock(isolated_home):
+    """REQ-PROV-004: game commands should use saved provider config."""
+    saved = OuroConfig(
+        provider="openai-compatible",
+        model="qwen-live",
+        api_key_env="OURO_API_KEY",
+        base_url="https://llm.example.test/v1",
+        api_version="",
+        timeout_seconds=77,
+        max_retries=4,
+        trace_level="summary",
+        unicode_mode=False,
+        language="en",
+    )
+    args = Namespace(mock=False, unicode=True, lang=None)
+
+    effective = _effective_game_config(args, saved)
+
+    assert effective.provider == "openai-compatible"
+    assert effective.model == "qwen-live"
+    assert effective.api_key_env == "OURO_API_KEY"
+    assert effective.base_url == "https://llm.example.test/v1"
+    assert effective.timeout_seconds == 77
+    assert effective.max_retries == 4
+    assert effective.unicode_mode is True
+    assert effective.language == "en"
+
+    forced = _effective_game_config(
+        Namespace(mock=True, unicode=False, lang="zh"),
+        saved,
+    )
+
+    assert forced.provider == "mock"
+    assert forced.model == "mock-smart"
+    assert forced.api_key_env == ""
+    assert forced.timeout_seconds == 77
+    assert forced.language == "zh"
+
+
 def test_load_rejects_legacy_plaintext_key(isolated_home, tmp_path):
     bad = tmp_path / "config.toml"
     bad.write_text(
@@ -108,6 +149,61 @@ def test_config_setup_rejects_plaintext_api_key_env(isolated_home, monkeypatch, 
     assert "api_key_env stores a variable NAME" in err
 
 
+def test_config_preflight_redacts_env_value_and_reports_ready(
+    isolated_home,
+    monkeypatch,
+    capsys,
+):
+    save_config(
+        OuroConfig(
+            provider="openai-compatible",
+            model="qwen-live",
+            api_key_env="OURO_API_KEY",
+            base_url="https://llm.example.test/v1",
+            language="en",
+        )
+    )
+    fake_secret = "sk-" + "live-secret-value"
+    monkeypatch.setenv("OURO_API_KEY", fake_secret)
+
+    rc = main(["--lang", "en", "config", "preflight"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "PROVIDER PREFLIGHT" in out
+    assert "provider     : openai-compatible" in out
+    assert "model        : qwen-live" in out
+    assert "api_key_env  : OURO_API_KEY" in out
+    assert "env value    : set (hidden)" in out
+    assert "network      : not called" in out
+    assert "status       : READY" in out
+    assert fake_secret not in out
+
+
+def test_config_preflight_missing_real_env_returns_not_ready(
+    isolated_home,
+    monkeypatch,
+    capsys,
+):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    save_config(
+        OuroConfig(
+            provider="openai",
+            model="gpt-4o-mini",
+            api_key_env="OPENAI_API_KEY",
+            language="en",
+        )
+    )
+
+    rc = main(["--lang", "en", "config", "preflight"])
+
+    out = capsys.readouterr().out
+    assert rc == 3
+    assert "status       : NOT READY" in out
+    assert "environment variable OPENAI_API_KEY is not set" in out
+    assert "env value    : MISSING" in out
+
+
 def test_cli_default_shows_main_menu(isolated_home, capsys):
     rc = main(["--lang", "en"])
 
@@ -115,6 +211,249 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert rc == 0
     assert "OURO AGENT :: PROMPT LEGEND" in out
     assert "Provider : mock" in out
+    assert "PLAYER JOURNEY BOARD" in out
+    assert "[START] Guided demo -> ouro demo --seed 1" in out
+    assert "[BUILD] Pick hero/prompt -> ouro list-heroes / ouro prompt-templates" in out
+    assert "[RUN]   Full run -> ouro run --mock" in out
+    assert "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report" in out
     assert "New Run" in out
+    assert "ouro run --mock" in out
+    assert "Guided Demo" in out
+    assert "ouro demo --seed 1" in out
+    assert "Quick Battle" in out
     assert "Hero Card" in out
     assert "Prompt Style" in out
+    assert "Status" in out
+    assert "ouro status" in out
+    assert "Codex" in out
+    assert "Runs" in out
+    assert "Run Report" in out
+    assert "ouro run-report" in out
+    assert "History" in out
+    assert "Doctor" in out
+
+
+def test_cli_prompt_templates_show_pilot_board(isolated_home, capsys):
+    rc = main(["--lang", "en", "prompt-templates"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "PROMPT STRATEGY TEMPLATES" in out
+    assert "PROMPT PILOT BOARD" in out
+    assert "[aggressive] BURST" in out
+    assert "[guarded]    STABLE" in out
+    assert "[control]    DENY" in out
+    assert "[attrition]  GRIND" in out
+    assert "PROMPT SCENARIO BOARD" in out
+    assert "[CHANT] control -> interrupt high ATB" in out
+    assert "[LOW HP] guarded -> defend or shield" in out
+    assert "[EXECUTE] aggressive -> finish low HP" in out
+    assert "[BOSS] control -> manage charge" in out
+    assert "PICK: boss/chant use control; low HP use guarded" in out
+    assert "RUN: ouro run --mock --prompt-style <name>" in out
+    assert "Use: ouro play --mock --prompt-style control" in out
+
+
+def test_cli_accepts_global_language_after_subcommand(isolated_home, capsys):
+    """REQ-QOL-001: new players can write `ouro menu --lang en`."""
+    rc = main(["menu", "--lang", "en"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "OURO AGENT :: PROMPT LEGEND" in out
+    assert "Language : en" in out
+    assert "New Run" in out
+    assert "ouro run --mock" in out
+
+
+def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
+    """REQ-EXP-008: one command shows the first playable loop without network."""
+    rc = main(
+        [
+            "--lang",
+            "en",
+            "demo",
+            "--seed",
+            "1",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "OURO DEMO :: FIRST ECHO" in out
+    assert "STEP 1: Status and next commands" in out
+    assert "Guided Demo" in out
+    assert "Trace: -" in out
+    assert "STEP 2: Hero card and build plan" in out
+    assert "HERO CARD" in out
+    assert "[W:" in out
+    assert "STEP 3: Deterministic mock battle" in out
+    assert "Provider: mock" in out
+    assert "BATTLE COMPLETE" in out
+    assert "Result : victory" in out
+    assert "STEP 4: Codex readback" in out
+    assert "CODEX :: MONSTER ARCHIVE" in out
+    assert "Observed: 2/9" in out
+    assert "[OB] Hungry Cultist" in out
+    assert "STEP 5: Continue from here" in out
+    assert "Next commands" in out
+    assert "Full run" in out
+    assert "ouro run --mock" in out
+    assert "Status" in out
+    assert "ouro status --lang en" in out
+    assert "Run Report" in out
+    assert "ouro run-report --lang en" in out
+    assert "Review Codex" in out
+    assert "ouro codex --lang en" in out
+    assert "Review runs" in out
+    assert "ouro runs --lang en --limit 5" in out
+    assert "Doctor" in out
+    assert "ouro doctor --lang en" in out
+    assert "Trace :" not in out
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "demo",
+        "play",
+        "list-heroes",
+        "hero-card",
+        "status",
+        "codex",
+        "runs",
+        "history",
+        "validate-content",
+        "doctor",
+        "run",
+        "batch",
+    ],
+)
+def test_content_dir_help_describes_installed_fallback(command, capsys):
+    """REQ-CLIUX-003: help text matches install-time bundled content fallback."""
+    with pytest.raises(SystemExit) as exc:
+        main([command, "--help"])
+
+    out = capsys.readouterr().out
+
+    assert exc.value.code == 0
+    assert "--content-dir" in out
+    assert "bundled" in out
+    assert "installed content" in out
+    assert "defaults to ./content" not in out
+
+
+def test_interactive_run_abort_returns_code_without_system_exit(
+    isolated_home,
+    content_root,
+    monkeypatch,
+    capsys,
+):
+    """REQ-CLIUX-002: interactive abort returns a code instead of killing callers."""
+    monkeypatch.setattr("builtins.input", lambda _prompt: (_ for _ in ()).throw(EOFError()))
+
+    rc = main(
+        [
+            "run",
+            "--mock",
+            "--seed",
+            "7",
+            "--no-animation",
+            "--no-trace",
+            "--content-dir",
+            str(content_root),
+            "--lang",
+            "en",
+        ]
+    )
+
+    err = capsys.readouterr().err
+
+    assert rc == 130
+    assert "Aborted." in err
+
+
+def test_doctor_respects_language_override_and_validates_content(
+    isolated_home,
+    content_root,
+    capsys,
+):
+    """REQ-DIAG-001: doctor should prove install/config/content readiness."""
+    rc = main(["doctor", "--lang", "en", "--content-dir", str(content_root)])
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "language     : en" in out
+    assert "provider chk : READY" in out
+    assert "content      : OK heroes=6 skills=18 enemies=9" in out
+    assert "items=15 affixes=12 resonances=5" in out
+    assert "mock play    : ready (no API key required)" in out
+
+
+def test_doctor_reports_real_provider_preflight_without_leaking_env(
+    isolated_home,
+    content_root,
+    monkeypatch,
+    capsys,
+):
+    secret = "sk-" + "doctor-hidden-value"
+    monkeypatch.setenv("OURO_API_KEY", secret)
+    save_config(
+        OuroConfig(
+            provider="openai-compatible",
+            model="qwen-live",
+            api_key_env="OURO_API_KEY",
+            base_url="https://llm.example.test/v1",
+            language="en",
+        )
+    )
+
+    rc = main(["--lang", "en", "doctor", "--content-dir", str(content_root)])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "provider     : openai-compatible" in out
+    assert "env var      : OURO_API_KEY = set (hidden)" in out
+    assert "provider chk : READY" in out
+    assert "provider err :" not in out
+    assert secret not in out
+
+
+def test_doctor_returns_not_ready_when_real_provider_env_is_missing(
+    isolated_home,
+    content_root,
+    monkeypatch,
+    capsys,
+):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    save_config(
+        OuroConfig(
+            provider="openai",
+            model="gpt-4o-mini",
+            api_key_env="OPENAI_API_KEY",
+            language="en",
+        )
+    )
+
+    rc = main(["--lang", "en", "doctor", "--content-dir", str(content_root)])
+
+    out = capsys.readouterr().out
+    assert rc == 3
+    assert "content      : OK heroes=6 skills=18 enemies=9" in out
+    assert "provider chk : NOT READY" in out
+    assert "provider err : environment variable OPENAI_API_KEY is not set" in out
+
+
+def test_doctor_fails_when_content_is_invalid(isolated_home, tmp_path, capsys):
+    """REQ-DIAG-001: doctor exits nonzero when content cannot be loaded."""
+    missing_content = tmp_path / "missing-content"
+
+    rc = main(["--lang", "en", "doctor", "--content-dir", str(missing_content)])
+    out = capsys.readouterr().out
+
+    assert rc == 3
+    assert "content      : FAIL heroes=0 skills=0 enemies=0" in out
+    assert "content err  :" in out

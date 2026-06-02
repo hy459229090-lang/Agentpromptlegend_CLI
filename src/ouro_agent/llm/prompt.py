@@ -10,10 +10,12 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from ouro_agent.content.schema import ContentBundle
+from ouro_agent.content.schema import ContentBundle, CodexStage
+from ouro_agent.engine.build import ResolvedBuild, resolve_build
 from ouro_agent.engine.models import BattleState
 from ouro_agent.llm.actions import ACTION_SCHEMA_VERSION, ACTION_TYPES
 from ouro_agent.sessions import BattleLLMSession, hash_static_context
+from ouro_agent.sessions.codex import CodexProgress
 
 
 @dataclass(frozen=True)
@@ -144,6 +146,8 @@ def compose_prompt(
     bundle: ContentBundle,
     hero_prompt_override: str | None = None,
     battle_session: BattleLLMSession | None = None,
+    prompt_style: str | None = None,
+    build: ResolvedBuild | None = None,
 ) -> PromptContext:
     lang = state.language
     hero_data = bundle.heroes[state.hero.id]
@@ -151,12 +155,18 @@ def compose_prompt(
     effective_prompt = (
         hero_prompt_override
         if hero_prompt_override is not None
-        else base_prompt
+        else apply_prompt_style(base_prompt, prompt_style, lang)
     )
     static_context = (
         battle_session.static_context
         if battle_session is not None
-        else compose_static_context(state, bundle, effective_prompt)
+        else compose_static_context(
+            state,
+            bundle,
+            effective_prompt,
+            prompt_style=prompt_style,
+            build=build,
+        )
     )
     static_context_hash = (
         battle_session.static_context_hash
@@ -169,7 +179,7 @@ def compose_prompt(
         else "delta_local_0001"
     )
     delta_context = compose_turn_delta(state, bundle)
-    snapshot = compose_snapshot(state, bundle)
+    snapshot = compose_snapshot(state, bundle, prompt_style=prompt_style)
     return PromptContext(
         schema_version=ACTION_SCHEMA_VERSION,
         rules_summary=_RULES_SUMMARY,
@@ -190,6 +200,9 @@ def compose_static_context(
     state: BattleState,
     bundle: ContentBundle,
     hero_prompt_override: str | None = None,
+    codex_progress: CodexProgress | None = None,
+    prompt_style: str | None = None,
+    build: ResolvedBuild | None = None,
 ) -> dict[str, Any]:
     hero = state.hero
     lang = state.language
@@ -199,9 +212,34 @@ def compose_static_context(
         if hero_prompt_override is not None
         else hero_data.default_prompt.get(lang)
     )
+    resolved_build = build or resolve_build(hero_data, bundle)
+    enemies = []
+    for e in state.enemies:
+        enemy_data = bundle.enemies.get(e.id)
+        if enemy_data is None:
+            codex_text = ""
+        else:
+            if codex_progress is not None and enemy_data.family_id:
+                stage = codex_progress.get_stage(enemy_data.family_id, enemy_data.tier)
+            else:
+                stage = CodexStage.UNKNOWN
+            codex_text = enemy_data.codex_text_for_stage(stage, lang)
+
+        enemies.append({
+            "id": e.id,
+            "name": e.name,
+            "max_hp": e.max_hp,
+            "tier": e.tier,
+            "codex": codex_text,
+        })
+
     return {
         "schema_version": ACTION_SCHEMA_VERSION,
         "language": lang,
+        "prompt_style": prompt_style,
+        "prompt_template": (
+            prompt_style_text(prompt_style, lang) if prompt_style else None
+        ),
         "rules": {
             "valid_actions": list(ACTION_TYPES),
             "local_judge": "damage, status, MP, cooldown and victory are resolved locally",
@@ -217,6 +255,7 @@ def compose_static_context(
             "defense": hero.defense,
             "power": hero.power,
         },
+        "build": _build_context(resolved_build, bundle, lang),
         "skills": [
             {
                 "id": s.id,
@@ -226,19 +265,49 @@ def compose_static_context(
             }
             for s in hero.skills
         ],
-        "enemies": [
+        "enemies": enemies,
+    }
+
+
+def _build_context(
+    build: ResolvedBuild,
+    bundle: ContentBundle,
+    language: str,
+) -> dict[str, Any]:
+    progress = build.calculate_progress(bundle)
+    return {
+        "archetype": build.archetype(language),
+        "risk_level": build.risk_level(),
+        "stage": progress.stage.value,
+        "stage_badge": progress.stage.badge,
+        "core_tags": progress.core_tags,
+        "tags": list(build.tags),
+        "items": [
             {
-                "id": e.id,
-                "name": e.name,
-                "max_hp": e.max_hp,
-                "codex": (
-                    bundle.enemies[e.id].codex_stage_observed.get(lang)
-                    if e.id in bundle.enemies
-                    else ""
-                ),
+                "id": item.id,
+                "name": item.display_name.get(language),
+                "tier": item.tier,
+                "tags": list(item.tags),
             }
-            for e in state.enemies
+            for item in build.items
         ],
+        "affixes": [
+            {
+                "id": affix.id,
+                "name": affix.display_name.get(language),
+                "tags": list(affix.tags),
+            }
+            for affix in build.affixes
+        ],
+        "resonances": [
+            {
+                "id": resonance.id,
+                "name": resonance.display_name.get(language),
+            }
+            for resonance in build.resonances
+        ],
+        "strategy": build.strategy_lines(language),
+        "passive_tags": list(build.passive_tags),
     }
 
 
@@ -268,6 +337,9 @@ def compose_turn_delta(state: BattleState, bundle: ContentBundle) -> dict[str, A
                 "id": e.id,
                 "hp": e.hp,
                 "atb": e.atb,
+                "tier": e.tier,
+                "chant_progress": e.chant_progress,
+                "chant_charge_turns": e.chant_charge_turns,
                 "statuses": [
                     {"id": s.id, "stacks": s.stacks, "duration": s.duration}
                     for s in e.statuses
@@ -279,9 +351,14 @@ def compose_turn_delta(state: BattleState, bundle: ContentBundle) -> dict[str, A
     }
 
 
-def compose_snapshot(state: BattleState, bundle: ContentBundle) -> dict[str, Any]:
+def compose_snapshot(
+    state: BattleState,
+    bundle: ContentBundle,
+    *,
+    prompt_style: str | None = None,
+) -> dict[str, Any]:
     """Legacy full snapshot kept for mock/provider compatibility."""
-    static_context = compose_static_context(state, bundle)
+    static_context = compose_static_context(state, bundle, prompt_style=prompt_style)
     delta_context = compose_turn_delta(state, bundle)
     hero = dict(static_context["hero"])
     hero.update(delta_context["hero_delta"])
@@ -304,6 +381,8 @@ def compose_snapshot(state: BattleState, bundle: ContentBundle) -> dict[str, Any
         "schema_version": static_context["schema_version"],
         "tick": delta_context["tick"],
         "language": static_context["language"],
+        "prompt_style": prompt_style,
+        "prompt_template": static_context.get("prompt_template"),
         "hero": hero,
         "skills": skills,
         "enemies": enemies,

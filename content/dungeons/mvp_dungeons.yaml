@@ -1,5 +1,5 @@
 schema_version: "0.1"
-content_version: "mvp_a"
+content_version: "mvp_c2"
 dungeons:
   - id: dungeon_ember_crypt
     display_name:
@@ -51,8 +51,11 @@ nodes:
       en: "Hungry Followers"
       zh: "饥饿信徒"
     description:
-      en: "A small group of hungry cultists patrols the entrance."
-      zh: "一小群饥饿的邪教徒在入口巡逻。"
+      en: "A small group of hungry cultists patrols the entrance. They seem starved, but still dangerous."
+      zh: "一小群饥饿的邪教徒在入口巡逻。他们看起来营养不良，但依然危险。"
+    encounter_intro:
+      en: "You hear shuffling footsteps and ragged breathing. Something is very hungry in this hallway."
+      zh: "你听到拖沓的脚步声和粗重的喘息声。这条走廊里有什么东西非常饥饿。"
     enemy_ids:
       - enemy_hungry_cultist
     rewards:
@@ -69,17 +72,20 @@ nodes:
   - id: node_ember_crypt_f2_n1
     node_type: normal_combat
     display_name:
-      en: "[M] Hungry Followers"
-      zh: "[M] 饥饿信徒"
+      en: "[M] Rat Pack"
+      zh: "[M] 鼠群"
     description:
-      en: "More cultists, slightly stronger. Risk: low. Reward: gold/xp."
-      zh: "更多邪教徒，稍强一些。风险：低。奖励：金币/经验。"
+      en: "Mire rats infest the gallery. Their glowing eyes reflect the candlelight."
+      zh: "瘟鼠群在长廊中肆虐。它们发光的眼睛反射着烛光。"
+    encounter_intro:
+      en: "Scurrying sounds come from the corners. Greenish eyes blink in the shadow."
+      zh: "角落传来急促的奔跑声。阴影中有绿色的眼睛在闪烁。"
     enemy_ids:
-      - enemy_hungry_cultist
-      - enemy_hungry_cultist
+      - enemy_mire_rat
+      - enemy_mire_rat
     rewards:
-      gold: 25
-      xp: 20
+      gold: 20
+      xp: 15
       reward_choices:
         - type: item
           item_id: item_warden_aegis
@@ -98,6 +104,10 @@ nodes:
       en: "A mysterious merchant selling candles and trinkets. Risk: safe. Reward: shop, no xp."
       zh: "一个神秘商人，出售蜡烛和饰品。风险：安全。奖励：商店，无经验。"
     shop_items:
+      - type: heal
+        heal_percent: 35
+        restore_mp: true
+        price: 12
       - type: item
         item_id: item_quick_string
         price: 18
@@ -107,30 +117,12 @@ nodes:
       - type: strategy
         strategy_style: control
         price: 10
+      - type: scout
+        price: 8
+        scout_hint:
+          en: "Boss clue: Black Candle chants become lethal if the counter window is missed."
+          zh: "Boss 线索：黑烛吟唱若错过反制窗口，会转化为致命伤害。"
     risk_level: safe
-
-  - id: node_ember_crypt_f3_boss
-    node_type: boss
-    display_name:
-      en: "[B] Black Candle High Priest"
-      zh: "[B] 黑烛主祭"
-    description:
-      en: "The leader of the black candle cult, already reading your last three turns."
-      zh: "黑烛教派的领袖，已经读过你最近的三个回合。"
-    enemy_ids:
-      - enemy_black_candle_acolyte
-      - enemy_hungry_cultist
-    rewards:
-      gold: 50
-      xp: 40
-      reward_choices:
-        - type: item
-          item_id: item_black_sun_codex
-        - type: affix
-          affix_id: affix_iron_will
-        - type: codex
-          progress: 2
-    is_boss: true
 
   - id: node_ember_crypt_f2_n3
     node_type: rest
@@ -138,20 +130,23 @@ nodes:
       en: "[+] Candle Shrine"
       zh: "[+] 烛火圣坛"
     description:
-      en: "A small shrine with flickering candles. Rest here to recover HP and MP. Risk: safe."
-      zh: "一个烛火摇曳的小圣坛。在此休息可恢复HP和MP。风险：安全。"
+      en: "A small shrine with flickering candles. The warm glow seems to push back the shadows."
+      zh: "一个烛火摇曳的小圣坛。温暖的光芒似乎在驱赶阴影。"
     risk_level: safe
 
   - id: node_ember_crypt_f3_n1
     node_type: normal_combat
     display_name:
-      en: "[M] Candle Acolytes"
-      zh: "[M] 烛火侍僧"
+      en: "[M] Ritebound Zealots"
+      zh: "[M] 仪式狂信者"
     description:
-      en: "Two acolytes guarding the inner sanctum. Risk: medium."
-      zh: "两名守护内殿的侍僧。风险：中。"
+      en: "Ritual-bound cultists and acolytes guard the inner sanctum. Their chants echo off the stone walls."
+      zh: "仪式化的狂信者和祭司守护着内殿。他们的吟唱在石壁间回荡。"
+    encounter_intro:
+      en: "A low chant reverberates through the chamber. These are not hungry scavengers - these are believers."
+      zh: "低沉的吟唱在房间中回响。这些不是饥饿的觅食者——这些是信徒。"
     enemy_ids:
-      - enemy_black_candle_acolyte
+      - enemy_hungry_cultist_rite
       - enemy_black_candle_acolyte
     rewards:
       gold: 30
@@ -171,8 +166,8 @@ nodes:
       en: "[?] Mysterious Altar"
       zh: "[?] 神秘祭坛"
     description:
-      en: "A strange altar with three glowing symbols. Choose wisely."
-      zh: "一个刻有三个发光符号的神秘祭坛。明智选择。"
+      en: "A strange altar with three glowing symbols. The air feels charged with potential."
+      zh: "一个刻有三个发光符号的神秘祭坛。空气中似乎充满了可能性。"
     rewards:
       reward_choices:
         - type: item
@@ -189,19 +184,24 @@ nodes:
       en: "[B] Black Candle High Priest"
       zh: "[B] 黑烛主祭"
     description:
-      en: "The leader of the black candle cult, already reading your last three turns."
-      zh: "黑烛教派的领袖，已经读过你最近的三个回合。"
+      en: "The Archive-Bound High Priest reads your past, present, and future from the candle smoke."
+      zh: "档案化的主祭从烛烟中读出你的过去、现在和未来。"
+    encounter_intro:
+      en: "The chapel doors creak open. Hundreds of black candles light simultaneously, and you realize... He has been waiting."
+      zh: "礼拜堂的门嘎吱作响地打开。数百根黑烛同时点燃，你意识到……他一直在等你。"
+    boss_intro:
+      en: "The Black Candle High Priest has already read your last three turns. Your next move? He predicted that too."
+      zh: "黑烛主祭已经读过你最近的三个回合。你的下一步行动？他也已经预言了。"
     enemy_ids:
-      - enemy_black_candle_acolyte
-      - enemy_hungry_cultist
+      - enemy_black_candle_high_priest_archive
     rewards:
-      gold: 50
-      xp: 40
+      gold: 100
+      xp: 80
       reward_choices:
         - type: item
           item_id: item_black_sun_codex
         - type: affix
           affix_id: affix_iron_will
         - type: codex
-          progress: 2
+          progress: 3
     is_boss: true

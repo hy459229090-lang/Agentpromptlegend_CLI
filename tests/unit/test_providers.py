@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from ouro_agent.config import OuroConfig
 from ouro_agent.content import load_content_bundle
 from ouro_agent.engine.battle import BattleLoop
 from ouro_agent.llm.prompt import compose_prompt
@@ -19,6 +20,7 @@ from ouro_agent.providers import (
     MockProvider,
     OpenAICompatibleProvider,
     OpenAIProvider,
+    provider_preflight,
 )
 from ouro_agent.providers.base import ProviderError
 from ouro_agent.providers.http import HttpResponse
@@ -97,6 +99,43 @@ def test_openai_provider_requires_env_var(monkeypatch, prompt_ctx):
     provider = OpenAIProvider(model="gpt-test")
     with pytest.raises(ProviderError):
         provider.request_turn(prompt_ctx)
+
+
+def test_provider_preflight_reports_missing_env_without_secret():
+    cfg = OuroConfig(
+        provider="openai",
+        model="gpt-4o-mini",
+        api_key_env="OPENAI_API_KEY",
+    )
+
+    report = provider_preflight(cfg, env={})
+
+    assert report.ready is False
+    assert report.api_key_env == "OPENAI_API_KEY"
+    assert report.env_present is False
+    assert report.base_url == "https://api.openai.com/v1"
+    assert report.issues == ("environment variable OPENAI_API_KEY is not set",)
+    assert "sk-" not in " ".join(report.issues)
+
+
+def test_provider_preflight_ready_for_configured_compatible_without_network():
+    cfg = OuroConfig(
+        provider="openai-compatible",
+        model="qwen-live",
+        api_key_env="OURO_API_KEY",
+        base_url="https://llm.example.test/v1",
+        timeout_seconds=45,
+        max_retries=3,
+    )
+
+    report = provider_preflight(cfg, env={"OURO_API_KEY": "secret-value"})
+
+    assert report.ready is True
+    assert report.env_present is True
+    assert report.base_url == "https://llm.example.test/v1"
+    assert report.timeout_seconds == 45
+    assert report.max_retries == 3
+    assert report.issues == ()
 
 
 def test_openai_compatible_requires_explicit_base_url():
@@ -209,3 +248,77 @@ def test_prompt_serializers(prompt_ctx):
     assert "system" in ant
     assert ant["messages"][0]["role"] == "user"
     assert "Battle snapshot" in ant["messages"][0]["content"]
+
+
+def test_mock_prompt_style_changes_tactical_choice(content_root: Path):
+    bundle = load_content_bundle(content_root)
+    loop = BattleLoop(bundle, MockProvider(seed=0, language="en"), seed=1, language="en")
+    state = loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    cultist = state.enemies[0]
+    acolyte = state.enemies[1]
+    cultist.hp = 18
+    cultist.atb = 10
+    acolyte.hp = 70
+    acolyte.atb = 90
+    acolyte.chant_progress = 1
+
+    aggressive_prompt = compose_prompt(state, bundle, prompt_style="aggressive")
+    control_prompt = compose_prompt(state, bundle, prompt_style="control")
+
+    aggressive = json.loads(MockProvider(seed=1, language="en").request_turn(aggressive_prompt).raw_text)
+    control = json.loads(MockProvider(seed=1, language="en").request_turn(control_prompt).raw_text)
+
+    assert aggressive_prompt.snapshot["prompt_style"] == "aggressive"
+    assert control_prompt.static_context["prompt_style"] == "control"
+    assert aggressive["action"]["skill_id"] == "skill_shadow_sting"
+    assert aggressive["action"]["targets"] == ["enemy_hungry_cultist"]
+    assert control["action"]["skill_id"] == "skill_hex_seal"
+    assert control["action"]["targets"] == ["enemy_black_candle_acolyte"]
+
+
+def test_mock_guarded_style_raises_defensive_threshold(content_root: Path):
+    """REQ-PLAY-005: Guarded should defend earlier under incoming pressure."""
+    bundle = load_content_bundle(content_root)
+    loop = BattleLoop(bundle, MockProvider(seed=0, language="en"), seed=1, language="en")
+    state = loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    state.hero.hp = 60
+    state.enemies[1].atb = 95
+
+    guarded_prompt = compose_prompt(state, bundle, prompt_style="guarded")
+    aggressive_prompt = compose_prompt(state, bundle, prompt_style="aggressive")
+
+    guarded = json.loads(MockProvider(seed=1, language="en").request_turn(guarded_prompt).raw_text)
+    aggressive = json.loads(MockProvider(seed=1, language="en").request_turn(aggressive_prompt).raw_text)
+
+    assert guarded["action"]["skill_id"] == "skill_corrupted_focus"
+    assert guarded["action"]["targets"] == ["hero_shadow_apprentice"]
+    assert aggressive["action"]["skill_id"] == "skill_shadow_sting"
+
+
+def test_mock_attrition_style_changes_target_and_dot_priority(content_root: Path):
+    """REQ-PLAY-005: Attrition should prefer durable targets for damage-over-time."""
+    bundle = load_content_bundle(content_root)
+    loop = BattleLoop(bundle, MockProvider(seed=0, language="en"), seed=1, language="en")
+    state = loop.setup(
+        "hero_mire_oracle",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    state.enemies[0].hp = 20
+    state.enemies[1].hp = 100
+    state.enemies[1].atb = 30
+
+    attrition_prompt = compose_prompt(state, bundle, prompt_style="attrition")
+    aggressive_prompt = compose_prompt(state, bundle, prompt_style="aggressive")
+
+    attrition = json.loads(MockProvider(seed=1, language="en").request_turn(attrition_prompt).raw_text)
+    aggressive = json.loads(MockProvider(seed=1, language="en").request_turn(aggressive_prompt).raw_text)
+
+    assert attrition["action"]["skill_id"] == "skill_mire_needle"
+    assert attrition["action"]["targets"] == ["enemy_black_candle_acolyte"]
+    assert aggressive["action"]["targets"] == ["enemy_hungry_cultist"]

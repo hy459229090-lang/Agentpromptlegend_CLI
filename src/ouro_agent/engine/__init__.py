@@ -5,6 +5,8 @@ from ouro_agent.engine.battle import (
     TurnRecord,
     generate_battle_report,
     run_mock_battle,
+    BatchResult,
+    run_batch,
 )
 from ouro_agent.engine.build import (
     BuildProgress,
@@ -15,6 +17,14 @@ from ouro_agent.engine.build import (
     HERO_STRATEGIES,
     ResolvedBuild,
     resolve_build,
+)
+from ouro_agent.engine.diagnostics import (
+    TacticalDiagnosis,
+    TempoBudget,
+    analyze_battle_tactics,
+    analyze_prompt_impacts,
+    classify_tempo_budget,
+    classify_tempo_outlier,
 )
 from ouro_agent.engine.models import (
     BattleEvent,
@@ -49,4 +59,12 @@ __all__ = [
     "BattleReport",
     "TurnRecord",
     "generate_battle_report",
+    "BatchResult",
+    "run_batch",
+    "TacticalDiagnosis",
+    "TempoBudget",
+    "analyze_battle_tactics",
+    "analyze_prompt_impacts",
+    "classify_tempo_budget",
+    "classify_tempo_outlier",
 ]

@@ -27,6 +27,11 @@ from ouro_agent.content.schema import (
     ShopItem,
 )
 from ouro_agent.engine.build import ResolvedBuild, resolve_build
+from ouro_agent.sessions.codex import (
+    CodexProgress,
+    record_battle_codex,
+    record_codex_study,
+)
 
 
 class RunPhase(Enum):
@@ -75,6 +80,10 @@ class RunState:
     current_mp: int = 0
     max_hp: int = 0
     max_mp: int = 0
+    strategy_style: str | None = None
+    next_battle_shield: int = 0
+    scout_notes: list[str] = field(default_factory=list)
+    codex_progress: CodexProgress = field(default_factory=CodexProgress)
     
     # Resources
     gold: int = 0
@@ -106,6 +115,22 @@ class RunState:
             item_ids=tuple(self.item_ids) if self.item_ids else None,
             affix_ids=tuple(self.affix_ids) if self.affix_ids else None,
         )
+
+    def sync_build_stats(self, bundle: ContentBundle) -> None:
+        """Update run HP/MP caps after build changes."""
+        build = self.resolved_build(bundle)
+        old_hp = self.max_hp
+        old_mp = self.max_mp
+        self.max_hp = build.hp
+        self.max_mp = build.mp
+        if old_hp <= 0:
+            self.current_hp = self.max_hp
+        else:
+            self.current_hp = min(self.max_hp, self.current_hp + max(0, self.max_hp - old_hp))
+        if old_mp <= 0:
+            self.current_mp = self.max_mp
+        else:
+            self.current_mp = min(self.max_mp, self.current_mp + max(0, self.max_mp - old_mp))
     
     def current_dungeon(self, bundle: ContentBundle) -> DungeonData:
         """Get the current dungeon data."""
@@ -136,9 +161,10 @@ class RunState:
                 available.append((idx, node))
         return available
     
-    def is_floor_complete(self) -> bool:
+    def is_floor_complete(self, bundle: ContentBundle) -> bool:
         """Check if all nodes on the current floor are completed."""
-        return False  # TODO: Implement based on floor type
+        floor = self.current_floor(bundle)
+        return all(node_id in self.visited_node_ids for node_id in floor.nodes)
     
     def has_next_floor(self, bundle: ContentBundle) -> bool:
         """Check if there is a next floor."""
@@ -200,6 +226,20 @@ class RunState:
         self.xp += xp
         self.earned_gold_total += gold
         self.earned_xp_total += xp
+
+    def record_codex_battle(
+        self,
+        bundle: ContentBundle,
+        enemy_ids: list[str] | tuple[str, ...],
+        defeated_enemy_ids: set[str] | list[str] | tuple[str, ...] = (),
+    ) -> None:
+        """Record monster encounter/defeat knowledge for this run."""
+        record_battle_codex(
+            self.codex_progress,
+            bundle,
+            enemy_ids,
+            defeated_enemy_ids,
+        )
     
     def set_reward_choices(self, choices: list[RewardChoice]) -> None:
         """Set the available reward choices after a victory."""
@@ -223,12 +263,23 @@ class RunState:
         if choice.type == "item":
             if choice.item_id:
                 self.item_ids.append(choice.item_id)
+                self.sync_build_stats(bundle)
         elif choice.type == "affix":
             if choice.affix_id:
                 self.affix_ids.append(choice.affix_id)
+                self.sync_build_stats(bundle)
         elif choice.type == "codex":
-            # Codex progress - TODO: Implement codex tracking
-            pass
+            node = self.current_node(bundle)
+            amount = choice.progress or 1
+            record_codex_study(
+                self.codex_progress,
+                bundle,
+                tuple(node.enemy_ids),
+                amount,
+            )
+            self.scout_notes.append(
+                f"Codex study: +{amount} research on this node's enemy family."
+            )
         elif choice.type == "gold":
             self.gold += choice.gold or 0
         elif choice.type == "heal":
@@ -290,17 +341,26 @@ class RunState:
         if item.type == "item":
             if item.item_id:
                 self.item_ids.append(item.item_id)
+                self.sync_build_stats(bundle)
         elif item.type == "affix":
             if item.affix_id:
                 self.affix_ids.append(item.affix_id)
+                self.sync_build_stats(bundle)
         elif item.type == "strategy":
-            # Strategy style - TODO: Implement strategy tracking
-            pass
+            if item.strategy_style:
+                self.strategy_style = item.strategy_style
         elif item.type == "heal":
             heal_percent = item.heal_percent or 0
             if heal_percent > 0:
                 actual_heal = int(self.max_hp * heal_percent / 100)
                 self.current_hp = min(self.max_hp, self.current_hp + actual_heal)
+            if item.restore_mp:
+                self.current_mp = self.max_mp
+        elif item.type == "scout":
+            if item.scout_hint:
+                self.scout_notes.append(item.scout_hint.get("en"))
+            else:
+                self.scout_notes.append("Scout: the next route reveals one hidden pressure keyword.")
         
         return True
     
@@ -328,22 +388,39 @@ class RunState:
         """Enter rest phase."""
         self.phase = RunPhase.REST
     
-    def apply_rest(self, heal_percent: int = 30, restore_full_mp: bool = True) -> None:
+    def apply_rest(
+        self,
+        heal_percent: int = 30,
+        restore_full_mp: bool = True,
+        option: str = "recover",
+    ) -> None:
         """Apply rest benefits.
         
         Args:
             heal_percent: Percentage of max HP to heal (0-100)
             restore_full_mp: Whether to restore MP to full
+            option: One of recover, focus, study
         """
         if self.phase != RunPhase.REST:
             raise RuntimeError(f"Cannot apply rest in phase: {self.phase}")
-        
-        if heal_percent > 0:
-            heal_amount = int(self.max_hp * heal_percent / 100)
-            self.current_hp = min(self.max_hp, self.current_hp + heal_amount)
-        
-        if restore_full_mp:
-            self.current_mp = self.max_mp
+
+        if option == "recover":
+            if heal_percent > 0:
+                heal_amount = int(self.max_hp * heal_percent / 100)
+                self.current_hp = min(self.max_hp, self.current_hp + heal_amount)
+            if restore_full_mp:
+                self.current_mp = self.max_mp
+            return
+
+        if option == "focus":
+            self.next_battle_shield = max(self.next_battle_shield, 12)
+            return
+
+        if option == "study":
+            self.scout_notes.append("Study: next route preview reveals one enemy mechanism keyword.")
+            return
+
+        raise ValueError(f"unknown rest option: {option}")
     
     def leave_rest(self, bundle: ContentBundle) -> None:
         """Leave the rest site and proceed to next phase."""
@@ -388,8 +465,10 @@ class RunState:
         if hasattr(choice, "type"):
             if choice.type == "item" and hasattr(choice, "item_id") and choice.item_id:
                 self.item_ids.append(choice.item_id)
+                self.sync_build_stats(bundle)
             elif choice.type == "affix" and hasattr(choice, "affix_id") and choice.affix_id:
                 self.affix_ids.append(choice.affix_id)
+                self.sync_build_stats(bundle)
             elif choice.type == "gold" and hasattr(choice, "gold") and choice.gold:
                 self.gold += choice.gold or 0
             elif choice.type == "heal" and hasattr(choice, "heal_percent") and choice.heal_percent:
@@ -397,6 +476,18 @@ class RunState:
                 if heal_percent > 0:
                     actual_heal = int(self.max_hp * heal_percent / 100)
                     self.current_hp = min(self.max_hp, self.current_hp + actual_heal)
+            elif choice.type == "codex":
+                node = self.current_node(bundle)
+                amount = getattr(choice, "progress", None) or 1
+                record_codex_study(
+                    self.codex_progress,
+                    bundle,
+                    tuple(node.enemy_ids),
+                    amount,
+                )
+                self.scout_notes.append(
+                    f"Codex study: +{amount} research on this event's enemy clue."
+                )
         
         # Mark current node as visited
         floor = self.current_floor(bundle)
@@ -423,6 +514,7 @@ def create_run_state(
     hero_id: str,
     dungeon_id: str,
     bundle: ContentBundle,
+    codex_progress: CodexProgress | None = None,
 ) -> RunState:
     """Create a new run state.
     
@@ -458,6 +550,7 @@ def create_run_state(
         gold=0,
         xp=0,
         phase=RunPhase.ROUTE_CHOICE,
+        codex_progress=codex_progress or CodexProgress(),
     )
     
     return state

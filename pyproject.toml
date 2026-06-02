@@ -41,6 +41,15 @@ where = ["src"]
 [tool.setuptools.package-data]
 "ouro_agent" = ["py.typed"]
 
+[tool.setuptools.data-files]
+"share/ouro-agent/content/heroes" = ["content/heroes/mvp_heroes.yaml"]
+"share/ouro-agent/content/skills" = ["content/skills/mvp_skills.yaml"]
+"share/ouro-agent/content/enemies" = ["content/enemies/mvp_enemies.yaml"]
+"share/ouro-agent/content/items" = ["content/items/mvp_items.yaml"]
+"share/ouro-agent/content/affixes" = ["content/affixes/mvp_affixes.yaml"]
+"share/ouro-agent/content/resonances" = ["content/resonances/mvp_resonances.yaml"]
+"share/ouro-agent/content/dungeons" = ["content/dungeons/mvp_dungeons.yaml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

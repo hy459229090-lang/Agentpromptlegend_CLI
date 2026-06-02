@@ -27,6 +27,62 @@ def test_six_heroes_loaded(bundle):
     } == set(bundle.heroes)
 
 
+def test_six_heroes_have_identity_and_build_tendency(bundle):
+    assert {"hero_mire_oracle", "hero_gravewright", "hero_echo_exile"}.issubset(
+        bundle.heroes
+    )
+    for hero in bundle.heroes.values():
+        assert hero.id.startswith("hero_")
+        assert hero.short_tag.startswith("[") and hero.short_tag.endswith("]")
+        assert hero.class_name.en
+        assert hero.class_name.zh
+        assert hero.tags
+        assert len(hero.skills) == 3
+        assert hero.default_prompt.en
+        assert hero.default_prompt.zh
+        assert hero.default_build.items or hero.default_build.affixes
+
+        build = resolve_build(hero, bundle)
+        assert build.archetype("en")
+        assert build.strategy_lines("en")
+        assert build.tags
+
+
+def test_monster_families_have_tier_ladders_and_boss_mock_battle(bundle):
+    from collections import defaultdict
+
+    by_family: dict[str, set[str]] = defaultdict(set)
+    for enemy in bundle.enemies.values():
+        assert enemy.id.startswith("enemy_")
+        assert enemy.family_id.startswith("family_")
+        assert enemy.tier in {"trace", "ritebound", "archive_bound"}
+        assert enemy.codex_stage_unknown.en
+        assert enemy.codex_stage_observed.en
+        assert enemy.codex_stage_familiar.en
+        assert enemy.codex_stage_mastered.en
+        by_family[enemy.family_id].add(enemy.tier)
+
+    assert len(by_family) >= 4
+    for tiers in by_family.values():
+        assert {"trace", "ritebound"}.issubset(tiers)
+
+    bosses = [enemy for enemy in bundle.enemies.values() if enemy.tier == "archive_bound"]
+    assert bosses
+    assert any(enemy.behavior.kind == "rule_chant" for enemy in bosses)
+
+    loop = BattleLoop(
+        bundle,
+        MockProvider(seed=3, language="en"),
+        seed=3,
+        max_ticks=20,
+        language="en",
+    )
+    state = loop.setup("hero_shadow_apprentice", [bosses[0].id])
+    result = loop.run(state)
+    assert result in {"victory", "defeat", "timeout"}
+    assert state.enemies[0].tier == "archive_bound"
+
+
 def test_eighteen_skills_loaded(bundle):
     assert len(bundle.skills) >= 18
     for hero in bundle.heroes.values():
@@ -184,6 +240,24 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Build:" in text
     assert "Weapon:" in text
     assert "Risk:" in text
+    assert "[HERO]  ##@##  prompt / build / ..." in text
+    assert "[PATH]  ##==>##  route" not in text
+    assert "HERO ROSTER BOARD" in text
+    assert "WEAPON GALLERY BOARD" in text
+    assert "[1] [W:STF] c==* [ONLINE] | Online" in text
+    assert "[2] [W:SHD] [#] [ONLINE] | Online" in text
+    assert "[3] [W:XBW] ==> [PAIR] | Pair" in text
+    assert "[4] [W:VIL] (v) [ONLINE] | Online" in text
+    assert "[5] [W:GER] [o] [ONLINE] | Online" in text
+    assert "[6] [W:BEL] )o( [ONLINE] | Online" in text
+    assert "AI: AI favors interrupts and tempo skills." in text
+    assert "Next: compare weapon silhouettes, then open hero-card for full Build plan" in text
+    assert "[1] Astia [ONLINE] | Prompt control | Risk normal | shadow / control" in text
+    assert "[2] Norn" in text
+    assert "Prompt guarded" in text
+    assert "[3] Vela" in text
+    assert "Prompt aggressive" in text
+    assert "Next: ouro hero-card <hero_id> --prompt-style <name>" in text
 
 
 def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
@@ -201,9 +275,30 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert text.isascii()
     assert "Build: Black Candle Interrupt" in text
     assert "Weapon: [W:STF]" in text
+    assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
+    assert "Build Before -> After: [ONLINE] shadow/control" in text
+    assert "AI Effect: AI favors interrupts and tempo skills." in text
+    assert "HERO LOADOUT BOARD" in text
+    assert "[PROMPT] control / agent behavior" in text
+    assert "[BUILD] [ONLINE] Online / Black Candle Interrupt" in text
+    assert "[CORE] shadow / control" in text
+    assert "[OPENER] open by denying chant windows" in text
+    assert "[RUN] ouro run --mock --hero hero_shadow_apprentice --prompt-style control" in text
     assert "AI Bias:" in text
     assert "Prompt Template: control" in text
     assert "interrupt high-ATB" in text
+
+
+def test_render_hero_card_unicode_shows_block_weapon_art(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    text = render_hero_card(astia, bundle, build, language="en", unicode_mode=True)
+
+    assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
+    assert "░▓███░" in text
+    assert "AI Effect:" in text
 
 
 def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
@@ -223,6 +318,79 @@ def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
         assert "Build:" in text
         assert "Weapon:" in text
         assert "Risk:" in text
+        assert "HERO LOADOUT BOARD" in text
+        assert "[PROMPT] hero default / agent behavior" in text
+        assert f"[RUN] ouro run --mock --hero {hero_id}" in text
         assert "AI Bias:" in text
         assert "MP " in text
         assert "cd " in text
+
+
+def test_build_progress_calculates_stage_for_astia(bundle):
+    from ouro_agent.engine.build import BuildStage
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.stage in {BuildStage.ONLINE, BuildStage.HIGH_ROLL, BuildStage.LOCKED_IN}
+    assert progress.stage_name
+    assert progress.stage.badge in {"[SEED]", "[PAIR]", "[ONLINE]", "[HIGH]", "[LOCK]"}
+    assert "shadow" in progress.core_tags
+    assert "control" in progress.core_tags
+    assert progress.active_resonances
+    assert any(r == "resonance_corruption_school" for r in progress.active_resonances)
+
+
+def test_build_progress_identifies_near_resonances(bundle):
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.near_resonances is not None
+    for near in progress.near_resonances:
+        assert "id" in near
+        assert "display_name" in near
+        assert "missing" in near
+        assert near["missing"]
+
+
+def test_build_progress_provides_best_next_picks(bundle):
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.best_next_picks is not None
+    for pick in progress.best_next_picks:
+        assert "tag" in pick
+        assert "need" in pick
+        assert pick["need"] > 0
+
+
+def test_build_stage_badge_display(bundle):
+    from ouro_agent.engine.build import BuildStage
+
+    assert BuildStage.SEED.badge == "[SEED]"
+    assert BuildStage.PAIR.badge == "[PAIR]"
+    assert BuildStage.ONLINE.badge == "[ONLINE]"
+    assert BuildStage.HIGH_ROLL.badge == "[HIGH]"
+    assert BuildStage.LOCKED_IN.badge == "[LOCK]"
+
+    assert BuildStage.SEED.display_name == "Seed"
+    assert BuildStage.PAIR.display_name == "Pair"
+    assert BuildStage.ONLINE.display_name == "Online"
+    assert BuildStage.HIGH_ROLL.display_name == "High Roll"
+    assert BuildStage.LOCKED_IN.display_name == "Locked In"
+
+
+def test_hero_card_shows_build_stage_badge(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    text = render_hero_card(astia, bundle, build, language="en")
+
+    assert "[ONLINE]" in text or "[HIGH]" in text or "[LOCK]" in text
+    assert "BUILD STAGE:" in text or "构筑阶段:" in text
+    assert "Core Tags:" in text
+    assert "Active Resonances:" in text
