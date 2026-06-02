@@ -1,52 +1,130 @@
 # Agent Prompt Legend CLI / 暗影代理：祷文传说
 
-> 一个把 AI Agent 变成肉鸽英雄的命令行游戏。你不直接点技能，
-> 而是配置英雄、Build、Prompt 和战术倾向，然后看模型在战斗中做选择；
-> 伤害、胜负、掉落和成长全部由本地确定性规则裁判。
->
-> 它不是聊天机器人套壳，也不是普通日志模拟器，而是一款围绕
-> “AI 决策可观看、可复盘、可调教” 设计的终端 roguelike。
-
-中文说明请见 **[README.zh.md](README.zh.md)**.
+**Language / 语言**: [中文](#中文) | [English](#english) | [完整中文文档](README.zh.md)
 
 [![tests](https://img.shields.io/badge/tests-318%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
 ---
 
-## 中文项目介绍
+## 中文
 
-**暗影代理：祷文传说** 是一个命令行 AI 肉鸽原型：玩家配置一名英雄
-Agent，给它装备、词条、Prompt 与战术风格，然后进入自动战斗。模型只负责
-选择结构化行动，本地引擎负责校验、伤害、状态、胜负、奖励和存档。
+### AI 会自己下副本，你负责把它训练成英雄
 
-项目的核心看点：
+**暗影代理：祷文传说** 是一款命令行 AI 肉鸽。你不在战斗中手动点技能，
+而是在战前配置英雄、装备、词条、Prompt 和战术风格，然后观看这个 Agent
+自动战斗。模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、
+状态、胜负、奖励和长期存档。
 
-- **AI 决策是玩法，不是背景文案。** 你调的是 Agent 的提示词、构筑和上下文，
-  战斗中观察它是否真的会保留 MP、打断吟唱、处理 Boss 窗口。
-- **TUI 不是纯文本堆叠。** 战斗有低分辨率 Canvas、左右对战舞台、角色/怪物
-  像素形象、弹道、命中浮字、英雄 `VOX` 与敌方 `ENM` 气泡。
-- **每场战斗都可复盘。** `MOMENTUM BOARD`、`BATTLE TURN MAP`、`ENCOUNTER BRIEFING`
-  和本地 trace 会把模型行动、本地裁判、关键窗口和数值节奏串起来。
-- **没有 API key 也能完整试玩。** 默认 mock provider 离线可跑；真实 provider
-  支持 OpenAI、Anthropic 和 OpenAI-compatible，并且密钥只读环境变量。
-- **它已经是一个可运行的 MVP release candidate。** 当前包含 6 名英雄、18 个技能、
-  15 件装备、12 个词条、5 个羁绊、怪物图鉴、运行归档、死亡历史、状态页和批量调参报告。
+这不是聊天机器人套壳。它的核心玩法是：**让 AI 决策变得可观看、可复盘、
+可调教**。
 
-先跑一局：
+| 类型 | 当前状态 | 试玩门槛 |
+|------|----------|----------|
+| CLI roguelike / auto-battler / prompt-building game | MVP release candidate | 默认 mock，无需网络，无需 API key |
+
+### 游戏画面
+
+真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`：
+
+```text
+█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+█ HERO [CNDL] Astia        █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓ █ ENEMY [c] Hungry Cultist █
+█ VOX There. The wick...   █        . candle .                    █ ENM armor cracking   █
+█ ACT>▄██▄░                █ DIRECTOR T:WIN P:RDY F:INT           █     ▄▒▄        <TGT  █
+█    ▐▓c▓██                █              ░▒▓▓██>                 █    ▐▒x▒              █
+█  HP ████████████ 100/100 █            SEAL -16 HP               █ HP ███████░ 34/50    █
+█  MP ████████░░░░ 54/72   █ ACTION Hex Seal -> Hungry Cultist    █ THREAT WINDOW 0/1    █
+█  ATB READY               █ JUDGE  VALID | -16 HP                █ RETICLE [WINDOW]     █
+█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+```
+
+```text
+>==============================[ MOMENTUM BOARD ]==============================<
+| [FLOW] WINDOW | enemy ATB 99                                                 |
+| [LANE] HERO [########] 100/100 vs ENEMY [#######-] 104/120                   |
+| [TARGET] Hungry Cultist                                                      |
+| [SWING] hero hit -16 HP                                                      |
+| [READ] answer the window before damage races ahead                           |
+>==============================================================================<
+```
+
+```text
+BATTLE TURN MAP
+  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 ->
+  H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
+  [FIRST HERO] skill_hex_seal
+  [IMPACT] peak hit 48 / enemy damage 14
+  [READ] one hero hit created the swing
+```
+
+### 你在游戏里做什么
+
+1. **配置 Agent**：选英雄、Prompt 模板、装备、词条和 Build 方向。
+2. **观看战斗**：AI 选择行动，本地裁判结算，TUI 展示意图、风险、伤害、窗口和节奏。
+3. **复盘失败**：查看 `BATTLE TURN MAP`、死亡历史、图鉴进度和下一局建议。
+4. **迭代构筑**：用新 Prompt、路线、奖励和 Codex 情报继续推进。
+
+### 为什么这个项目有意思
+
+- **AI 决策是玩法，不是背景文案。** 你调的是 Agent 的提示词、构筑和上下文；
+  战斗中观察它是否会保留 MP、打断吟唱、处理 Boss 窗口。
+- **TUI 是游戏界面，不是日志。** 战斗有低分辨率 Canvas、左右对战舞台、角色/怪物
+  像素形象、武器小卡、弹道、命中浮字、英雄 `VOX` 与敌方 `ENM` 气泡。
+- **战斗可以被解释。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、
+  `BATTLE RESULT BOARD` 和本地 trace 会把模型行动、本地裁判、关键窗口和数值节奏串起来。
+- **离线也能完整试玩。** 默认 mock provider 不联网、不需要 API key；真实 Provider
+  支持 OpenAI、Anthropic 和 OpenAI-compatible。
+- **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、
+  反制错失、样本热力图和调参建议。
+
+### 一分钟试玩
 
 ```bash
 pip install -e .
+ouro doctor --lang zh --content-dir content
 ouro demo --lang zh --seed 1
 ouro run --mock
 ```
 
-English summary: a bilingual command-line AI roguelike where one configured
-hero Agent fights automatically through model-chosen actions and deterministic
-local combat rules. The model **never** decides damage, drops, or victory.
+想看更强画面感：
+
+```bash
+ouro --lang en play --mock --seed 2 --unicode --color always --no-trace
+```
 
 ---
 
-## Status
+## English
+
+**Agent Prompt Legend CLI** is a command-line AI roguelike where you configure
+one hero Agent, then watch it fight automatically. The model chooses structured
+actions; the local engine validates them and resolves damage, statuses, victory,
+rewards, archives, and progression.
+
+The design goal is not "chatbot writes a battle log." The goal is a playable
+terminal roguelike where AI decisions are visible, debuggable, and tunable.
+
+What you get:
+
+- A deterministic mock mode that needs no network and no API key.
+- A graphical TUI battle stage with actor sprites, projectile lanes, VOX/ENM
+  battle lines, resource deltas, counter windows, and post-battle maps.
+- Real provider adapters for OpenAI, Anthropic, and OpenAI-compatible APIs,
+  with safe preflight and fallback behavior.
+- Persistent Codex progress, run archives, death history, status dashboards,
+  replay, and batch balance reports.
+
+Quick start:
+
+```bash
+pip install -e .
+ouro demo --lang en --seed 1
+ouro run --mock
+```
+
+---
+
+## Current Build
 
 | Slice | What | State |
 |-------|------|-------|
@@ -70,7 +148,10 @@ local combat rules. The model **never** decides damage, drops, or victory.
 
 ## Recent Development (2026-05-06)
 
-### Slice D - Full Roguelelike Loop (Completed)
+<details>
+<summary>Development notes and implementation log</summary>
+
+### Slice D - Full Roguelike Loop (Completed)
 
 **What was implemented:**
 
@@ -188,6 +269,8 @@ Skill Usage Detail:
   skill_hex_seal: 100
   skill_corrupted_focus: 50
 ```
+
+</details>
 
 ---
 

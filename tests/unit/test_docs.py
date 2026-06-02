@@ -773,7 +773,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert [finding.label for finding in findings] == ["provider key", "bearer token"]
 
 
-def test_release_scope_classifies_manifest_paths_and_rejects_local_noise():
+def test_release_scope_classifies_manifest_paths_and_rejects_local_noise(tmp_path):
     """REQ-REL-014: changed paths are audited against the release boundary."""
     scope = _load_release_scope_module()
     script = ROOT / "scripts/release_scope.py"
@@ -788,8 +788,13 @@ def test_release_scope_classifies_manifest_paths_and_rejects_local_noise():
     assert scope.classify_path(".env") == "local-only"
     assert scope.classify_path("scratchpad/output.txt") == "unknown"
 
+    repo_ok = tmp_path / "release-ok"
+    repo_ok.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_ok, check=True, stdout=subprocess.PIPE)
+    (repo_ok / "README.md").write_text("# release\n", encoding="utf-8")
+
     result = subprocess.run(
-        [sys.executable, str(script), "--json"],
+        [sys.executable, str(script), "--json", "--root", str(repo_ok)],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
@@ -800,12 +805,36 @@ def test_release_scope_classifies_manifest_paths_and_rejects_local_noise():
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
     assert report["ok"] is True
-    assert report["release_bound_count"] > 0
+    assert report["release_bound_count"] == 1
     assert report["local_only_count"] == 0
     assert report["unknown_count"] == 0
 
+    repo_blocked = tmp_path / "release-blocked"
+    repo_blocked.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_blocked, check=True, stdout=subprocess.PIPE)
+    (repo_blocked / "README.md").write_text("# release\n", encoding="utf-8")
+    (repo_blocked / ".env").write_text("OURO_API_KEY=placeholder\n", encoding="utf-8")
+    (repo_blocked / "scratchpad").mkdir()
+    (repo_blocked / "scratchpad/output.txt").write_text("local\n", encoding="utf-8")
 
-def test_release_scope_prints_read_only_stage_plan_without_mutating_index():
+    blocked = subprocess.run(
+        [sys.executable, str(script), "--json", "--root", str(repo_blocked)],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert blocked.returncode == 1
+    blocked_report = json.loads(blocked.stdout)
+    assert blocked_report["ok"] is False
+    assert blocked_report["release_bound_count"] == 1
+    assert blocked_report["local_only"] == [".env"]
+    assert blocked_report["unknown"] == ["scratchpad/output.txt"]
+
+
+def test_release_scope_prints_read_only_stage_plan_without_mutating_index(tmp_path):
     """REQ-REL-016: release-bound staging has a reviewable read-only plan."""
     scope = _load_release_scope_module()
     script = ROOT / "scripts/release_scope.py"
@@ -823,16 +852,24 @@ def test_release_scope_prints_read_only_stage_plan_without_mutating_index():
     assert "git add -- 'docs/product/stage plan note.md'" in commands
     assert "git add -- src/ouro_agent/cli/main.py" in commands
 
+    repo = tmp_path / "stage-plan"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.PIPE)
+    (repo / "README.md").write_text("# release\n", encoding="utf-8")
+    src_file = repo / "src/ouro_agent/cli/main.py"
+    src_file.parent.mkdir(parents=True)
+    src_file.write_text("def main():\n    return 0\n", encoding="utf-8")
+
     before = subprocess.run(
         ["git", "diff", "--cached", "--name-only"],
-        cwd=ROOT,
+        cwd=repo,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
     )
     result = subprocess.run(
-        [sys.executable, str(script), "--stage-plan"],
+        [sys.executable, str(script), "--stage-plan", "--root", str(repo)],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
@@ -841,7 +878,7 @@ def test_release_scope_prints_read_only_stage_plan_without_mutating_index():
     )
     after = subprocess.run(
         ["git", "diff", "--cached", "--name-only"],
-        cwd=ROOT,
+        cwd=repo,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

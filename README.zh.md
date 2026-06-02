@@ -1,10 +1,12 @@
 # 暗影代理：祷文传说 / Agent Prompt Legend CLI
 
-> 一款把 AI Agent 变成肉鸽英雄的命令行游戏。你配置一名英雄、Build、
-> Prompt 和战术风格，然后看它在自动战斗中做选择；本地引擎负责裁判、
-> 伤害、胜负、奖励和长期存档。**模型永远不决定伤害、掉落、胜负。**
+**语言 / Language**: **中文** | [English](README.md#english)
 
-English: **[README.md](README.md)**.
+> AI 会自己下副本，你负责把它训练成英雄。
+>
+> 这是一款命令行 AI 肉鸽。你配置一名英雄、Build、Prompt 和战术风格，
+> 然后看它在自动战斗中做选择；本地引擎负责裁判、伤害、胜负、奖励和长期存档。
+> **模型永远不决定伤害、掉落、胜负。**
 
 [![tests](https://img.shields.io/badge/tests-318%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
@@ -12,8 +14,8 @@ English: **[README.md](README.md)**.
 
 ## 这是什么
 
-**暗影代理：祷文传说** 是一个面向命令行的 AI roguelike MVP。它的重点不是
-让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
+**暗影代理：祷文传说** 的重点不是让模型“讲故事”，而是让模型成为一名
+可训练、可观察、可复盘的战斗 Agent：
 
 1. 玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
 2. 战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
@@ -21,6 +23,45 @@ English: **[README.md](README.md)**.
 4. 每场战斗都会留下本地 trace、战报、图鉴进度和 run archive，方便复盘下一局。
 
 因此它更接近“AI 驾驶的终端肉鸽”，而不是普通聊天机器人或日志生成器。
+
+| 类型 | 当前状态 | 试玩门槛 |
+|------|----------|----------|
+| CLI roguelike / auto-battler / prompt-building game | MVP release candidate | 默认 mock，无需网络，无需 API key |
+
+## 游戏画面
+
+真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`：
+
+```text
+█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+█ HERO [CNDL] Astia        █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓ █ ENEMY [c] Hungry Cultist █
+█ VOX There. The wick...   █        . candle .                    █ ENM armor cracking   █
+█ ACT>▄██▄░                █ DIRECTOR T:WIN P:RDY F:INT           █     ▄▒▄        <TGT  █
+█    ▐▓c▓██                █              ░▒▓▓██>                 █    ▐▒x▒              █
+█  HP ████████████ 100/100 █            SEAL -16 HP               █ HP ███████░ 34/50    █
+█  MP ████████░░░░ 54/72   █ ACTION Hex Seal -> Hungry Cultist    █ THREAT WINDOW 0/1    █
+█  ATB READY               █ JUDGE  VALID | -16 HP                █ RETICLE [WINDOW]     █
+█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+```
+
+```text
+>==============================[ MOMENTUM BOARD ]==============================<
+| [FLOW] WINDOW | enemy ATB 99                                                 |
+| [LANE] HERO [########] 100/100 vs ENEMY [#######-] 104/120                   |
+| [TARGET] Hungry Cultist                                                      |
+| [SWING] hero hit -16 HP                                                      |
+| [READ] answer the window before damage races ahead                           |
+>==============================================================================<
+```
+
+```text
+BATTLE TURN MAP
+  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 ->
+  H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
+  [FIRST HERO] skill_hex_seal
+  [IMPACT] peak hit 48 / enemy damage 14
+  [READ] one hero hit created the swing
+```
 
 ## 为什么值得看
 
@@ -87,6 +128,9 @@ ouro history --lang zh --limit 5
 
 ## 近期开发（2026-05-07）
 
+<details>
+<summary>开发日志和实现细节</summary>
+
 ### Slice C-Experience & F - 批量试跑（已完成）
 
 **实现内容：**
@@ -141,6 +185,14 @@ ouro --lang zh batch --count 20 --hero hero_shadow_apprentice --enemies enemy_hu
   skill_hex_seal：100
   skill_corrupted_focus：50
 ```
+
+### Slice D - 完整肉鸽循环（已完成）
+
+这一阶段实现了可从开局走到 Boss 的单局流程：路线选择、战斗节点、
+奖励三选一、商店、休息、事件、结算、run archive 与下一局建议。
+详细实现以 `docs/product/06_需求追踪矩阵_20260503.md` 的证据记录为准。
+
+</details>
 
 ---
 
