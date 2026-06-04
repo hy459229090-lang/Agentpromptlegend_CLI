@@ -422,6 +422,15 @@ def _render_canvas_duel_panel(
         3,
         _stage_director_canvas_line(state, target, frame, width=center_w - 2),
     )
+    _draw_canvas_tempo_rail(
+        surface,
+        center_x + 1,
+        4,
+        center_w - 2,
+        state,
+        target,
+        frame,
+    )
     _draw_canvas_effect_lane(
         surface,
         center_x + 1,
@@ -752,6 +761,63 @@ def _draw_canvas_beat_strip(
         fill = _canvas_beat_fill(idx, record, frame, glyphs)
         surface.fill_rect(left, y, segment_width, 1, fill)
         surface.draw_text(left + 1, y, fit_text(label_text, segment_width - 2))
+
+
+def _draw_canvas_tempo_rail(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    state: BattleState,
+    target: Enemy | None,
+    frame: BattleFrame,
+) -> None:
+    """Draw a compact ATB pressure rail inside the battle canvas."""
+    if width < 20:
+        return
+    hero_atb = max(0, min(100, int(state.hero.atb)))
+    enemy_atb = max(0, min(100, int(target.atb))) if target is not None else 0
+    if width < 30:
+        bar_width = 2
+        prefix = "RAIL"
+    elif width < 42:
+        bar_width = 4
+        prefix = "TEMPO RAIL"
+    else:
+        bar_width = 8
+        prefix = "TEMPO RAIL"
+    hero_bar = _canvas_tempo_bar(hero_atb, bar_width)
+    enemy_bar = _canvas_tempo_bar(enemy_atb, bar_width)
+    state_label = _canvas_tempo_state(state, target, frame)
+    line = f"{prefix} H{hero_atb:03d} {hero_bar} E{enemy_atb:03d} {enemy_bar} {state_label}"
+    surface.draw_text(x, y, fit_text(line, width))
+
+
+def _canvas_tempo_bar(value: int, width: int) -> str:
+    glyphs = get_glyph_set("unicode")
+    bounded = max(0, min(100, value))
+    filled = round(width * (bounded / 100))
+    return glyphs.solid * filled + glyphs.light * (width - filled)
+
+
+def _canvas_tempo_state(state: BattleState, target: Enemy | None, frame: BattleFrame) -> str:
+    if frame.counter_hint and "[MISSED]" in frame.counter_hint:
+        return "MISS"
+    if frame.counter_hint or frame.counter_clock or (target is not None and target.chant_progress):
+        return "WIN"
+    if not state.hero.is_alive:
+        return "FALL"
+    if target is not None and not target.is_alive:
+        return "CLR"
+    if state.hero.hp / max(1, state.hero.max_hp) <= 0.3:
+        return "CRIT"
+    if target is not None and target.hp / max(1, target.max_hp) <= 0.3:
+        return "FIN"
+    if target is not None and target.atb >= 95:
+        return "PRESS"
+    if state.hero.atb >= 100:
+        return "RDY"
+    return "FLOW"
 
 
 def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame) -> tuple[str, str, str]:

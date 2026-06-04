@@ -482,6 +482,66 @@ def test_battle_screen_embeds_director_strip_for_current_beat(bundle, language, 
         assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_tempo_rail_inside_canvas(bundle, width):
+    """REQ-TEMPORAIL-001: Canvas stage should draw ATB pressure as a visual rail."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=7, language="en"), seed=7, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_priest_rite"])
+    state.hero.atb = 100
+    target = state.enemies[0]
+    target.atb = 96
+    target.chant_progress = 1
+    record = TurnRecord(
+        tick=137,
+        actor_id=state.hero.id,
+        side="hero",
+        raw_text=None,
+        validation=None,
+        action=HeroAction(
+            type="cast_skill",
+            skill_id="skill_hex_seal",
+            targets=(target.id,),
+        ),
+        judge=JudgeOutcome(
+            valid=True,
+            reason="cast_skill resolved",
+            summary=f"cast_skill skill_hex_seal -> {target.id} | 19 dmg",
+            damage=19,
+            target_ids=(target.id,),
+            skill_id="skill_hex_seal",
+            action_kind="cast_skill",
+        ),
+        battle_session_id="be_temporail",
+        static_context_hash="ctx_temporail",
+        delta_context_id="be_temporail_d0001",
+    )
+
+    screen = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=7,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "RAIL" in screen
+    if width > 88:
+        assert "TEMPO RAIL" in screen
+    assert "H100" in screen
+    assert "E096" in screen
+    assert "WIN" in screen
+    assert "██" in screen
+    assert "SEAL -19 HP" in screen
+    assert "ACTION Hex Seal" in screen
+    assert "JUDGE  VALID | -19 HP" in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
 @pytest.mark.parametrize("language", ["en", "zh"])
 @pytest.mark.parametrize("width", [80, 100, 120])
 def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, language, width):
