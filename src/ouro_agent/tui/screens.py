@@ -373,6 +373,7 @@ def _render_canvas_duel_panel(
         width=left_w - 6,
     )
     _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses)
+    _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero)
 
     enemy_title = (
         f"ENEMY [{target.short_glyph}] {target.name}"
@@ -885,6 +886,49 @@ def _draw_canvas_status_chips(
 def _canvas_status_chip(status) -> str:
     code = format_status_short(status).split(" ", 1)[0]
     return f"{code}{status.stacks}"
+
+
+_CANVAS_SKILL_CODES = {
+    "skill_shadow_sting": "STG",
+    "skill_hex_seal": "HEX",
+    "skill_corrupted_focus": "FOC",
+}
+
+
+def _draw_canvas_skill_rail(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    hero: Hero,
+) -> None:
+    if width < 12 or not hero.skills:
+        return
+    max_chips = 2 if width < 22 else 3
+    chips = [_canvas_skill_chip(skill, hero.mp) for skill in hero.skills[:max_chips]]
+    hidden = len(hero.skills) - len(chips)
+    if hidden > 0 and width >= 28:
+        chips.append(f"+{hidden}")
+    surface.draw_text(x, y, fit_text("SKILL " + " ".join(chips), width))
+
+
+def _canvas_skill_chip(skill, current_mp: int) -> str:
+    code = _canvas_skill_code(skill)
+    if skill.cooldown_remaining > 0:
+        return f"{code}{min(skill.cooldown_remaining, 9)}"
+    if skill.is_ready(current_mp):
+        return f"{code}*"
+    return f"{code}!"
+
+
+def _canvas_skill_code(skill) -> str:
+    if skill.id in _CANVAS_SKILL_CODES:
+        return _CANVAS_SKILL_CODES[skill.id]
+    words = [word for word in skill.display_name.replace("-", " ").split() if word]
+    if len(words) >= 2:
+        return "".join(word[0] for word in words[:3]).upper()[:3]
+    source = (words[0] if words else skill.id).replace("skill_", "")
+    return source[:3].upper()
 
 
 def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame) -> tuple[str, str, str]:

@@ -402,6 +402,37 @@ def test_unicode_battle_screen_draws_status_chips_inside_canvas(bundle, width):
         assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_skill_rail_inside_canvas(bundle, width):
+    """REQ-SKILLRAIL-001: Canvas stage should show compact skill readiness chips."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.hero.mp = state.hero.max_mp
+    hex_seal = state.hero.find_skill("skill_hex_seal")
+    assert hex_seal is not None
+    hex_seal.cooldown_remaining = 4
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "SKILL STG* HEX4" in screen
+    if width >= 100:
+        assert "FOC*" in screen
+    assert "ACTION Hex Seal" in screen
+    assert "JUDGE  VALID | -16 HP" in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_adds_stagecraft_focus_markers(bundle):
     """REQ-STAGECRAFT-001: Canvas stage should visually mark actor, target, weapon, and threat."""
     from ouro_agent.tui.screens import render_battle_screen
