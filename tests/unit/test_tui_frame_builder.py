@@ -542,6 +542,56 @@ def test_unicode_battle_screen_draws_tempo_rail_inside_canvas(bundle, width):
         assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_enemy_stack_inside_canvas(bundle, width):
+    """REQ-ENEMYSTACK-001: Canvas stage should show the enemy pack without relying on roster text."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=2, language="en"), seed=2, language="en")
+    state = loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    cultist = state.enemies[0]
+    acolyte = state.enemies[1]
+    cultist.hp = 34
+    cultist.atb = 81
+    acolyte.hp = 70
+    acolyte.atb = 100
+    record = TurnRecord(
+        tick=10,
+        actor_id=acolyte.id,
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_stack",
+        static_context_hash="ctx_stack",
+    )
+
+    screen = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=2,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "STACK" in screen
+    assert "ATB" in screen
+    assert "-c" in screen
+    assert ">k" in screen
+    assert "RETICLE [WINDOW]" in screen
+    assert "THREAT WINDOW" in screen
+    assert "ENEMY ROSTER" in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
 @pytest.mark.parametrize("language", ["en", "zh"])
 @pytest.mark.parametrize("width", [80, 100, 120])
 def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, language, width):

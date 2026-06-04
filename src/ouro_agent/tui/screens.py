@@ -408,6 +408,14 @@ def _render_canvas_duel_panel(
             atb=target.atb,
             width=right_w - 6,
         )
+    _draw_canvas_enemy_stack(
+        surface,
+        right_x + 1,
+        14,
+        right_w - 3,
+        state,
+        target,
+    )
 
     _draw_canvas_beat_strip(
         surface,
@@ -818,6 +826,42 @@ def _canvas_tempo_state(state: BattleState, target: Enemy | None, frame: BattleF
     if state.hero.atb >= 100:
         return "RDY"
     return "FLOW"
+
+
+def _draw_canvas_enemy_stack(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    state: BattleState,
+    target: Enemy | None,
+) -> None:
+    """Draw compact HP/ATB pips for the visible enemy pack."""
+    if width < 14 or not state.enemies:
+        return
+    visible = state.enemies[:2]
+    remaining = max(0, len(state.enemies) - len(visible))
+    hp_parts = [_canvas_enemy_stack_part(enemy, target, attr="hp") for enemy in visible]
+    atb_parts = [_canvas_enemy_stack_part(enemy, target, attr="atb") for enemy in visible]
+    if remaining:
+        hp_parts.append(f"+{remaining}")
+        atb_parts.append(f"+{remaining}")
+    surface.draw_text(x, y, fit_text("STACK " + " ".join(hp_parts), width))
+    surface.draw_text(x, y + 1, fit_text("ATB   " + " ".join(atb_parts), width))
+
+
+def _canvas_enemy_stack_part(enemy: Enemy, target: Enemy | None, *, attr: str) -> str:
+    marker = ">" if target is not None and enemy.id == target.id else "-"
+    value = enemy.hp / max(1, enemy.max_hp) if attr == "hp" else min(enemy.atb, 100) / 100
+    return f"{marker}{enemy.short_glyph}{_canvas_mini_bar(value)}"
+
+
+def _canvas_mini_bar(ratio: float) -> str:
+    glyphs = get_glyph_set("unicode")
+    bounded = max(0.0, min(1.0, ratio))
+    width = 3
+    filled = round(width * bounded)
+    return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
 def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame) -> tuple[str, str, str]:
