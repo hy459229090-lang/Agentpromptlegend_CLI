@@ -370,6 +370,38 @@ def test_unicode_battle_screen_embeds_resource_thresholds_in_canvas(bundle):
         assert visual_width(line) <= 100
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_status_chips_inside_canvas(bundle, width):
+    """REQ-CANVASSTATUS-001: Canvas stage should show compact buff/debuff chips."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.hero.add_status(StatusEffect("status_shield", stacks=7, duration=2))
+    target = state.enemies[0]
+    target.add_status(StatusEffect("status_silence", stacks=1, duration=1))
+    target.add_status(StatusEffect("status_corruption", stacks=2, duration=3))
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "FX SHD7" in screen
+    assert "FX SLN1 CRP2" in screen
+    assert "TEMPO RAIL" in screen or "RAIL" in screen
+    assert "STACK" in screen
+    assert "ACTION Hex Seal" in screen
+    assert "JUDGE  VALID | -16 HP" in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_adds_stagecraft_focus_markers(bundle):
     """REQ-STAGECRAFT-001: Canvas stage should visually mark actor, target, weapon, and threat."""
     from ouro_agent.tui.screens import render_battle_screen

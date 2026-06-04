@@ -372,6 +372,7 @@ def _render_canvas_duel_panel(
         atb=state.hero.atb,
         width=left_w - 6,
     )
+    _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses)
 
     enemy_title = (
         f"ENEMY [{target.short_glyph}] {target.name}"
@@ -408,6 +409,7 @@ def _render_canvas_duel_panel(
             atb=target.atb,
             width=right_w - 6,
         )
+        _draw_canvas_status_chips(surface, right_x + 2, 12, right_w - 6, target.statuses)
     _draw_canvas_enemy_stack(
         surface,
         right_x + 1,
@@ -447,10 +449,10 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
     )
-    action = fit_text(frame.action_label, center_w - 2)
-    judge = fit_text(frame.judge_label, center_w - 2)
-    surface.draw_text(center_x + 1, 12, f"ACTION {action}")
-    surface.draw_text(center_x + 1, 13, f"JUDGE  {judge}")
+    action = fit_text(f"ACTION {frame.action_label}", center_w - 2)
+    judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
+    surface.draw_text(center_x + 1, 12, action)
+    surface.draw_text(center_x + 1, 13, judge)
     if frame.counter_clock:
         surface.draw_text(center_x + 1, 14, fit_text(frame.counter_clock, center_w - 2))
     elif frame.impact_line:
@@ -862,6 +864,27 @@ def _canvas_mini_bar(ratio: float) -> str:
     width = 3
     filled = round(width * bounded)
     return glyphs.solid * filled + glyphs.light * (width - filled)
+
+
+def _draw_canvas_status_chips(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    statuses: list,
+) -> None:
+    if width < 8 or not statuses:
+        return
+    chips = [_canvas_status_chip(status) for status in statuses[:3]]
+    hidden = len(statuses) - len(chips)
+    if hidden > 0:
+        chips.append(f"+{hidden}")
+    surface.draw_text(x, y, fit_text("FX " + " ".join(chips), width))
+
+
+def _canvas_status_chip(status) -> str:
+    code = format_status_short(status).split(" ", 1)[0]
+    return f"{code}{status.stacks}"
 
 
 def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame) -> tuple[str, str, str]:
