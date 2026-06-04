@@ -411,6 +411,7 @@ def _render_canvas_duel_panel(
             width=right_w - 6,
         )
         _draw_canvas_status_chips(surface, right_x + 2, 12, right_w - 6, target.statuses)
+        _draw_canvas_enemy_intent(surface, right_x + 2, 13, right_w - 6, target, frame)
     _draw_canvas_enemy_stack(
         surface,
         right_x + 1,
@@ -534,6 +535,39 @@ def _canvas_enemy_threat_badge(target: Enemy, frame: BattleFrame) -> str:
     if target.hp / max(1, target.max_hp) <= 0.3:
         return "THREAT LOW HP"
     return f"THREAT {target.tier.upper()}"
+
+
+def _draw_canvas_enemy_intent(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    target: Enemy,
+    frame: BattleFrame,
+) -> None:
+    if width < 12:
+        return
+    surface.draw_text(x, y, fit_text(_canvas_enemy_intent_label(target, frame), width))
+
+
+def _canvas_enemy_intent_label(target: Enemy, frame: BattleFrame) -> str:
+    if not target.is_alive:
+        return "INTENT CLEARED"
+    if target.find_status("status_silence") is not None:
+        return "INTENT SILENCED"
+    if target.chant_charge_turns or target.chant_progress or frame.counter_clock or frame.counter_hint:
+        total = max(1, target.chant_charge_turns)
+        current = max(0, min(total, target.chant_progress))
+        if current >= total:
+            return "INTENT RELEASE"
+        if current > 0:
+            return f"INTENT CHANT {current}/{total}"
+        return "INTENT CHANT WATCH"
+    if target.atb >= 95:
+        return "INTENT STRIKE RDY"
+    if target.hp / max(1, target.max_hp) <= 0.3:
+        return "INTENT FALTER"
+    return "INTENT STRIKE"
 
 
 def _colorize_canvas_lines(lines: list[str], *, tone: str, color_mode: str) -> list[str]:

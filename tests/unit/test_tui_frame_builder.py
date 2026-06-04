@@ -488,6 +488,111 @@ def test_unicode_battle_screen_adds_stagecraft_focus_markers(bundle):
         assert visual_width(line) <= 100
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_enemy_intent_inside_canvas(bundle, width):
+    """REQ-ENEMYINTENT-001: Canvas stage should show compact enemy intent."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    target = state.enemies[0]
+    target.atb = 88
+    target.chant_charge_turns = 2
+    target.chant_progress = 1
+    record = TurnRecord(
+        tick=12,
+        actor_id=state.hero.id,
+        side="hero",
+        raw_text=None,
+        validation=None,
+        action=HeroAction(
+            type="cast_skill",
+            skill_id="skill_hex_seal",
+            targets=(target.id,),
+        ),
+        judge=JudgeOutcome(
+            valid=True,
+            reason="cast_skill resolved",
+            summary=f"cast_skill skill_hex_seal -> {target.id} | 16 dmg",
+            damage=16,
+            target_ids=(target.id,),
+            skill_id="skill_hex_seal",
+            action_kind="cast_skill",
+        ),
+        battle_session_id="be_enemy_intent",
+        static_context_hash="ctx_enemy_intent",
+        delta_context_id="be_enemy_intent_d0001",
+    )
+
+    chanting = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "INTENT CHANT 1/2" in chanting
+    assert "THREAT WINDOW 1/2" in chanting
+    assert "RETICLE [WINDOW]" in chanting
+    assert "ACTION Hex Seal" in chanting
+    assert "JUDGE  VALID | -16 HP" in chanting
+
+    target.add_status(StatusEffect("status_silence", stacks=1, duration=1))
+    silenced = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "INTENT SILENCED" in silenced
+
+    target.statuses.clear()
+    target.chant_charge_turns = 0
+    target.chant_progress = 0
+    target.atb = 100
+    ready_record = TurnRecord(
+        tick=16,
+        actor_id=state.hero.id,
+        side="hero",
+        raw_text=None,
+        validation=None,
+        action=HeroAction(
+            type="basic_attack",
+            targets=(target.id,),
+        ),
+        judge=JudgeOutcome(
+            valid=True,
+            reason="basic_attack resolved",
+            summary=f"basic_attack -> {target.id} | 8 dmg",
+            damage=8,
+            target_ids=(target.id,),
+            action_kind="basic_attack",
+        ),
+        battle_session_id="be_enemy_intent",
+        static_context_hash="ctx_enemy_intent",
+        delta_context_id="be_enemy_intent_d0002",
+    )
+    ready = render_battle_screen(
+        state,
+        ready_record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "INTENT STRIKE RDY" in ready
+
+    for screen in (chanting, silenced, ready):
+        for line in screen.splitlines():
+            assert visual_width(line) <= width
+
+
 @pytest.mark.parametrize("language", ["en", "zh"])
 @pytest.mark.parametrize("width", [80, 100, 120])
 def test_battle_screen_embeds_director_strip_for_current_beat(bundle, language, width):

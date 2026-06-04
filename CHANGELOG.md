@@ -33,10 +33,10 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 
 ### Validation
 
-- `venv312/bin/python -m pytest` -> `330 passed`
+- `venv312/bin/python -m pytest` -> `333 passed`
 - `venv312/bin/ouro validate-content` -> content OK
 - `git diff --check` -> no whitespace errors
-- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 330 tests collected; 247 release-bound text files.`
+- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 333 tests collected; 247 release-bound text files.`
 - `venv312/bin/python scripts/release_check.py --privacy-scan-only` -> no likely plaintext secrets
 - Clean venv install smoke: `/private/tmp/ouro_install_smoke_20260601/bin/python -m pip install .`
 - Installed CLI smoke from `/private/tmp`: `ouro --version`, `ouro doctor`, `ouro demo --seed 1`, `ouro play --mock --seed 1 --no-animation --no-trace`, `ouro codex`, `ouro runs --limit 1`, `ouro run-report`, `ouro history --limit 1`, and `ouro status`
