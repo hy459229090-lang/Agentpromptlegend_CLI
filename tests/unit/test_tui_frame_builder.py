@@ -871,6 +871,16 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         assert "VOX 封住咏唱" in zh_screen
         assert "ENM 护甲开裂" in zh_screen
         assert "ENM      Agent" not in zh_screen
+        assert "英雄" in zh_screen
+        assert "敌方" in zh_screen
+        assert "导演" in zh_screen
+        assert "计划" in zh_screen
+        assert "行动" in zh_screen
+        assert "裁判" in zh_screen
+        assert "意图" in zh_screen
+        assert "队列" in zh_screen
+        assert "技能" in zh_screen
+        assert "伤口" in zh_screen
         for prefix in ("VOX", "ENM"):
             segments = [
                 line.split(prefix, 1)[1].split("█", 1)[0]
@@ -879,6 +889,27 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             ]
             assert segments
             assert all(any("\u4e00" <= ch <= "\u9fff" for ch in segment) for segment in segments)
+        canvas_lines = [line for line in zh_screen.splitlines() if line.startswith("█")][:25]
+        canvas = "\n".join(canvas_lines)
+        for bad in (
+            "HERO [",
+            "ENEMY [",
+            "DIRECTOR",
+            "TEMPO RAIL",
+            "PLAN ",
+            "ACTION ",
+            "JUDGE ",
+            "INTENT ",
+            "STACK ",
+            "SKILL ",
+            "WOUND ",
+            "PAIN ",
+            "SUPPORT ",
+            "DELTA ",
+            "THREAT ",
+            "RETICLE ",
+        ):
+            assert bad not in canvas
         for line in zh_screen.splitlines():
             assert visual_width(line) <= zh_width
 
@@ -1189,9 +1220,15 @@ def test_battle_screen_embeds_director_strip_for_current_beat(bundle, language, 
     assert "DIRECTOR" in screen or "导演" in screen
     assert "THREAT" in screen or "威胁" in screen or "T:WIN" in screen
     assert "TEMPO" in screen or "节奏" in screen or "P:RDY" in screen
-    assert "FOCUS" in screen or "焦点" in screen or "F:INT" in screen
+    assert "FOCUS" in screen or "焦点" in screen or "F:INT" in screen or "F:打断" in screen
     assert "HERO READY" in screen or "HERO_RDY" in screen or "P:RDY" in screen
-    assert "interrupt chant" in screen or "打断咏唱" in screen or "INTERRUPT" in screen or "F:INT" in screen
+    assert (
+        "interrupt chant" in screen
+        or "打断咏唱" in screen
+        or "INTERRUPT" in screen
+        or "F:INT" in screen
+        or "F:打断" in screen
+    )
     for line in screen.splitlines():
         assert visual_width(line) <= width
 

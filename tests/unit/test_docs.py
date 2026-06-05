@@ -27,11 +27,21 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "完整中文文档 / Full Chinese README" in text
     assert "English Store Page" in text
     assert "双语首页 / Bilingual README" in zh_text
+    assert "Language / 语言" in text
+    assert "语言切换 / Language" in zh_text
     assert "CLI 语言切换" in text
     assert "CLI 语言切换" in zh_text
     assert "Build one Agent. Tune the Prompt. Watch the dungeon judge it." in text
-    assert "像 Steam 页面一样先说清楚" in text
-    assert "像 Steam 页面一样先说清楚" in zh_text
+    assert "游戏速览 / Storefront Snapshot" in text
+    assert "游戏速览" in zh_text
+    assert "Build before the fight. Watch the Agent answer under pressure." in text
+    assert "先说清楚：你到底玩什么" in zh_text
+    assert "像 Steam 页面一样先说清楚" not in text
+    assert "像 Steam 页面一样先说清楚" not in zh_text
+    assert "Player Promise" in text
+    assert "玩家期待" in zh_text
+    assert "Screenshots below are captured from reproducible CLI output" in text
+    assert "下面的画面来自可复现的 CLI 输出" in zh_text
     assert "游戏画面 / Media Gallery" in text
     assert "先看游戏画面 / Media Gallery" in text
     assert "先看游戏画面" in zh_text

@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>训练一个英雄 Agent。调教 Prompt。看地牢用本地规则审判它。</strong><br>
-  <sub>黑暗终端 AI 肉鸽：你负责构筑和策略，模型负责出招，本地引擎负责所有伤害、状态、奖励和胜负。</sub>
+  <sub>黑暗终端 AI 肉鸽：战前构筑、战中观战、战后复盘，让 Prompt 在本地规则里接受考验。</sub>
 </p>
 
 <p align="center">
@@ -12,6 +12,9 @@
 </p>
 
 <table>
+  <tr>
+    <th colspan="4">语言切换 / Language</th>
+  </tr>
   <tr>
     <td align="center"><strong>中文介绍</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文商店页</sub></a></td>
@@ -24,11 +27,29 @@
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
 </p>
 
+## 游戏速览
+
+**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你在战前准备一个英雄
+Agent，然后看它进入地牢：读局、保留 MP、打断仪式、错过窗口、压低怪物血线，或死在
+自己的判断里。每一场都会留下可复盘的战斗轨道。
+
+| 玩家期待 | 你实际在做什么 | 它为什么不一样 |
+|----------|----------------|----------------|
+| 调教 Prompt，然后看地牢反击。 | 战前选择英雄、Build、装备、词条、Prompt 风格和战术偏好。 | 模型只选择结构化行动；合法性、伤害、奖励、失败和胜利都由本地引擎裁决。 |
+| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：角色像素形象、弹道、VOX/ENM 台词、资源变化、敌方意图和裁判结果同屏出现。 | CLI 是媒介，不是借口；战斗状态被组织成低分辨率的终端画面。 |
+| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史和批量试跑结果，调整下一局构筑。 | 默认 mock 完整离线可玩，不需要网络和 API key；真实模型接入只是可选增强。 |
+
+```bash
+pip install -e .
+ouro --lang zh demo --seed 1
+ouro --lang zh play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
+```
+
 ## 先看游戏画面
 
-这些是当前 CLI 输出整理成的 README media captures，不是概念图。对应命令可用
+下面的画面来自可复现的 CLI 输出，不是概念图。对应命令可用
 `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`，README 可以直接展示游戏画面，而不是只放文本日志。
+复现。SVG 资产保存在 `examples/`，README 第一屏先展示游戏画面、战斗节奏和复盘卖点。
 
 <table>
   <tr>
@@ -70,7 +91,7 @@ BATTLE TURN MAP
 
 ## 这是什么
 
-### 像 Steam 页面一样先说清楚：这到底玩什么
+### 先说清楚：你到底玩什么
 
 **暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
 而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent

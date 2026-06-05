@@ -63,6 +63,35 @@ from ouro_agent.tui.report_analysis import (
 )
 
 
+_CANVAS_LABELS: dict[str, dict[str, str]] = {
+    "canvas_title": {"en": "THE ECHO ALTAR", "zh": "回声祭坛"},
+    "canvas_hero": {"en": "HERO", "zh": "英雄"},
+    "canvas_enemy": {"en": "ENEMY", "zh": "敌方"},
+    "director": {"en": "DIRECTOR", "zh": "导演"},
+    "tempo": {"en": "TEMPO", "zh": "节奏"},
+    "tempo_rail": {"en": "TEMPO RAIL", "zh": "节奏"},
+    "plan": {"en": "PLAN", "zh": "计划"},
+    "action": {"en": "ACTION", "zh": "行动"},
+    "judge": {"en": "JUDGE", "zh": "裁判"},
+    "intent": {"en": "INTENT", "zh": "意图"},
+    "stack": {"en": "STACK", "zh": "队列"},
+    "skill": {"en": "SKILL", "zh": "技能"},
+    "wound": {"en": "WOUND", "zh": "伤口"},
+    "pain": {"en": "PAIN", "zh": "承伤"},
+    "support": {"en": "SUPPORT", "zh": "支援"},
+    "delta": {"en": "DELTA", "zh": "变化"},
+    "reticle": {"en": "RETICLE", "zh": "准星"},
+    "threat": {"en": "THREAT", "zh": "威胁"},
+    "focus": {"en": "FOCUS", "zh": "焦点"},
+    "select": {"en": "SELECT", "zh": "SELECT"},
+}
+
+
+def _canvas_label(key: str, lang: str) -> str:
+    values = _CANVAS_LABELS.get(key, {})
+    return values.get(lang, values.get("en", key.upper()))
+
+
 def render_battle_screen(
     state: BattleState,
     last_record: TurnRecord | None,
@@ -344,8 +373,8 @@ def _render_canvas_duel_panel(
     surface = Surface(width, height)
     surface.draw_box(0, 0, width, height, glyphs)
 
-    title = "THE ECHO ALTAR"
-    event = _stage_event_title(frame, "en")
+    title = _canvas_label("canvas_title", lang)
+    event = _stage_event_title(frame, lang)
     surface.draw_text(3, 0, f" {title} / {event} ")
     _draw_canvas_beat_badge(surface, width, frame)
 
@@ -375,7 +404,14 @@ def _render_canvas_duel_panel(
             enemy_pose = "low"
         enemy_art = enemy_block_sprite(target.short_glyph, enemy_pose)
 
-    surface.draw_text(2, 1, fit_text(f"HERO {state.hero.short_tag} {state.hero.name}", left_w - 3))
+    surface.draw_text(
+        2,
+        1,
+        fit_text(
+            f"{_canvas_label('canvas_hero', lang)} {state.hero.short_tag} {state.hero.name}",
+            left_w - 3,
+        ),
+    )
     surface.draw_text(2, 2, _canvas_hero_dialogue(state, last_record, frame, lang=lang, width=left_w - 3))
     surface.draw_sprite(4, 3, hero_art)
     weapon, build_badge = _hero_icons(state.hero)
@@ -392,12 +428,12 @@ def _render_canvas_duel_panel(
         width=left_w - 6,
     )
     _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses)
-    _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero)
+    _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero, lang=lang)
 
     enemy_title = (
-        _canvas_enemy_title(target, right_w - 3)
+        _canvas_enemy_title(target, right_w - 3, lang=lang)
         if target is not None
-        else "ENEMY -"
+        else f"{_canvas_label('canvas_enemy', lang)} -"
     )
     surface.draw_text(right_x + 1, 1, fit_text(enemy_title, right_w - 3))
     surface.draw_text(
@@ -415,6 +451,7 @@ def _render_canvas_duel_panel(
         record=last_record,
         target=target,
         frame=frame,
+        lang=lang,
     )
     if target is not None:
         _draw_canvas_cast_meter(surface, right_x + 2, 8, right_w - 6, target)
@@ -432,7 +469,7 @@ def _render_canvas_duel_panel(
             width=right_w - 6,
         )
         _draw_canvas_status_chips(surface, right_x + 2, 12, right_w - 6, target.statuses)
-        _draw_canvas_enemy_intent(surface, right_x + 2, 13, right_w - 6, target, frame)
+        _draw_canvas_enemy_intent(surface, right_x + 2, 13, right_w - 6, target, frame, lang=lang)
     _draw_canvas_enemy_stack(
         surface,
         right_x + 1,
@@ -440,6 +477,7 @@ def _render_canvas_duel_panel(
         right_w - 3,
         state,
         target,
+        lang=lang,
     )
 
     _draw_canvas_beat_strip(
@@ -449,11 +487,12 @@ def _render_canvas_duel_panel(
         center_w - 2,
         last_record,
         frame,
+        lang=lang,
     )
     surface.draw_text(
         center_x + 1,
         3,
-        _stage_director_canvas_line(state, target, frame, width=center_w - 2),
+        _stage_director_canvas_line(state, target, frame, lang=lang, width=center_w - 2),
     )
     _draw_canvas_tempo_rail(
         surface,
@@ -463,6 +502,7 @@ def _render_canvas_duel_panel(
         state,
         target,
         frame,
+        lang=lang,
     )
     _draw_canvas_effect_lane(
         surface,
@@ -471,6 +511,7 @@ def _render_canvas_duel_panel(
         center_w - 2,
         last_record,
         frame,
+        lang=lang,
     )
     _draw_canvas_damage_rail(
         surface,
@@ -481,17 +522,35 @@ def _render_canvas_duel_panel(
         target,
         last_record,
         frame,
+        lang=lang,
     )
-    _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
-    action = fit_text(_canvas_action_label(frame, last_record, target, hero=state.hero), center_w - 2)
-    judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
+    _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame, lang=lang)
+    action = fit_text(
+        _canvas_action_label(
+            frame,
+            last_record,
+            target,
+            hero=state.hero,
+            lang=lang,
+        ),
+        center_w - 2,
+    )
+    judge = fit_text(f"{_canvas_label('judge', lang)}  {frame.judge_label}", center_w - 2)
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
     if frame.counter_clock:
         surface.draw_text(center_x + 1, 14, fit_text(_canvas_counter_rail_label(frame.counter_clock), center_w - 2))
     elif frame.impact_line:
         surface.draw_text(center_x + 1, 14, fit_text(_canvas_impact_label(frame.impact_line), center_w - 2))
-    _draw_canvas_delta_ribbon(surface, center_x + 1, 15, center_w - 2, frame, state)
+    _draw_canvas_delta_ribbon(
+        surface,
+        center_x + 1,
+        15,
+        center_w - 2,
+        frame,
+        state,
+        lang=lang,
+    )
 
     rendered = _colorize_canvas_lines(
         surface.render(),
@@ -501,7 +560,7 @@ def _render_canvas_duel_panel(
     if frame.boss_intel:
         rendered.append(fit_text(_boss_intel_summary(frame, lang), width))
     if lang == "zh":
-        rendered.append(fit_text("图形化 TUI: 终端低分辨率 Canvas / ASCII fallback 保持可用", width))
+        rendered.append(fit_text("图形化 TUI: 终端低分辨率 Canvas / ASCII 兼容输出", width))
     else:
         rendered.append(fit_text("GRAPHICAL TUI: low-resolution terminal Canvas / ASCII fallback remains available", width))
     return rendered
@@ -584,6 +643,7 @@ def _draw_canvas_stagecraft(
     record: TurnRecord | None,
     target: Enemy | None,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     glyphs = get_glyph_set("unicode")
     hero_shadow_w = max(8, min(16, left_w - 4))
@@ -597,32 +657,46 @@ def _draw_canvas_stagecraft(
     surface.draw_text(left_x, 3, hero_mark)
     if target is not None:
         surface.draw_text(right_x + max(0, right_w - 4), 3, enemy_mark)
-        surface.draw_text(right_x + 1, 7, fit_text(_canvas_enemy_threat_badge(target, frame), right_w - 2))
+        surface.draw_text(right_x + 1, 7, fit_text(_canvas_enemy_threat_badge(target, frame, lang=lang), right_w - 2))
         if frame.counter_clock or frame.counter_hint:
-            surface.draw_text(right_x + 1, 9, fit_text("RETICLE [WINDOW]", right_w - 2))
+            surface.draw_text(
+                right_x + 1,
+                9,
+                fit_text(f"{_canvas_label('reticle', lang)} [WINDOW]", right_w - 2),
+            )
         else:
-            surface.draw_text(right_x + 1, 9, fit_text("RETICLE [TARGET]", right_w - 2))
+            surface.draw_text(
+                right_x + 1,
+                9,
+                fit_text(f"{_canvas_label('reticle', lang)} [TARGET]", right_w - 2),
+            )
 
 
-def _canvas_enemy_threat_badge(target: Enemy, frame: BattleFrame) -> str:
+def _canvas_enemy_threat_badge(
+    target: Enemy,
+    frame: BattleFrame,
+    lang: str,
+) -> str:
+    threat = _canvas_label("threat", lang)
     if not target.is_alive:
-        return "THREAT CLEARED"
+        return f"{threat} CLEARED"
     if frame.counter_clock or frame.counter_hint or target.chant_progress:
-        return f"THREAT WINDOW {target.chant_progress}/{target.chant_charge_turns or 1}"
+        return f"{threat} WINDOW {target.chant_progress}/{target.chant_charge_turns or 1}"
     if target.atb >= 95:
-        return "THREAT HIGH ATB"
+        return f"{threat} HIGH ATB"
     if target.hp / max(1, target.max_hp) <= 0.3:
-        return "THREAT LOW HP"
-    return f"THREAT {target.tier.upper()}"
+        return f"{threat} LOW HP"
+    return f"{threat} {target.tier.upper()}"
 
 
-def _canvas_enemy_title(target: Enemy, width: int) -> str:
+def _canvas_enemy_title(target: Enemy, width: int, *, lang: str) -> str:
     choices = _canvas_enemy_stage_name_choices(target)
+    prefix = _canvas_label("canvas_enemy", lang)
     for choice in choices:
-        title = f"ENEMY [{target.short_glyph}] {choice}"
+        title = f"{prefix} [{target.short_glyph}] {choice}"
         if visual_width(title) <= width:
             return title
-    return f"ENEMY [{target.short_glyph}]"
+    return f"{prefix} [{target.short_glyph}]"
 
 
 def _canvas_enemy_stage_name(target: Enemy) -> str:
@@ -653,31 +727,38 @@ def _draw_canvas_enemy_intent(
     width: int,
     target: Enemy,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     if width < 12:
         return
     surface.fill_rect(x, y, width, 1, " ")
-    surface.draw_text(x, y, fit_text(_canvas_enemy_intent_label(target, frame), width))
+    surface.draw_text(x, y, fit_text(_canvas_enemy_intent_label(target, frame, lang=lang), width))
 
 
-def _canvas_enemy_intent_label(target: Enemy, frame: BattleFrame) -> str:
+def _canvas_enemy_intent_label(
+    target: Enemy,
+    frame: BattleFrame,
+    *,
+    lang: str,
+) -> str:
+    intent = _canvas_label("intent", lang)
     if not target.is_alive:
-        return "INTENT CLEARED"
+        return f"{intent} CLEARED"
     if target.find_status("status_silence") is not None:
-        return "INTENT SILENCED"
+        return f"{intent} SILENCED"
     if target.chant_charge_turns or target.chant_progress or frame.counter_clock or frame.counter_hint:
         total = max(1, target.chant_charge_turns)
         current = max(0, min(total, target.chant_progress))
         if current >= total:
-            return "INTENT RELEASE"
+            return f"{intent} RELEASE"
         if current > 0:
-            return f"INTENT CHANT {current}/{total}"
-        return "INTENT CHANT WATCH"
+            return f"{intent} CHANT {current}/{total}"
+        return f"{intent} CHANT WATCH"
     if target.atb >= 95:
-        return "INTENT STRIKE RDY"
+        return f"{intent} STRIKE RDY"
     if target.hp / max(1, target.max_hp) <= 0.3:
-        return "INTENT FALTER"
-    return "INTENT STRIKE"
+        return f"{intent} FALTER"
+    return f"{intent} STRIKE"
 
 
 def _draw_canvas_cast_meter(
@@ -719,25 +800,27 @@ def _draw_canvas_damage_rail(
     target: Enemy | None,
     record: TurnRecord | None,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     if width < 20:
         return
-    support_label = _canvas_support_rail_label(record, frame)
+    support_label = _canvas_support_rail_label(record, frame, lang=lang)
     if support_label:
         surface.draw_text(x, y, fit_text(support_label, width))
     elif _canvas_pain_damage(record) > 0:
-        surface.draw_text(x, y, fit_text(_canvas_pain_label(hero, record), width))
+        surface.draw_text(x, y, fit_text(_canvas_pain_label(hero, record, lang=lang), width))
     elif target is not None:
-        surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record), width))
+        surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record, lang=lang), width))
 
 
-def _canvas_wound_label(target: Enemy, record: TurnRecord | None) -> str:
+def _canvas_wound_label(target: Enemy, record: TurnRecord | None, *, lang: str) -> str:
+    label = _canvas_label("wound", lang)
     damage = _canvas_wound_damage(target, record)
     hp_text = f"{target.hp}/{target.max_hp}"
     state = _canvas_wound_state(target)
     if damage > 0:
-        return f"WOUND -{damage} {_canvas_wound_bar(target)} {hp_text} {state}"
-    return f"WOUND {_canvas_wound_bar(target)} {hp_text} {state}"
+        return f"{label} -{damage} {_canvas_wound_bar(target)} {hp_text} {state}"
+    return f"{label} {_canvas_wound_bar(target)} {hp_text} {state}"
 
 
 def _canvas_wound_damage(target: Enemy, record: TurnRecord | None) -> int:
@@ -764,11 +847,12 @@ def _canvas_wound_bar(target: Enemy) -> str:
     return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
-def _canvas_pain_label(hero: Hero, record: TurnRecord | None) -> str:
+def _canvas_pain_label(hero: Hero, record: TurnRecord | None, *, lang: str) -> str:
+    label = _canvas_label("pain", lang)
     damage = _canvas_pain_damage(record)
     hp_text = f"{hero.hp}/{hero.max_hp}"
     state = _canvas_pain_state(hero)
-    return f"PAIN -{damage} {_canvas_pain_bar(hero)} {hp_text} {state}"
+    return f"{label} -{damage} {_canvas_pain_bar(hero)} {hp_text} {state}"
 
 
 def _canvas_pain_damage(record: TurnRecord | None) -> int:
@@ -794,13 +878,15 @@ def _canvas_pain_bar(hero: Hero) -> str:
     return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
-def _canvas_support_rail_label(record: TurnRecord | None, frame: BattleFrame) -> str:
+def _canvas_support_rail_label(record: TurnRecord | None, frame: BattleFrame, *, lang: str) -> str:
+    support = _canvas_label("support", lang)
     if not _is_canvas_support_record(record):
         return ""
-    return f"SUPPORT {_canvas_support_token(frame)}"
+    return f"{support} {_canvas_support_token(frame)}"
 
 
-def _canvas_support_effect_label(record: TurnRecord | None, frame: BattleFrame) -> str:
+def _canvas_support_effect_label(record: TurnRecord | None, frame: BattleFrame, *, lang: str) -> str:
+    support = _canvas_label("support", lang)
     if not _is_canvas_support_record(record):
         return ""
     if record is not None and record.action is not None and record.action.type == "defend":
@@ -808,7 +894,7 @@ def _canvas_support_effect_label(record: TurnRecord | None, frame: BattleFrame) 
     elif record is not None:
         tag = _canvas_skill_action_tag(record, frame)
     else:
-        tag = "SUPPORT"
+        tag = support
     return f"{tag} {_canvas_support_token(frame)}"
 
 
@@ -924,28 +1010,30 @@ def _canvas_action_label(
     target: Enemy | None,
     *,
     hero: Hero,
+    lang: str,
 ) -> str:
+    action = _canvas_label("action", lang)
     if record is None:
-        return "ACTION WAIT"
+        return f"{action} WAIT"
     if record.side == "enemy":
-        return f"ACTION ENEMY {_canvas_enemy_action_tag(record, frame)}"
+        return f"{action} {_canvas_label('canvas_enemy', lang)} {_canvas_enemy_action_tag(record, frame)}"
     if record.action is None:
-        return "ACTION HERO CHECK"
+        return f"{action} HERO CHECK"
     action_type = str(record.action.type)
     target_code = _canvas_action_target_code(record, target, hero)
     if action_type == "cast_skill":
-        return f"ACTION {_canvas_skill_action_tag(record, frame)} -> {target_code}"
+        return f"{action} {_canvas_skill_action_tag(record, frame)} -> {target_code}"
     if action_type == "basic_attack":
-        return f"ACTION BASIC -> {target_code}"
+        return f"{action} BASIC -> {target_code}"
     if action_type == "defend":
-        return f"ACTION GUARD -> {target_code}"
+        return f"{action} GUARD -> {target_code}"
     if action_type == "observe":
-        return f"ACTION OBSERVE -> {target_code}"
+        return f"{action} OBSERVE -> {target_code}"
     if action_type == "change_stance":
-        return f"ACTION STANCE -> {target_code}"
+        return f"{action} STANCE -> {target_code}"
     if action_type == "use_item":
-        return f"ACTION ITEM -> {target_code}"
-    return f"ACTION {_canvas_action_token(action_type)} -> {target_code}"
+        return f"{action} ITEM -> {target_code}"
+    return f"{action} {_canvas_action_token(action_type)} -> {target_code}"
 
 
 def _canvas_enemy_action_tag(record: TurnRecord, frame: BattleFrame) -> str:
@@ -1038,14 +1126,15 @@ def _draw_canvas_plan_ribbon(
     y: int,
     width: int,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     if width < 16:
         return
-    surface.draw_text(x, y, fit_text(_canvas_plan_label(frame), width))
+    surface.draw_text(x, y, fit_text(_canvas_plan_label(frame, lang=lang), width))
 
 
-def _canvas_plan_label(frame: BattleFrame) -> str:
-    return f"PLAN {_canvas_plan_mode(frame)} | {_canvas_plan_source(frame)}"
+def _canvas_plan_label(frame: BattleFrame, *, lang: str) -> str:
+    return f"{_canvas_label('plan', lang)} {_canvas_plan_mode(frame)} | {_canvas_plan_source(frame)}"
 
 
 def _canvas_plan_mode(frame: BattleFrame) -> str:
@@ -1324,11 +1413,16 @@ def _draw_canvas_delta_ribbon(
     width: int,
     frame: BattleFrame,
     state: BattleState,
+    lang: str,
 ) -> None:
     if not frame.resource_deltas:
         return
     parts = [_compact_canvas_delta(delta.label, delta.text, state) for delta in frame.resource_deltas[:2]]
-    surface.draw_text(x, y, fit_text("DELTA " + " ".join(parts), width))
+    surface.draw_text(
+        x,
+        y,
+        fit_text(f"{_canvas_label('delta', lang)} " + " ".join(parts), width),
+    )
 
 
 def _compact_canvas_delta(label_text: str, delta_text: str, state: BattleState) -> str:
@@ -1392,11 +1486,12 @@ def _draw_canvas_effect_lane(
     width: int,
     record: TurnRecord | None,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     glyphs = get_glyph_set("unicode")
     surface.fill_rect(x, y, width, 3, " ")
     surface.fill_rect(x, y + 2, width, 1, glyphs.light)
-    lane = _block_effect_lane(record, frame, width)
+    lane = _block_effect_lane(record, frame, width, lang=lang)
     for idx, row in enumerate(lane[:6]):
         surface.draw_text(x, y + idx, fit_text(row, width))
 
@@ -1408,9 +1503,10 @@ def _draw_canvas_beat_strip(
     width: int,
     record: TurnRecord | None,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     glyphs = get_glyph_set("unicode")
-    labels = _canvas_beat_labels(record, frame)
+    labels = _canvas_beat_labels(record, frame, lang)
     segment_gap = 1
     segment_width = max(7, (width - segment_gap * 2) // 3)
     for idx, label_text in enumerate(labels):
@@ -1428,6 +1524,7 @@ def _draw_canvas_tempo_rail(
     state: BattleState,
     target: Enemy | None,
     frame: BattleFrame,
+    lang: str,
 ) -> None:
     """Draw a compact ATB pressure rail inside the battle canvas."""
     if width < 20:
@@ -1435,19 +1532,30 @@ def _draw_canvas_tempo_rail(
     hero_atb = max(0, min(100, int(state.hero.atb)))
     enemy_atb = max(0, min(100, int(target.atb))) if target is not None else 0
     state_label = _canvas_tempo_state(state, target, frame)
-    line = _canvas_tempo_line(hero_atb, enemy_atb, state_label, width)
+    line = _canvas_tempo_line(hero_atb, enemy_atb, state_label, width, lang=lang)
     surface.draw_text(x, y, line)
 
 
-def _canvas_tempo_line(hero_atb: int, enemy_atb: int, state_label: str, width: int) -> str:
-    candidates = (
-        ("TEMPO RAIL", 8, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-        ("TEMPO RAIL", 4, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-        ("TEMPO RAIL", 2, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-        ("RAIL", 2, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-        ("RAIL", 1, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-        ("T", 1, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
-    )
+def _canvas_tempo_line(
+    hero_atb: int,
+    enemy_atb: int,
+    state_label: str,
+    width: int,
+    *,
+    lang: str,
+) -> str:
+    prefix = _canvas_label("tempo_rail", lang)
+    hero_label = f"H{hero_atb:03d}"
+    enemy_label = f"E{enemy_atb:03d}"
+    compact_prefix = "RAIL" if lang == "en" else prefix
+    candidates = [
+        (prefix, 8, hero_label, enemy_label),
+        (prefix, 4, hero_label, enemy_label),
+        (compact_prefix, 2, hero_label, enemy_label),
+        (prefix, 2, hero_label, enemy_label),
+        (compact_prefix, 1, hero_label, enemy_label),
+        ("T", 1, hero_label, enemy_label),
+    ]
     for prefix, bar_width, hero_label, enemy_label in candidates:
         line = (
             f"{prefix} {hero_label} {_canvas_tempo_bar(hero_atb, bar_width)} "
@@ -1493,6 +1601,7 @@ def _draw_canvas_enemy_stack(
     width: int,
     state: BattleState,
     target: Enemy | None,
+    lang: str,
 ) -> None:
     """Draw compact HP/ATB pips for the visible enemy pack."""
     if width < 14 or not state.enemies:
@@ -1504,7 +1613,7 @@ def _draw_canvas_enemy_stack(
     if remaining:
         hp_parts.append(f"+{remaining}")
         atb_parts.append(f"+{remaining}")
-    surface.draw_text(x, y, fit_text("STACK " + " ".join(hp_parts), width))
+    surface.draw_text(x, y, fit_text(f"{_canvas_label('stack', lang)} " + " ".join(hp_parts), width))
     surface.draw_text(x, y + 1, fit_text("ATB   " + " ".join(atb_parts), width))
 
 
@@ -1556,6 +1665,7 @@ def _draw_canvas_skill_rail(
     y: int,
     width: int,
     hero: Hero,
+    lang: str,
 ) -> None:
     if width < 12 or not hero.skills:
         return
@@ -1564,7 +1674,7 @@ def _draw_canvas_skill_rail(
     hidden = len(hero.skills) - len(chips)
     if hidden > 0 and width >= 28:
         chips.append(f"+{hidden}")
-    surface.draw_text(x, y, fit_text("SKILL " + " ".join(chips), width))
+    surface.draw_text(x, y, fit_text(f"{_canvas_label('skill', lang)} " + " ".join(chips), width))
 
 
 def _canvas_skill_chip(skill, current_mp: int) -> str:
@@ -1591,16 +1701,17 @@ def _canvas_skill_code(skill) -> str:
     return source[:3].upper()
 
 
-def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame) -> tuple[str, str, str]:
+def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame, lang: str) -> tuple[str, str, str]:
+    judge = _canvas_label("judge", lang)
     if record is None:
-        return ("SELECT", "WAIT", "JUDGE")
+        return ("SELECT", "WAIT", judge)
     if frame.counter_hint and "[MISSED]" in frame.counter_hint:
-        return ("SELECT", "MISS", "JUDGE")
+        return ("SELECT", "MISS", judge)
     if frame.counter_hint or frame.counter_clock:
-        return ("SELECT", "WINDOW", "JUDGE")
+        return ("SELECT", "WINDOW", judge)
     if frame.event_banner in {"CLIMAX HIT", "KILL CONFIRMED", "BOSS DOWN"}:
-        return ("SELECT", "CLIMAX", "JUDGE")
-    return ("SELECT", "IMPACT", "JUDGE")
+        return ("SELECT", "CLIMAX", judge)
+    return ("SELECT", "IMPACT", judge)
 
 
 def _canvas_beat_fill(idx: int, record: TurnRecord | None, frame: BattleFrame, glyphs) -> str:
@@ -1615,7 +1726,12 @@ def _canvas_beat_fill(idx: int, record: TurnRecord | None, frame: BattleFrame, g
     return glyphs.mid if idx == 0 else glyphs.solid
 
 
-def _block_effect_lane(record: TurnRecord | None, frame: BattleFrame, width: int) -> list[str]:
+def _block_effect_lane(
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    width: int,
+    lang: str = "en",
+) -> list[str]:
     if record is None:
         return block_effect_rows("wait", "░░░ waiting for first echo ░░░", width)
     damage = 0
@@ -1634,7 +1750,7 @@ def _block_effect_lane(record: TurnRecord | None, frame: BattleFrame, width: int
             return block_effect_rows("break", "CHANT BROKEN", width)
         return block_effect_rows("enemy_strike", f"STRIKE -{amount} HP", width)
     if record.action is not None:
-        support_label = _canvas_support_effect_label(record, frame)
+        support_label = _canvas_support_effect_label(record, frame, lang=lang)
         if support_label:
             return block_effect_rows("guard", support_label, width)
         if record.action.type == "basic_attack":
@@ -1718,10 +1834,13 @@ def _stage_director_line(
 ) -> str:
     """Summarize the current battle beat as a compact readable director strip."""
     threat = _director_threat(state, target, frame)
-    tempo = _director_tempo(state, target)
+    tempo = _director_tempo(state, target, lang=lang)
     focus = _director_focus(state, target, frame, lang=lang)
     if lang == "zh":
-        body = f"导演 | 威胁 {threat} | 节奏 {tempo} | 焦点 {focus}"
+        tempo_display = tempo
+        if "就绪" in tempo:
+            tempo_display = "P:RDY"
+        body = f"导演 | 威胁 {threat} | 节奏 {tempo_display} | 焦点 {focus}"
     else:
         body = f"DIRECTOR | THREAT {threat} | TEMPO {tempo} | FOCUS {focus}"
     if not framed:
@@ -1735,10 +1854,13 @@ def _stage_director_canvas_line(
     frame: BattleFrame,
     *,
     width: int,
+    lang: str,
 ) -> str:
     threat = _director_threat(state, target, frame)
-    tempo = _director_tempo(state, target).replace("HERO READY", "HERO_RDY").replace("ENEMY READY", "ENEMY_RDY")
-    focus = _director_focus(state, target, frame, lang="en")
+    tempo = _director_tempo(state, target, lang=lang).replace(
+        "HERO READY", "HERO_RDY"
+    ).replace("ENEMY READY", "ENEMY_RDY")
+    focus = _director_focus(state, target, frame, lang=lang)
     focus = {
         "interrupt chant": "INTERRUPT",
         "review resources": "REVIEW",
@@ -1746,7 +1868,13 @@ def _stage_director_canvas_line(
         "finish target": "FINISH",
         "stabilize HP": "STABILIZE",
         "keep tempo": "TEMPO",
-    }.get(focus, focus.upper()[:9])
+        "复盘资源": "REVIEW" if lang == "en" else "复盘",
+        "打断咏唱": "INTERRUPT" if lang == "en" else "打断",
+        "压制完成": "LANDED" if lang == "en" else "压制",
+        "收割目标": "FINISH" if lang == "en" else "收割",
+        "稳住血线": "STABILIZE" if lang == "en" else "稳线",
+        "保持节奏": "TEMPO" if lang == "en" else "节奏",
+    }.get(focus, focus.upper()[:9] if lang == "en" else focus[:4])
     if width < 60:
         short_threat = {
             "WINDOW": "WIN",
@@ -1756,15 +1884,31 @@ def _stage_director_canvas_line(
             "HIGH": "HIGH",
             "LOW": "LOW",
         }.get(threat, threat[:4])
-        short_tempo = "RDY" if "RDY" in tempo or "READY" in tempo else tempo.replace("HERO ", "H").replace("ENEMY ", "E")
+        short_tempo = (
+            "RDY"
+            if any(token in tempo for token in ("RDY", "READY", "就绪"))
+            else tempo.replace("HERO ", "H").replace("ENEMY ", "E")
+        )
         short_focus = {
-            "INTERRUPT": "INT",
-            "STABILIZE": "STAB",
-            "FINISH": "FIN",
-            "LANDED": "HIT",
-            "REVIEW": "REV",
-        }.get(focus, focus[:4])
+            "INTERRUPT": "INT" if lang == "en" else "断",
+            "STABILIZE": "STAB" if lang == "en" else "稳",
+            "FINISH": "FIN" if lang == "en" else "收",
+            "LANDED": "HIT" if lang == "en" else "压",
+            "REVIEW": "REV" if lang == "en" else "复",
+            "TEMPO": "TEM" if lang == "en" else "节",
+        }.get(focus, focus[:4] if isinstance(focus, str) else "")
+        if lang == "zh":
+            return fit_text(
+                f"{_canvas_label('director', lang)} T:{short_threat} P:{short_tempo} F:{short_focus}",
+                width,
+            )
         return fit_text(f"DIRECTOR T:{short_threat} P:{short_tempo} F:{short_focus}", width)
+    if lang == "zh":
+        return fit_text(
+            f"{_canvas_label('director', lang)} | {_canvas_label('threat', lang)} {threat} | "
+            f"{_canvas_label('tempo', lang)} {tempo} | {_canvas_label('focus', lang)} {focus}",
+            width,
+        )
     return fit_text(f"DIRECTOR | THREAT {threat} | TEMPO {tempo} | FOCUS {focus}", width)
 
 
@@ -1783,7 +1927,15 @@ def _director_threat(state: BattleState, target: Enemy | None, frame: BattleFram
     return "LOW"
 
 
-def _director_tempo(state: BattleState, target: Enemy | None) -> str:
+def _director_tempo(state: BattleState, target: Enemy | None, *, lang: str = "en") -> str:
+    if lang == "zh":
+        if state.hero.atb >= 100:
+            return "英雄 就绪"
+        if target is not None and target.atb >= 100:
+            return "敌方 就绪"
+        if target is not None and target.atb >= 85:
+            return f"敌方 {target.atb}/100"
+        return f"英雄 {min(100, state.hero.atb)}/100"
     if state.hero.atb >= 100:
         return "HERO READY"
     if target is not None and target.atb >= 100:

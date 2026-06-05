@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Build one Agent. Tune the Prompt. Watch the dungeon judge it.</strong><br>
-  <sub>像 Steam 页面一样先说清楚：这是一款黑暗终端 AI 肉鸽，不是工程日志，也不是聊天机器人外壳。</sub>
+  <sub>A dark terminal AI roguelike about preparation, pressure, and watching your Prompt survive contact with local rules.</sub>
 </p>
 
 <p align="center">
@@ -12,6 +12,9 @@
 </p>
 
 <table>
+  <tr>
+    <th colspan="4">Language / 语言</th>
+  </tr>
   <tr>
     <td align="center"><a href="README.zh.md"><strong>中文完整介绍</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>Read the English pitch</sub></a></td>
@@ -24,15 +27,33 @@
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
 </p>
 
+## 游戏速览 / Storefront Snapshot
+
+**Ouro Agent: Prompt Legend** is a playable CLI roguelike where you prepare one
+hero Agent before the fight, then watch it read the battle, spend resources,
+interrupt rituals, make mistakes, and leave behind a trace you can learn from.
+
+| Player Promise | What You Actually Do | Why It Is Different |
+|----------------|----------------------|---------------------|
+| Train the Prompt, then watch the dungeon answer. | Pick a hero, Build, equipment, affixes, Prompt style, and tactical bias before combat. | The model chooses only structured actions; the local engine owns legality, damage, rewards, defeat, and victory. |
+| Every fight is readable. | Watch a left-vs-right TUI battle stage with actor sprites, projectile lane, VOX/ENM battle barks, resource deltas, intent, and judge result. | It is not a text log pretending to be a game; the combat state is framed as a low-resolution terminal stage. |
+| Every failure becomes a next run. | Use the battle report, Codex progress, death history, and batch balance tools to tune the next build. | Mock mode works offline with no API key, while real providers remain optional. |
+
+```bash
+pip install -e .
+ouro --lang zh demo --seed 1
+ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
+```
+
 ## 先看游戏画面 / Media Gallery
 
 <a id="media-gallery--real-tui-captures"></a>
 
 ### Real TUI Captures
 
-这些是当前 CLI 输出整理成的 README media captures，不是概念图。对应命令可用
+Screenshots below are captured from reproducible CLI output, not concept art. 对应命令可用
 `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现；SVG 资产保存在 `examples/`，首页先展示游戏画面，而不是让玩家先读工程日志。
+复现；SVG 资产保存在 `examples/`，首页先展示游戏画面、战斗节奏和复盘卖点。
 
 <table>
   <tr>
@@ -74,7 +95,7 @@ BATTLE TURN MAP
 
 ## 中文介绍
 
-### 像 Steam 页面一样先说清楚：这到底玩什么
+### Build before the fight. Watch the Agent answer under pressure.
 
 **暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
 而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
