@@ -170,8 +170,9 @@ def test_status_short_name_keeps_combat_screen_readable():
     assert format_status_short(StatusEffect("status_corruption", stacks=1, duration=1)) == "CRP corrupt(1)"
     assert (
         format_status_detail(StatusEffect("status_silence", stacks=2, duration=1))
-        == "SLN silence(2) id=status_silence dur=1"
+        == "SLN silence x2 / 1t"
     )
+    assert format_status_detail(StatusEffect("status_custom_mark", stacks=1, duration=3)) == "CUS custom mark x1 / 3t"
 
 
 def test_layout_width_uses_visual_width(bundle):

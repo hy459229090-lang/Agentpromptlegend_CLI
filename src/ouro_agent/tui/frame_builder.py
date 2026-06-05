@@ -77,12 +77,13 @@ STATUS_SHORT_NAMES: dict[str, tuple[str, str]] = {
 
 
 def format_status_short(status: StatusEffect) -> str:
-    code, name = STATUS_SHORT_NAMES.get(status.id, (_fallback_status_code(status.id), status.id))
+    code, name = _status_display(status.id)
     return f"{code} {name}({status.stacks})"
 
 
 def format_status_detail(status: StatusEffect) -> str:
-    return f"{format_status_short(status)} id={status.id} dur={status.duration}"
+    code, name = _status_display(status.id)
+    return f"{code} {name} x{status.stacks} / {status.duration}t"
 
 
 def build_battle_frame(state: BattleState, record: TurnRecord | None) -> BattleFrame:
@@ -627,3 +628,14 @@ def _skill_name(hero: Hero, skill_id: str) -> str:
 def _fallback_status_code(status_id: str) -> str:
     cleaned = status_id.replace("status_", "")
     return cleaned[:3].upper()
+
+
+def _fallback_status_name(status_id: str) -> str:
+    return status_id.replace("status_", "").replace("_", " ")
+
+
+def _status_display(status_id: str) -> tuple[str, str]:
+    return STATUS_SHORT_NAMES.get(
+        status_id,
+        (_fallback_status_code(status_id), _fallback_status_name(status_id)),
+    )

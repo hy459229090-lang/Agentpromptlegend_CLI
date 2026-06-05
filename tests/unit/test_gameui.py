@@ -609,8 +609,10 @@ def test_selectable_surfaces_share_card_rules_and_status_details(bundle):
     assert "status_shield" not in screen
     assert "status_corruption" not in screen
     assert "Status Details:" in report
-    assert "id=status_shield" in report
-    assert "id=status_corruption" in report
+    assert "HERO SHD shield x2 / 3t" in report
+    assert "[c] CRP corrupt x1 / 2t" in report
+    assert "id=status_shield" not in report
+    assert "id=status_corruption" not in report
 
 
 def test_core_screens_have_stable_width_and_required_fields(bundle):
