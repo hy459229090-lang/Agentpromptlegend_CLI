@@ -242,6 +242,9 @@ def test_unicode_battle_screen_canvas_width_matrix(bundle, width):
     assert "SELECT" in screen
     assert "IMPACT" in screen
     assert "HIT -16 HP SLN" in screen
+    assert "ACTION HEX -> c" in screen
+    assert "ACTION Hex Seal" not in screen
+    assert "Hex Seal -> Hungry Cultist" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= width
 
@@ -275,7 +278,8 @@ def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "PLAN CONTROL | PROMPT HIT" in action
-    assert "ACTION Hex Seal" in action
+    assert "ACTION HEX -> c" in action
+    assert "Hex Seal -> Hungry Cultist" in action
     assert "JUDGE  VALID | -16 HP" in action
 
     enemy = state.enemies[0]
@@ -303,7 +307,8 @@ def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "PLAN ANSWER | COUNTER" in counter
-    assert "ACTION Hungry Cultist" in counter
+    assert "ACTION ENEMY CHARGE" in counter
+    assert "Hungry Cultist chant_charge" in counter
     assert "JUDGE  LOCAL" in counter
 
     for screen in (waiting, action, counter):
@@ -342,7 +347,8 @@ def test_unicode_battle_screen_draws_beat_badge_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "BEAT T009 HERO" in action
-    assert "ACTION Hex Seal" in action
+    assert "ACTION HEX -> c" in action
+    assert "Hex Seal -> Hungry Cultist" in action
     assert "JUDGE  VALID | -16 HP" in action
 
     enemy = state.enemies[0]
@@ -368,7 +374,8 @@ def test_unicode_battle_screen_draws_beat_badge_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "BEAT T010 ENEMY" in enemy_turn
-    assert "ACTION Hungry Cultist" in enemy_turn
+    assert "ACTION ENEMY STRIKE" in enemy_turn
+    assert "Hungry Cultist attack" in enemy_turn
     assert "JUDGE  LOCAL" in enemy_turn
 
     for screen in (waiting, action, enemy_turn):
@@ -628,6 +635,8 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
     assert "CUT " in screen
     assert "FULL" in screen
     assert "CD3" in screen
+    assert "ACTION ENEMY CHARGE" in screen
+    assert "ACTION Black Candle Acolyte cha..." not in screen
     assert "COUNTER CLOCK" in screen
     assert screen.count("COUNTER CLOCK") == 1
     assert "THE ECHO ALTAR / COUNTER WINDOW" in screen
@@ -782,7 +791,7 @@ def test_unicode_battle_screen_draws_status_chips_inside_canvas(bundle, width):
     assert "FX SLN1 CRP2" in screen
     assert "TEMPO RAIL" in screen or "RAIL" in screen
     assert "STACK" in screen
-    assert "ACTION Hex Seal" in screen
+    assert "ACTION HEX -> c" in screen
     assert "JUDGE  VALID | -16 HP" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= width
@@ -813,7 +822,7 @@ def test_unicode_battle_screen_draws_skill_rail_inside_canvas(bundle, width):
     assert "SKILL STG* HEX4" in screen
     if width >= 100:
         assert "FOC*" in screen
-    assert "ACTION Hex Seal" in screen
+    assert "ACTION HEX -> c" in screen
     assert "JUDGE  VALID | -16 HP" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= width
@@ -922,7 +931,7 @@ def test_unicode_battle_screen_draws_enemy_intent_inside_canvas(bundle, width):
     assert "INTENT CHANT 1/2" in chanting
     assert "THREAT WINDOW 1/2" in chanting
     assert "RETICLE [WINDOW]" in chanting
-    assert "ACTION Hex Seal" in chanting
+    assert "ACTION HEX -> k" in chanting
     assert "JUDGE  VALID | -16 HP" in chanting
 
     target.atb = 100
@@ -1092,7 +1101,7 @@ def test_unicode_battle_screen_draws_tempo_rail_inside_canvas(bundle, width):
     assert "WIN" in screen
     assert "██" in screen
     assert "SEAL -19 HP" in screen
-    assert "ACTION Hex Seal" in screen
+    assert "ACTION HEX -> K" in screen
     assert "JUDGE  VALID | -19 HP" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= width

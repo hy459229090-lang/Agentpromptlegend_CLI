@@ -472,7 +472,7 @@ def _render_canvas_duel_panel(
         last_record,
     )
     _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
-    action = fit_text(f"ACTION {frame.action_label}", center_w - 2)
+    action = fit_text(_canvas_action_label(frame, last_record, target, hero=state.hero), center_w - 2)
     judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
@@ -742,6 +742,105 @@ def _canvas_counter_ready_label(text: str) -> str:
     if lower.endswith("ready"):
         return "READY"
     return "CHECK"
+
+
+def _canvas_action_label(
+    frame: BattleFrame,
+    record: TurnRecord | None,
+    target: Enemy | None,
+    *,
+    hero: Hero,
+) -> str:
+    if record is None:
+        return "ACTION WAIT"
+    if record.side == "enemy":
+        return f"ACTION ENEMY {_canvas_enemy_action_tag(record, frame)}"
+    if record.action is None:
+        return "ACTION HERO CHECK"
+    action_type = str(record.action.type)
+    target_code = _canvas_action_target_code(record, target, hero)
+    if action_type == "cast_skill":
+        return f"ACTION {_canvas_skill_action_tag(record, frame)} -> {target_code}"
+    if action_type == "basic_attack":
+        return f"ACTION BASIC -> {target_code}"
+    if action_type == "defend":
+        return f"ACTION GUARD -> {target_code}"
+    if action_type == "observe":
+        return f"ACTION OBSERVE -> {target_code}"
+    if action_type == "change_stance":
+        return f"ACTION STANCE -> {target_code}"
+    if action_type == "use_item":
+        return f"ACTION ITEM -> {target_code}"
+    return f"ACTION {_canvas_action_token(action_type)} -> {target_code}"
+
+
+def _canvas_enemy_action_tag(record: TurnRecord, frame: BattleFrame) -> str:
+    action_type = str((record.enemy_action or {}).get("type", "basic_attack"))
+    if action_type == "chant_charge":
+        return "CHARGE"
+    if action_type == "chant_release":
+        return "RELEASE"
+    if action_type in {"attack", "basic_attack"}:
+        return "STRIKE"
+    if action_type == "silenced" or "silenced" in frame.action_label.lower():
+        return "SILENCED"
+    return _canvas_action_token(action_type)
+
+
+def _canvas_skill_action_tag(record: TurnRecord, frame: BattleFrame) -> str:
+    skill_id = ""
+    if record.action is not None and record.action.skill_id:
+        skill_id = record.action.skill_id
+    known = {
+        "skill_shadow_sting": "STING",
+        "skill_hex_seal": "HEX",
+        "skill_corrupted_focus": "FOCUS",
+        "skill_tower_brace": "BRACE",
+        "skill_ember_punish": "PUNISH",
+        "skill_ash_glare": "GLARE",
+        "skill_pierce_string": "PIERCE",
+        "skill_hook_break": "BREAK",
+        "skill_eclipse_step": "STEP",
+        "skill_mire_needle": "NEEDLE",
+        "skill_omen_vial": "VIAL",
+        "skill_sinking_veil": "VEIL",
+        "skill_grave_nail": "NAIL",
+        "skill_crank_charge": "CRANK",
+        "skill_burial_engine": "ENGINE",
+        "skill_bell_echo": "ECHO",
+        "skill_silent_hymn": "HYMN",
+        "skill_returning_chime": "CHIME",
+    }
+    if skill_id in known:
+        return known[skill_id]
+    if skill_id:
+        return _canvas_action_token(skill_id.removeprefix("skill_"))
+    return _canvas_action_token(frame.action_label.split("->", 1)[0])
+
+
+def _canvas_action_target_code(record: TurnRecord, target: Enemy | None, hero: Hero) -> str:
+    target_ids: list[str] = []
+    if record.action is not None and record.action.targets:
+        target_ids.extend(str(target_id) for target_id in record.action.targets)
+    if not target_ids and record.judge is not None and record.judge.target_ids:
+        target_ids.extend(str(target_id) for target_id in record.judge.target_ids)
+    if target_ids and hero.id in target_ids:
+        return "HERO"
+    if target is not None:
+        return target.short_glyph
+    if target_ids and target_ids[0].startswith("hero_"):
+        return "HERO"
+    return "FIELD"
+
+
+def _canvas_action_token(value: str) -> str:
+    parts = value.replace("-", "_").replace(" ", "_").split("_")
+    words = [part for part in parts if part and part.lower() not in {"skill", "action"}]
+    if not words:
+        return "CHECK"
+    if len(words) == 1:
+        return words[0][:8].upper()
+    return "".join(word[:1].upper() for word in words)[:8]
 
 
 def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame) -> None:
