@@ -648,6 +648,9 @@ def test_cli_batch_prompt_style_is_reported(content_root, isolated_home, capsys)
 
     assert rc == 0
     out = capsys.readouterr().out
+    assert "Hero: Astia" in out
+    assert "Enemies: Hungry Cultist, Black Candle Acolyte" in out
+    assert "skill_" not in out
     assert "Prompt style: control" in out
     assert "Prompt Impact:" in out
     assert "Control template" in out
@@ -712,7 +715,10 @@ def test_norn_seed7_boss_batch_is_explained_and_within_budget(content_root, isol
     assert "Tick spread: min 138 / p50 138 / p90 138 / max 138" in out
     assert "Timeouts: 0" in out
     assert "Counter windows: 5/5 answered, 0 missed" in out
-    assert "skill_tower_brace: 5" in out
+    assert "Hero: Norn" in out
+    assert "Enemies: Black Candle High Priest" in out
+    assert "Tower Brace: 5" in out
+    assert "skill_tower_brace" not in out
 
 
 def test_shop_strategy_change_is_visible_in_next_battle_trace(bundle, tmp_path):

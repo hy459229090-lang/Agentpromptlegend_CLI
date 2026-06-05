@@ -212,12 +212,22 @@ def test_batch_run_produces_reproducible_results(bundle):
     summary = "\n".join(result.summary("en"))
     assert result.build_name == "Black Candle Interrupt"
     assert result.enemy_tier_counts == {"trace": 2}
+    assert result.hero_id == "hero_shadow_apprentice"
+    assert result.enemy_ids == ("enemy_hungry_cultist", "enemy_black_candle_acolyte")
+    assert "Hero: Astia" in summary
+    assert "Enemies: Hungry Cultist, Black Candle Acolyte" in summary
     assert "Build: Black Candle Interrupt" in summary
     assert "Enemy tiers: trace=2" in summary
-    assert (
-        "Group key: hero=hero_shadow_apprentice | "
-        "build=Black Candle Interrupt"
-    ) in summary
+    assert "Group key: hero=Astia | build=Black Candle Interrupt" in summary
+    assert "Skill Usage Detail:" in summary
+    assert "Shadow Sting:" in summary
+    assert "Hex Seal:" in summary
+    assert "Corrupted Focus:" in summary
+    assert "hero_shadow_apprentice" not in summary
+    assert "enemy_hungry_cultist" not in summary
+    assert "hero_" not in summary
+    assert "enemy_" not in summary
+    assert "skill_" not in summary
     assert "Tempo Diagnostics:" in summary
     assert "BALANCE TUNING BOARD" in summary
     assert "[WIN]" in summary

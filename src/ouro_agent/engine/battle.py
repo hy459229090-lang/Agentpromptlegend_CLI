@@ -463,7 +463,14 @@ def generate_battle_report(
         (record.prompt_style for record in records if record.prompt_style),
         None,
     )
-    prompt_impacts = analyze_prompt_impacts(records, language=state.language)
+    enemy_display_names = {enemy.id: enemy.name for enemy in state.enemies}
+    prompt_impacts = _display_prompt_impacts(
+        analyze_prompt_impacts(records, language=state.language),
+        skill_display_names=skill_display_names,
+        enemy_display_names=enemy_display_names,
+        hero_id=state.hero.id,
+        hero_name=state.hero.name,
+    )
     tempo_budget = classify_tempo_budget(state)
     tempo_outlier_reason = classify_tempo_outlier(
         state,
@@ -508,6 +515,33 @@ def generate_battle_report(
         prompt_impacts=prompt_impacts,
         skill_display_names=skill_display_names,
     )
+
+
+def _display_prompt_impacts(
+    impacts: tuple[str, ...],
+    *,
+    skill_display_names: dict[str, str],
+    enemy_display_names: dict[str, str],
+    hero_id: str,
+    hero_name: str,
+) -> tuple[str, ...]:
+    display_names = {
+        **skill_display_names,
+        **enemy_display_names,
+        hero_id: hero_name,
+    }
+    return tuple(_replace_display_ids(impact, display_names) for impact in impacts)
+
+
+def _replace_display_ids(text: str, display_names: dict[str, str]) -> str:
+    result = text
+    for stable_id, display_name in sorted(
+        display_names.items(),
+        key=lambda item: len(item[0]),
+        reverse=True,
+    ):
+        result = result.replace(stable_id, display_name)
+    return result
 
 
 @dataclass
@@ -864,6 +898,9 @@ def run_mock_battle(
 class BatchResult:
     hero_id: str
     enemy_ids: tuple[str, ...]
+    hero_display_name: str = ""
+    enemy_display_names: dict[str, str] = field(default_factory=dict)
+    skill_display_names: dict[str, str] = field(default_factory=dict)
     build_name: str = ""
     build_stage_badge: str = ""
     enemy_tier_counts: dict[str, int] = field(default_factory=dict)
@@ -945,9 +982,18 @@ class BatchResult:
         return ", ".join(f"{tier}={count}" for tier, count in ordered)
 
     @property
+    def hero_text(self) -> str:
+        return self.hero_display_name or self.hero_id
+
+    @property
+    def enemy_text(self) -> str:
+        names = [self.enemy_display_names.get(enemy_id, enemy_id) for enemy_id in self.enemy_ids]
+        return ", ".join(names)
+
+    @property
     def group_key_text(self) -> str:
         return (
-            f"hero={self.hero_id} | "
+            f"hero={self.hero_text} | "
             f"build={self.build_text} | "
             f"tier={self.enemy_tier_text}"
         )
@@ -1078,7 +1124,7 @@ class BatchResult:
     def prompt_impact_counter(self) -> Counter:
         counter: Counter = Counter()
         for report in self.reports:
-            counter.update(report.prompt_impacts)
+            counter.update(self._display_prompt_impact(impact) for impact in report.prompt_impacts)
         return counter
 
     def summary(self, language: str = "en") -> list[str]:
@@ -1092,15 +1138,15 @@ class BatchResult:
         lines.append("")
 
         hero_label = {
-            "en": f"Hero: {self.hero_id}",
-            "zh": f"英雄: {self.hero_id}",
-        }.get(language, f"Hero: {self.hero_id}")
+            "en": f"Hero: {self.hero_text}",
+            "zh": f"英雄: {self.hero_text}",
+        }.get(language, f"Hero: {self.hero_text}")
         lines.append(hero_label)
 
         enemy_label = {
-            "en": f"Enemies: {', '.join(self.enemy_ids)}",
-            "zh": f"敌人: {', '.join(self.enemy_ids)}",
-        }.get(language, f"Enemies: {', '.join(self.enemy_ids)}")
+            "en": f"Enemies: {self.enemy_text}",
+            "zh": f"敌人: {self.enemy_text}",
+        }.get(language, f"Enemies: {self.enemy_text}")
         lines.append(enemy_label)
         build_label = {
             "en": f"Build: {self.build_text}",
@@ -1341,7 +1387,7 @@ class BatchResult:
             }.get(language, "Skill Usage Detail:")
             lines.append(skill_header)
             for skill_id, count in skill_counter.most_common(10):
-                lines.append(f"  {skill_id}: {count}")
+                lines.append(f"  {self._skill_display_name(skill_id)}: {count}")
             lines.append("")
 
         damage_header = {
@@ -1371,7 +1417,7 @@ class BatchResult:
             }.get(language, "Defeat Causes:")
             lines.append(defeat_cause)
             for enemy_id, count in killed_by.most_common(5):
-                lines.append(f"  {enemy_id}: {count}")
+                lines.append(f"  {self.enemy_display_names.get(enemy_id, enemy_id)}: {count}")
 
         failure_reasons = self.failure_reason_counter
         advice = self.next_run_advice_counter
@@ -1400,6 +1446,19 @@ class BatchResult:
                     lines.append(f"    {count}x {line}")
 
         return lines
+
+    def _skill_display_name(self, skill_id: str) -> str:
+        return self.skill_display_names.get(skill_id, skill_id)
+
+    def _display_prompt_impact(self, impact: str) -> str:
+        return _replace_display_ids(
+            impact,
+            {
+                **self.skill_display_names,
+                **self.enemy_display_names,
+                self.hero_id: self.hero_text,
+            },
+        )
 
     def _balance_tuning_board(self, language: str) -> list[str]:
         action = self._balance_tuning_action(language)
@@ -1554,10 +1613,22 @@ def run_batch(
     hero_data = bundle.get_hero(hero_id)
     build = resolve_build(hero_data, bundle)
     progress = build.calculate_progress(bundle)
+    hero_display_name = hero_data.display_name.get(language)
+    enemy_display_names = {
+        eid: bundle.get_enemy(eid).display_name.get(language)
+        for eid in enemy_ids
+    }
+    skill_display_names = {
+        sid: bundle.get_skill(sid).display_name.get(language)
+        for sid in hero_data.skills
+    }
     enemy_tiers = Counter(bundle.get_enemy(eid).tier for eid in enemy_ids)
     result = BatchResult(
         hero_id=hero_id,
         enemy_ids=tuple(enemy_ids),
+        hero_display_name=hero_display_name,
+        enemy_display_names=enemy_display_names,
+        skill_display_names=skill_display_names,
         build_name=build.archetype(language),
         build_stage_badge=progress.stage.badge,
         enemy_tier_counts=dict(enemy_tiers),

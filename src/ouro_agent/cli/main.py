@@ -1286,6 +1286,11 @@ def _cmd_batch(args: argparse.Namespace) -> int:
 
     hero_id = args.hero or DEFAULT_HERO_ID
     enemy_ids = list(args.enemies) or DEFAULT_ENEMY_IDS
+    hero_name = bundle.get_hero(hero_id).display_name.get(lang)
+    enemy_names = [
+        bundle.get_enemy(enemy_id).display_name.get(lang)
+        for enemy_id in enemy_ids
+    ]
 
     def _progress(current: int, total: int) -> None:
         if not args.quiet:
@@ -1297,7 +1302,9 @@ def _cmd_batch(args: argparse.Namespace) -> int:
                 sys.stdout.write("\n")
 
     if not args.quiet:
-        sys.stdout.write(f"Running {args.count} battles with {hero_id} vs {', '.join(enemy_ids)}\n")
+        sys.stdout.write(
+            f"Running {args.count} battles with {hero_name} vs {', '.join(enemy_names)}\n"
+        )
         sys.stdout.write(f"Base seed: {args.seed}\n\n")
         if args.prompt_style:
             sys.stdout.write(f"Prompt style: {args.prompt_style}\n\n")

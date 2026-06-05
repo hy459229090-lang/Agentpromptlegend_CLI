@@ -185,23 +185,23 @@ ouro --lang zh batch --count 20 --hero hero_shadow_apprentice --enemies enemy_hu
 
 **示例输出：**
 ```
-=== 批量试跑报告 ===
+=== 批量运行报告 ===
 
-英雄：hero_shadow_apprentice
-敌人：enemy_hungry_cultist, enemy_black_candle_acolyte
+英雄: 阿斯缇娅
+敌人: 饥饿邪教徒, 黑烛侍祭
 
-总体统计：
-  总场次：50
-  胜利：50 (100.0%)
-  失败：0
-  超时：0
+总体统计:
+  总运行数: 50
+  胜利: 50 (100.0%)
+  战败: 0
+  超时: 0
 
-行动模式：
-  平均英雄回合：6.0
-  平均普攻占比：0.0%
-  平均技能使用率：100.0%
+行动模式:
+  平均英雄回合: 6.0
+  平均普攻占比: 0.0%
+  平均技能使用率: 100.0%
 
-技能使用明细：
+技能使用详情:
   Shadow Sting：150
   Hex Seal：100
   Corrupted Focus：50

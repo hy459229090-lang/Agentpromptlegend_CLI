@@ -273,8 +273,8 @@ ouro --lang en batch --count 20 --hero hero_shadow_apprentice --enemies enemy_hu
 ```
 === BATCH RUN REPORT ===
 
-Hero: hero_shadow_apprentice
-Enemies: enemy_hungry_cultist, enemy_black_candle_acolyte
+Hero: Astia
+Enemies: Hungry Cultist, Black Candle Acolyte
 
 Overall Stats:
   Total runs: 50
