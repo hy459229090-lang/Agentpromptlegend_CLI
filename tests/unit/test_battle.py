@@ -598,7 +598,8 @@ def test_battle_report_includes_prompt_impact_for_style(bundle):
     assert report.prompt_impacts
     assert "Prompt Impact:" in summary
     assert "Control template" in summary
-    assert "skill_hex_seal" in summary
+    assert "Hex Seal" in summary
+    assert "\n  skill_hex_seal:" not in summary
 
 
 def test_batch_run_is_reproducible_with_same_seed(bundle):

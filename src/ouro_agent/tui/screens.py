@@ -3970,7 +3970,10 @@ def render_battle_report(
     ratio = f"{basic}:{skill_total}"
 
     if skill_counts:
-        skill_line = ", ".join(f"{sid} x{count}" for sid, count in skill_counts.items())
+        skill_line = ", ".join(
+            f"{_battle_report_skill_name(state, sid)} x{count}"
+            for sid, count in skill_counts.items()
+        )
     else:
         skill_line = label("battle_report_none", lang)
     if action_counts:
@@ -4001,7 +4004,7 @@ def render_battle_report(
         )
     )
     lines.append("")
-    lines.extend(_render_battle_turn_map(records, lang=lang))
+    lines.extend(_render_battle_turn_map(state, records, lang=lang))
     lines.append("")
     lines.append(f"{label('result', lang)}: {label(result_label_key, lang)}")
     lines.append(
@@ -4043,6 +4046,13 @@ def render_battle_report(
         lines.append("")
         lines.extend(status_details)
     return "\n".join(_wrap_screen_lines(lines, width))
+
+
+def _battle_report_skill_name(state: BattleState, skill_id: str) -> str:
+    skill = state.hero.find_skill(skill_id)
+    if skill is None:
+        return skill_id
+    return skill.display_name
 
 
 def _render_battle_result_board(
@@ -4095,7 +4105,7 @@ def _render_battle_result_board(
     ]
 
 
-def _render_battle_turn_map(records: list[TurnRecord], *, lang: str) -> list[str]:
+def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, lang: str) -> list[str]:
     limit = 14
     visible = records[:limit]
     hidden = max(0, len(records) - limit)
@@ -4107,7 +4117,7 @@ def _render_battle_turn_map(records: list[TurnRecord], *, lang: str) -> list[str
     first_hero = next((record for record in records if record.side == "hero"), None)
     peak_hit = max((_battle_turn_damage(record) for record in records if record.side == "hero"), default=0)
     enemy_damage = sum(_battle_turn_damage(record) for record in records if record.side == "enemy")
-    first_text = _battle_turn_label(first_hero, lang=lang) if first_hero else ("none" if lang == "en" else "无")
+    first_text = _battle_turn_label(state, first_hero, lang=lang) if first_hero else ("none" if lang == "en" else "无")
     read = _battle_turn_map_read(records, peak_hit=peak_hit, enemy_damage=enemy_damage, lang=lang)
     if lang == "zh":
         return [
@@ -4145,13 +4155,13 @@ def _battle_turn_damage(record: TurnRecord) -> int:
     return int((record.enemy_action or {}).get("damage", 0))
 
 
-def _battle_turn_label(record: TurnRecord | None, *, lang: str) -> str:
+def _battle_turn_label(state: BattleState, record: TurnRecord | None, *, lang: str) -> str:
     if record is None:
         return "none" if lang == "en" else "无"
     if record.action is None:
         return "pending" if lang == "en" else "等待"
     if record.action.type == "cast_skill" and record.judge is not None and record.judge.skill_id:
-        return record.judge.skill_id
+        return _battle_report_skill_name(state, record.judge.skill_id)
     return record.action.type
 
 

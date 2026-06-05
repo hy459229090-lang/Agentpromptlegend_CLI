@@ -88,6 +88,7 @@ class BattleReport:
     next_run_advice: tuple[str, ...] = ()
     prompt_style: str | None = None
     prompt_impacts: tuple[str, ...] = ()
+    skill_display_names: dict[str, str] = field(default_factory=dict)
 
     @property
     def total_hero_actions(self) -> int:
@@ -190,7 +191,7 @@ class BattleReport:
             }.get(language, "Skill Usage Detail")
             lines.append(f"{skill_detail_label}:")
             for skill_id, count in self.skill_usage.items():
-                lines.append(f"  {skill_id}: {count}")
+                lines.append(f"  {self._skill_display_name(skill_id)}: {count}")
 
         lines.append("")
         damage_label = {
@@ -375,6 +376,9 @@ class BattleReport:
 
         return lines
 
+    def _skill_display_name(self, skill_id: str) -> str:
+        return self.skill_display_names.get(skill_id, skill_id)
+
 
 def _result_display(result: str, lang: str) -> str:
     mapping = {
@@ -407,6 +411,7 @@ def generate_battle_report(
     observe_count = 0
     stance_count = 0
     skill_usage: dict[str, int] = {}
+    skill_display_names = {skill.id: skill.display_name for skill in state.hero.skills}
     hero_damage_dealt = 0
     enemy_damage_dealt = 0
     fallback_count = 0
@@ -501,6 +506,7 @@ def generate_battle_report(
         next_run_advice=diagnosis.next_run_advice,
         prompt_style=prompt_style,
         prompt_impacts=prompt_impacts,
+        skill_display_names=skill_display_names,
     )
 
 

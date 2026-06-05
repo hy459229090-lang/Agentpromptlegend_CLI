@@ -297,6 +297,8 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "BATTLE TURN MAP" in report
     assert "[FLOW] H" in report
     assert "[FIRST HERO]" in report
+    assert "[FIRST HERO] Hex Seal" in report
+    assert "[FIRST HERO] skill_" not in report
     assert "[IMPACT] peak hit" in report
     assert "[READ]" in report
     assert "[RESULT] victory" in report
@@ -306,6 +308,8 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "[NEXT]" in report
     assert "Hero action mix" in report
     assert "Skill usage" in report
+    assert "Hex Seal" in report
+    assert "Skill usage: skill_" not in report
     assert "Damage dealt" in report
     assert "Fallbacks" in report
 
@@ -329,7 +333,7 @@ def test_battle_report_shows_prompt_impact(bundle):
 
     assert "Prompt Impact:" in report
     assert "Control template" in report
-    assert "skill_hex_seal" in report
+    assert "Hex Seal" in report
 
 
 def test_battle_report_shows_trace_based_defeat_lessons(bundle):
