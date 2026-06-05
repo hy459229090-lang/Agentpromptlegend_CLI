@@ -2574,11 +2574,17 @@ def _battle_next_step(
         return "敌人已倒下，进入结算" if lang == "zh" else "enemy is down; resolve the win"
     if target.chant_progress:
         interrupt = _first_interrupt_skill(state.hero)
-        if interrupt is not None and state.hero.mp >= interrupt.mp_cost:
+        if interrupt is not None and interrupt.is_ready(state.hero.mp):
             return (
-                f"优先 {interrupt.display_name}；当前 MP 足够"
+                f"优先 {interrupt.display_name}；反制已就绪"
                 if lang == "zh"
-                else f"prefer {interrupt.display_name}; MP is ready"
+                else f"prefer {interrupt.display_name}; counter is ready"
+            )
+        if interrupt is not None and interrupt.cooldown_remaining > 0:
+            return (
+                f"{interrupt.display_name} 冷却中，先击杀或防守"
+                if lang == "zh"
+                else f"{interrupt.display_name} is cooling down; race the kill or defend"
             )
         return (
             "打断资源不足，改用击杀或防守减伤"

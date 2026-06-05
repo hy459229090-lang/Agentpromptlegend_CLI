@@ -549,10 +549,7 @@ def _targets_charging(state: BattleState, record: TurnRecord) -> bool:
 
 
 def _next_interrupt_ready(hero: Hero, *, after_mp: int) -> bool:
-    for skill in hero.skills:
-        if "hex" in skill.id or "seal" in skill.id or "glare" in skill.id:
-            return after_mp >= skill.mp_cost
-    return True
+    return _interrupt_available_after(hero, after_mp)
 
 
 def _interrupt_available_after(hero: Hero, after_mp: int) -> bool:

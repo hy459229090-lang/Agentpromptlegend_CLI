@@ -102,12 +102,18 @@ def test_battle_frame_support_skill_exposes_shield_impact(bundle):
     state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
     state.hero.mp = 42
     state.hero.add_status(StatusEffect("status_shield", stacks=8, duration=2))
+    hex_skill = state.hero.find_skill("skill_hex_seal")
+    assert hex_skill is not None
+    hex_skill.cooldown_remaining = 2
 
     frame = build_battle_frame(state, _focus_record(state.hero.id))
+    deltas = {delta.label: delta.text for delta in frame.resource_deltas}
 
     assert frame.impact_line is not None
     assert "SHD 8 shield" in frame.impact_line
     assert "MP 42->42" in frame.impact_line
+    assert "next interrupt: no" in frame.impact_line
+    assert deltas["MP"] == "42 -> 42 | interrupt ready: no"
 
 
 def test_pixel_skin_panels_are_ascii_and_fixed_width():
@@ -587,10 +593,15 @@ def test_unicode_battle_screen_draws_support_skill_payoff(bundle, width):
     state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
     state.hero.mp = 42
     state.hero.add_status(StatusEffect("status_shield", stacks=8, duration=2))
+    hex_skill = state.hero.find_skill("skill_hex_seal")
+    assert hex_skill is not None
+    hex_skill.cooldown_remaining = 2
     state.log.append("Astia casts Corrupted Focus. -MP 0, cd 3.")
     target = state.enemies[0]
     target.max_hp = 70
     target.hp = 70
+    target.chant_charge_turns = 1
+    target.chant_progress = 1
 
     screen = render_battle_screen(
         state,
@@ -604,8 +615,12 @@ def test_unicode_battle_screen_draws_support_skill_payoff(bundle, width):
 
     assert "FOCUS SHD+8" in screen
     assert "SUPPORT SHD+8" in screen
-    assert "VALID SHD+8 MP42>42 INT:Y" in screen
+    assert "VALID SHD+8 MP42>42 INT:N" in screen
+    assert "DELTA MP42>42 I:N" in screen
+    assert "Hex Seal is cooling down" in screen
     assert "CAST FOCUS SHD -MP0" in screen
+    assert "interrupt ready: yes" not in screen
+    assert "MP is ready" not in screen
     assert "SHADOW -0 HP" not in screen
     assert "WOUND" not in screen
     for line in screen.splitlines():
