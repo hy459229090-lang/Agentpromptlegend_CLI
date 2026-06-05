@@ -699,9 +699,9 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                 ("战斗分镜",),
                 ("VOX",),
                 ("ENM",),
-                ("FLOAT",),
-                ("STRIP",),
-                ("LOG",),
+                ("浮字",),
+                ("节奏",),
+                ("日志",),
             ),
             "report": (
                 ("结果:",),

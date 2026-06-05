@@ -2440,7 +2440,7 @@ def _render_cinematic_beat_panel(
     width: int,
     lang: str,
 ) -> list[str]:
-    title = "CINEMATIC BEAT" if lang == "en" else "战斗分镜 / CINEMATIC BEAT"
+    title = "CINEMATIC BEAT" if lang == "en" else "战斗分镜"
     max_text = max(24, width - 10)
 
     hero = state.hero
@@ -2455,22 +2455,22 @@ def _render_cinematic_beat_panel(
         lang=lang,
     )
     enm_raw = _select_enemy_line(state, last_record, frame, lang=lang, width=max_text)
-    float_raw = _build_cinematic_float(frame, width=max_text)
+    float_raw = _build_cinematic_float(frame, width=max_text, lang=lang)
     strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text)
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
 
     body = [
         f"VOX   {fit_text(_director_text(vox_raw, lang), max_text)}",
         f"ENM   {fit_text(_director_text(enm_raw, lang), max_text)}",
-        f"FLOAT {fit_text(float_raw, max_text)}",
-        f"STRIP {fit_text(strip_raw, max_text)}",
+        f"{'FLOAT' if lang == 'en' else '浮字'} {fit_text(float_raw, max_text)}",
+        f"{'STRIP' if lang == 'en' else '节奏'} {fit_text(strip_raw, max_text)}",
     ]
     body.extend(
-        f"LOG   {fit_text(line, max_text)}" if line else f"LOG   {label('no_events', lang)}"
+        f"{'LOG' if lang == 'en' else '日志'}   {fit_text(line, max_text)}" if line else f"{'LOG' if lang == 'en' else '日志'}   {label('no_events', lang)}"
         for line in log_lines
     )
     if not log_lines:
-        body.append(f"LOG   {label('no_events', lang)}")
+        body.append(f"{'LOG' if lang == 'en' else '日志'}   {label('no_events', lang)}")
 
     return list(pixel_panel(title, body, width, tone=_frame_tone(frame)).lines)
 
@@ -2496,7 +2496,12 @@ def _select_enemy_line(
     return line
 
 
-def _build_cinematic_float(frame: BattleFrame, *, width: int) -> str:
+def _build_cinematic_float(
+    frame: BattleFrame,
+    *,
+    width: int,
+    lang: str = "en",
+) -> str:
     if frame.floating_numbers:
         values = [value for value in frame.floating_numbers if value]
         if values:
@@ -2505,6 +2510,8 @@ def _build_cinematic_float(frame: BattleFrame, *, width: int) -> str:
     impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else ""
     if impact:
         return fit_text(impact, width)
+    if lang == "zh":
+        return "无"
     return "none"
 
 
@@ -2514,10 +2521,15 @@ def _build_cinematic_strip(
     lang: str,
     width: int,
 ) -> str:
-    windup = "windup"
+    windup = "windup" if lang == "en" else "起势"
     lane = frame.effect_glyph or frame.effect_kind or "lane"
-    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else "impact"
-    judge = frame.judge_label.split("|", 1)[0].strip() if frame.judge_label else "WAIT"
+    if lang == "zh" and lane == "lane":
+        lane = "通道"
+    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else ("impact" if lang == "en" else "命中")
+    judge = frame.judge_label.split("|", 1)[0].strip() if frame.judge_label else ("WAIT" if lang == "en" else "等待")
+    if lang == "zh":
+        judge = _director_text(judge, lang)
+        impact = _director_text(impact, lang)
 
     strip = f"{windup} -> {lane} -> {_director_text(impact, lang)} -> {_director_text(judge, lang)}"
     return fit_text(_fit_visual(strip, width), width)
@@ -2611,13 +2623,13 @@ def _render_battle_momentum_panel(
     max_text = max(24, width - 4)
     if lang == "zh":
         body = [
-            f"[FLOW] {flow} | 敌方 ATB {peak_atb}",
-            f"[LANE] HERO {hero_bar} {state.hero.hp}/{state.hero.max_hp} vs ENEMY {enemy_bar} {enemy_hp}/{enemy_max_hp}",
-            f"[TARGET] {target_name}",
-            f"[SWING] {swing}",
-            f"[READ] {read}",
+            f"[流势] {flow} | 敌方 ATB {peak_atb}",
+            f"[战线] 英雄 {hero_bar} {state.hero.hp}/{state.hero.max_hp} vs 敌方 {enemy_bar} {enemy_hp}/{enemy_max_hp}",
+            f"[目标] {target_name}",
+            f"[波动] {swing}",
+            f"[读法] {read}",
         ]
-        return list(pixel_panel("MOMENTUM BOARD :: 战斗势能板", [fit_text(line, max_text) for line in body], width, tone=_battle_momentum_tone(flow)).lines)
+        return list(pixel_panel("战斗势能板", [fit_text(line, max_text) for line in body], width, tone=_battle_momentum_tone(flow)).lines)
     body = [
         f"[FLOW] {flow} | enemy ATB {peak_atb}",
         f"[LANE] HERO {hero_bar} {state.hero.hp}/{state.hero.max_hp} vs ENEMY {enemy_bar} {enemy_hp}/{enemy_max_hp}",
@@ -2734,6 +2746,7 @@ def _director_text(text: str, lang: str) -> str:
         "locked": "锁定",
         "wait for charge or expose": "等待蓄力或破绽",
         "resolved": "已解决",
+        "WAIT": "待",
         "Enrage": "狂暴",
         "cleared": "解除",
         "ACTIVE": "启动",

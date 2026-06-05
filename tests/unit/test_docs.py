@@ -35,7 +35,14 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "游戏速览 / Storefront Snapshot" in text
     assert "游戏速览" in zh_text
     assert "Build before the fight. Watch the Agent answer under pressure." in text
+    assert "See the fight, not a scroll of logs." in text
+    assert "Visual Target" in text
+    assert "Core Loop / 核心循环" in text
+    assert "Why It Plays / 为什么它值得试玩" in text
+    assert "Mock, offline, no API key" in text
     assert "先说清楚：你到底玩什么" in zh_text
+    assert "一条命令试玩" in zh_text
+    assert "模型永远不决定伤害、掉落、胜负。" in zh_text
     assert "像 Steam 页面一样先说清楚" not in text
     assert "像 Steam 页面一样先说清楚" not in zh_text
     assert "Player Promise" in text
@@ -44,6 +51,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "下面的画面来自可复现的 CLI 输出" in zh_text
     assert "游戏画面 / Media Gallery" in text
     assert "先看游戏画面 / Media Gallery" in text
+    assert "Watch The Game First / 先看游戏画面 / Media Gallery" in text
     assert "先看游戏画面" in zh_text
     assert "Real TUI Captures" in text
     assert "Graphical Battle Stage" in text
@@ -114,7 +122,7 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "357 passed" in changelog
+    assert "358 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
@@ -172,7 +180,7 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "357 passed" in audit
+    assert "358 passed" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
     assert "License 仍待决策" in audit
@@ -711,7 +719,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 357 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 358 tests collected; 247 release-bound text files." in (
         evidence_result.stdout
     )
 

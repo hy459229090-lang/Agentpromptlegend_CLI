@@ -1671,6 +1671,52 @@ def test_seed7_third_battle_action_result_is_readable(bundle, width):
         assert visual_width(line) <= width
 
 
+def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundle):
+    """REQ-ZHREADOUT-001: momentum/cinematic readout uses Chinese short tags."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(
+        bundle,
+        MockProvider(seed=1, language="zh"),
+        seed=1,
+        language="zh",
+    )
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.log.append("Astia casts Hex Seal for 16 damage.")
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        unicode_mode=True,
+        width=100,
+    )
+
+    assert "战斗势能板" in screen
+    assert "[流势]" in screen
+    assert "[战线]" in screen
+    assert "[目标]" in screen
+    assert "[波动]" in screen
+    assert "[读法]" in screen
+    assert "战斗分镜" in screen
+    assert "浮字" in screen
+    assert "节奏" in screen
+    assert "日志" in screen
+
+    assert "MOMENTUM BOARD" not in screen
+    assert "[FLOW]" not in screen
+    assert "[LANE]" not in screen
+    assert "[TARGET]" not in screen
+    assert "[SWING]" not in screen
+    assert "[READ]" not in screen
+    assert "CINEMATIC BEAT" not in screen
+    assert "FLOAT none" not in screen
+    assert "STRIP windup" not in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= 100
+
+
 def test_battle_screen_keeps_raw_model_reasoning_out_of_main_surface(bundle):
     """REQ-MODEL-001: full model reasoning belongs in trace/replay, not the HUD."""
     from ouro_agent.tui.screens import render_battle_screen

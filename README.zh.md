@@ -6,19 +6,20 @@
 </p>
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-357%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-358%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
 <table>
   <tr>
-    <th colspan="4">语言切换 / Language</th>
+    <th colspan="5">语言切换 / Language</th>
   </tr>
   <tr>
     <td align="center"><strong>中文介绍</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文商店页</sub></a></td>
     <td align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong><br><sub>中英入口</sub></a></td>
+    <td align="center"><a href="#一条命令试玩"><strong>一条命令试玩</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
     <td align="center"><strong>CLI 语言切换</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
   </tr>
 </table>
@@ -29,21 +30,28 @@
 
 ## 游戏速览
 
-**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你在战前准备一个英雄
-Agent，然后看它进入地牢：读局、保留 MP、打断仪式、错过窗口、压低怪物血线，或死在
-自己的判断里。每一场都会留下可复盘的战斗轨道。
+**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是在战斗里手动点技能，
+而是在战前准备一个英雄 Agent：选择英雄、装备、词条、Build、Prompt 风格和战术偏好。
+然后你看它进入地牢，读局、保留 MP、打断仪式、错过窗口、压低怪物血线，或死在自己的判断里。
 
 | 玩家期待 | 你实际在做什么 | 它为什么不一样 |
 |----------|----------------|----------------|
 | 调教 Prompt，然后看地牢反击。 | 战前选择英雄、Build、装备、词条、Prompt 风格和战术偏好。 | 模型只选择结构化行动；合法性、伤害、奖励、失败和胜利都由本地引擎裁决。 |
-| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：角色像素形象、弹道、VOX/ENM 台词、资源变化、敌方意图和裁判结果同屏出现。 | CLI 是媒介，不是借口；战斗状态被组织成低分辨率的终端画面。 |
-| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史和批量试跑结果，调整下一局构筑。 | 默认 mock 完整离线可玩，不需要网络和 API key；真实模型接入只是可选增强。 |
+| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：角色像素形象、弹道、VOX/ENM 台词、HP/MP/ATB、敌方意图、裁判结果和浮字同屏出现。 | CLI 是媒介，不是借口；战斗状态被组织成低分辨率的终端画面。 |
+| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史、状态页、回放和批量试跑结果，调整下一局构筑。 | 默认 mock 完整离线可玩，不需要网络和 API key；真实模型接入只是可选增强。 |
 
-```bash
-pip install -e .
-ouro --lang zh demo --seed 1
-ouro --lang zh play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
-```
+<table>
+  <tr>
+    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
+    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
+    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
+  </tr>
+  <tr>
+    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
+    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
+    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
+  </tr>
+</table>
 
 ## 先看游戏画面
 
@@ -79,6 +87,11 @@ HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
 VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
 HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
 
+CINEMATIC BEAT
+  VOX There. The wick forgets its prayer.
+  FLOAT -16 HP | SLN
+  STRIP windup -> --x seal -- -> HIT-16 MP72>54 INT:N -> VALID
+
 BATTLE RESULT BOARD
   [RESULT] victory | HP 85/100 | MP 0/72
   [TEMPO] hero 6 / enemy 6 / tick 50
@@ -89,18 +102,12 @@ BATTLE TURN MAP
   [READ] one hero hit created the swing
 ```
 
-## 这是什么
+## 先说清楚：你到底玩什么
 
-### 先说清楚：你到底玩什么
-
-**暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
-而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
-自动战斗、犯错、打断吟唱、抢节奏或死在自己的判断里。
+它的重点不是让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
 
 模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
 **模型永远不决定伤害、掉落、胜负。**
-
-它的重点不是让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
 
 1. **构筑 Agent**：玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
 2. **观看 Agent 出招**：战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
@@ -109,29 +116,16 @@ BATTLE TURN MAP
 
 因此它更接近“AI 驾驶的终端肉鸽”，而不是普通聊天机器人或日志生成器。
 
-<table>
-  <tr>
-    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
-    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
-    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
-  </tr>
-  <tr>
-    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
-    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
-    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
-  </tr>
-</table>
-
 ## 为什么值得看
 
 - **AI 决策是核心玩法。** Prompt 不只是说明文字，而会影响 Agent 是否打断吟唱、是否保留 MP、是否优先处理高 ATB 敌人和 Boss 窗口。
 - **TUI 有游戏画面感。** 当前战斗屏已经包含低分辨率 Canvas、左右对战舞台、角色与怪物像素形象、武器小卡、弹道、命中浮字、`VOX` 英雄台词和 `ENM` 敌方回应。
-- **战斗不是黑盒。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、`BATTLE TURN MAP`、`BATTLE RESULT BOARD` 会解释威胁、势能、行动轨道和战后结论。
+- **战斗不是黑盒。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、`CINEMATIC BEAT`、`BATTLE TURN MAP`、`BATTLE RESULT BOARD` 会解释威胁、势能、行动轨道和战后结论。
 - **可离线试玩。** 默认 mock provider 无需网络、无需 API key，也能跑完整 demo、单场战斗、完整副本、图鉴、死亡历史和状态页。
 - **可接真实模型但不泄露密钥。** 支持 OpenAI、Anthropic、OpenAI-compatible；配置只保存环境变量名，实际 key 只从当前 shell 读取，并显示为 `set (hidden)`。
 - **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、反制错失、样本热力图和调参建议。
 
-## 一分钟试玩
+## 一条命令试玩
 
 ```bash
 pip install -e .
@@ -175,7 +169,7 @@ ouro history --lang zh --limit 5
 | C2 | 怪物家族、三档图鉴与内容 schema | done |
 | E | 图鉴持久化、Run 归档、死亡历史 | done |
 
-`357 测试通过`。任何测试都不联网。
+`358 测试通过`。任何测试都不联网。
 
 ---
 
