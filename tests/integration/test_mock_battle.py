@@ -15,6 +15,7 @@ from ouro_agent.llm.actions import HeroAction
 from ouro_agent.providers.mock import MockProvider
 from ouro_agent.sessions import codex_path, load_codex_progress
 from ouro_agent.sessions.run_state import create_run_state
+from ouro_agent.i18n import visual_width
 from ouro_agent.trace import TraceConfig, TraceWriter
 from ouro_agent.tui import render_battle_report, render_battle_screen
 from ouro_agent.engine.models import StatusEffect
@@ -333,6 +334,63 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "[CODEX] ouro codex" in report
     assert "ouro hero-card hero_shadow_apprentice --prompt-style control" in report
     assert "  [GUIDANCE] Keep the plan, then raise pressure with next seed." in report
+
+
+def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
+    state, records = _run(bundle, seed=1)
+    report = render_battle_report(state, records, language="zh")
+
+    assert "战斗结果板" in report
+    assert "[结果]" in report
+    assert "[结果] 胜利" in report
+    assert "[节奏]" in report
+    assert "英雄" in report
+    assert "敌方" in report
+    assert "[行动]" in report
+    assert "普攻:技能" in report
+    assert "降级" in report
+    assert "[伤害]" in report
+    assert "造成" in report
+    assert "承受" in report
+    assert "压力" in report
+    assert "[下一步]" in report
+    assert "回合轨道" in report
+    assert "[流程]" in report
+    assert "[先手]" in report
+    assert "[影响]" in report
+    assert "峰值命中" in report
+    assert "敌方伤害" in report
+    assert "[读法]" in report
+
+    report_lines = report.splitlines()
+    start = report_lines.index("战斗结果板")
+    end = report_lines.index("回合轨道", start)
+    board_text = "\n".join(report_lines[start : end + 6])
+
+    assert "BATTLE RESULT BOARD" not in board_text
+    assert "BATTLE TURN MAP" not in board_text
+    assert "[RESULT]" not in board_text
+    assert "[TEMPO]" not in board_text
+    assert "[ACTION]" not in board_text
+    assert "[DAMAGE]" not in board_text
+    assert "[NEXT]" not in board_text
+    assert "[FLOW]" not in board_text
+    assert "[FIRST HERO]" not in board_text
+    assert "[IMPACT]" not in board_text
+    assert "[READ]" not in board_text
+    assert "victory | HP" not in board_text
+    assert "hero " not in board_text
+    assert "enemy " not in board_text
+    assert "basic:skill" not in board_text
+    assert "fallbacks" not in board_text
+    assert "dealt" not in board_text
+    assert "taken" not in board_text
+    assert "pressure" not in board_text
+    assert "peak hit" not in board_text
+    assert "enemy damage" not in board_text
+
+    assert max(visual_width(line) for line in report_lines[start:end]) <= 100
+    assert max(visual_width(line) for line in report_lines[end:end + 8]) <= 100
 
 
 def test_battle_report_shows_prompt_impact(bundle):

@@ -4481,13 +4481,19 @@ def _render_battle_result_board(
         else:
             next_step = "继续观察行动帧"
         pressure = "高压" if damage_taken >= max(20, state.hero.max_hp // 2) else "可控"
+        result_text = {
+            "victory": "胜利",
+            "defeat": "失败",
+            "timeout": "超时",
+            "ongoing": "进行中",
+        }.get(result, "进行中")
         return [
-            "BATTLE RESULT BOARD :: 战斗结果板",
-            f"  [RESULT] {result} | HP {state.hero.hp}/{state.hero.max_hp} | MP {state.hero.mp}/{state.hero.max_mp}",
-            f"  [TEMPO] hero {hero_turns} / enemy {enemy_turns} / tick {state.tick}",
-            f"  [ACTION] basic:skill {action_ratio} / fallbacks {fallback_count}",
-            f"  [DAMAGE] dealt {damage_dealt} / taken {damage_taken} / pressure {pressure}",
-            f"  [NEXT] {next_step}",
+            "战斗结果板",
+            f"  [结果] {result_text} | HP {state.hero.hp}/{state.hero.max_hp} | MP {state.hero.mp}/{state.hero.max_mp}",
+            f"  [节奏] 英雄 {hero_turns} / 敌方 {enemy_turns} / tick {state.tick}",
+            f"  [行动] 普攻:技能 {action_ratio} / 降级 {fallback_count}",
+            f"  [伤害] 造成 {damage_dealt} / 承受 {damage_taken} / 压力 {pressure}",
+            f"  [下一步] {next_step}",
         ]
     if result == "victory":
         next_step = "keep variables, raise pressure" if hp_ratio >= 0.5 else "repair HP before elite/boss"
@@ -4524,11 +4530,11 @@ def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, la
     read = _battle_turn_map_read(records, peak_hit=peak_hit, enemy_damage=enemy_damage, lang=lang)
     if lang == "zh":
         return [
-            "BATTLE TURN MAP :: 回合轨道",
-            f"  [FLOW] {flow}",
-            f"  [FIRST HERO] {first_text}",
-            f"  [IMPACT] peak hit {peak_hit} / enemy damage {enemy_damage}",
-            f"  [READ] {read}",
+            "回合轨道",
+            f"  [流程] {flow}",
+            f"  [先手] {first_text}",
+            f"  [影响] 峰值命中 {peak_hit} / 敌方伤害 {enemy_damage}",
+            f"  [读法] {read}",
         ]
     return [
         "BATTLE TURN MAP",
