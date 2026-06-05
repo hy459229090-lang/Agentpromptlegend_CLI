@@ -1,8 +1,24 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
-**语言 / Language**: **中文** | [English](README.md#english)
+<p align="center">
+  <strong>中文介绍</strong>
+  ·
+  <a href="README.md#english-store-page"><strong>English</strong></a>
+  ·
+  <a href="README.md"><strong>双语首页 / Bilingual README</strong></a>
+  ·
+  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+</p>
 
-[![tests](https://img.shields.io/badge/tests-354%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
+<p align="center">
+  <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
+</p>
+
+<p align="center">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-354%20passing-brightgreen">
+  <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
+  <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
+</p>
 
 ---
 
@@ -32,7 +48,24 @@
 
 ## 游戏画面
 
-下面都是当前版本的真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`。
+这些媒体图来自当前 CLI 输出的视觉整理；对应命令可用
+`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
+复现。SVG 资产保存在 `examples/`，README 可以直接展示游戏画面，而不是只放文本日志。
+
+<table>
+  <tr>
+    <td width="50%">
+      <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
+      <br><strong>图形化战斗舞台</strong><br>
+      左英雄、右怪物、中间弹道和裁判结果同屏，显示 HP、MP、ATB、意图、风险、Prompt 命中和 Build 状态。
+    </td>
+    <td width="50%">
+      <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
+      <br><strong>战后复盘与长期成长</strong><br>
+      不是只告诉你赢了，而是把回合节奏、反制窗口、下一局建议和 Codex 研究目标一起留下。
+    </td>
+  </tr>
+</table>
 
 **开局配置：Prompt、Build、羁绊和下一步选择在进副本前就能看懂。**
 
@@ -43,61 +76,38 @@ RUN READY BOARD
   [CORE] shadow / control
   [NEXT PICK] guard, armor, poison
   [FIRST RULE] model chooses action, local judge resolves
-
-BUILD: [ONLINE] Online  Active Resonances: Corruption School
-Best Next Picks: guard, armor, poison
 ```
 
-**图形化战斗舞台：左右站位、像素角色、弹道、数值、台词和裁判结果同屏。**
+**战斗帧：低分辨率 Canvas、像素角色、弹道、数值、英雄台词和本地裁判同时出现。**
 
 ```text
-█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ BEAT T009 HERO ▀▀█
-█ HERO [CNDL] Astia       █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓  █ ENEMY [c] CULTIST █
-█ VOX seal the chant      █ DIRECTOR T:WIN P:RDY F:INT        █ ENM armor cracking█
-█ ACT>▄██▄░               █ TEMPO RAIL H100 ████ E081 ███░ WIN█      ▄▒▄    <TGT █
-█    ▐▓c▓██               █              ░▒▓▓██>              █     ▐▒x▒         █
-█  ░▓███░ [ONLINE] shadow █            SEAL -16 HP            █ HIT -16 HP SLN   █
-█ HP ████████████ 100/100 █ WOUND -16 ███░ 34/50 HOLD         █ HP ███████░ 34/50█
-█ MP ████████░░░░ 54/72   █ PLAN CONTROL | PROMPT HIT         █ INTENT SILENCED  █
-█ ATB READY               █ ACTION HEX -> c                   █ FX SLN1          █
-█ SKILL STG* HEX4 FOC*    █ DELTA MP72>54 I:N ATB:H*          █ STACK >c██░ -k███ █
-█▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+THE ECHO ALTAR / COUNTER WINDOW
+HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
+VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
+HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
 ```
 
-**战后复盘：不是只告诉你赢了，而是告诉你这局节奏如何形成。**
+**战后复盘：先给玩家读得懂的结果板，再进入细节。**
 
 ```text
 BATTLE RESULT BOARD
   [RESULT] victory | HP 85/100 | MP 0/72
   [TEMPO] hero 6 / enemy 6 / tick 50
-  [ACTION] basic:skill 0:6 / fallbacks 0
   [DAMAGE] dealt 173 / taken 15 / pressure controlled
 
 BATTLE TURN MAP
-  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 -> H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
   [FIRST HERO] Hex Seal
-  [IMPACT] peak hit 48 / enemy damage 14
   [READ] one hero hit created the swing
-
-Status Details:
-  - [c] SLN silence x1 / 1t
-  - [k] CRP corrupt x2 / 3t
 ```
 
 ## 为什么值得看
 
-- **AI 决策是核心玩法。** Prompt 不只是说明文字，而会影响 Agent 是否打断吟唱、
-  是否保留 MP、是否优先处理高 ATB 敌人和 Boss 窗口。
-- **TUI 有游戏画面感。** 当前战斗屏已经包含低分辨率 Canvas、左右对战舞台、
-  角色与怪物像素形象、武器小卡、弹道、命中浮字、`VOX` 英雄台词和 `ENM` 敌方回应。
-- **战斗不是黑盒。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、`BATTLE TURN MAP`、
-  `BATTLE RESULT BOARD` 会解释威胁、势能、行动轨道和战后结论。
-- **可离线试玩。** 默认 mock provider 无需网络、无需 API key，也能跑完整 demo、
-  单场战斗、完整副本、图鉴、死亡历史和状态页。
-- **可接真实模型但不泄露密钥。** 支持 OpenAI、Anthropic、OpenAI-compatible；
-  配置只保存环境变量名，实际 key 只从当前 shell 读取，并显示为 `set (hidden)`。
-- **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、
-  反制错失、样本热力图和调参建议。
+- **AI 决策是核心玩法。** Prompt 不只是说明文字，而会影响 Agent 是否打断吟唱、是否保留 MP、是否优先处理高 ATB 敌人和 Boss 窗口。
+- **TUI 有游戏画面感。** 当前战斗屏已经包含低分辨率 Canvas、左右对战舞台、角色与怪物像素形象、武器小卡、弹道、命中浮字、`VOX` 英雄台词和 `ENM` 敌方回应。
+- **战斗不是黑盒。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、`BATTLE TURN MAP`、`BATTLE RESULT BOARD` 会解释威胁、势能、行动轨道和战后结论。
+- **可离线试玩。** 默认 mock provider 无需网络、无需 API key，也能跑完整 demo、单场战斗、完整副本、图鉴、死亡历史和状态页。
+- **可接真实模型但不泄露密钥。** 支持 OpenAI、Anthropic、OpenAI-compatible；配置只保存环境变量名，实际 key 只从当前 shell 读取，并显示为 `set (hidden)`。
+- **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、反制错失、样本热力图和调参建议。
 
 ## 一分钟试玩
 
@@ -111,7 +121,7 @@ ouro run --mock
 想看更强画面感：
 
 ```bash
-ouro --lang en play --mock --seed 2 --unicode --color always --no-trace
+ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
 ```
 
 想看复盘和长期成长：
@@ -408,7 +418,7 @@ pyproject.toml                可安装包，命令入口 `ouro`
 src/ouro_agent/               运行时代码（按职责拆分）
 content/                      游戏数据（英雄 / 技能 / 敌人 / 装备 / 词条 / 羁绊）
 tests/                        单元 + 集成测试
-examples/                     示例配置 + 示例 trace
+examples/                     示例配置 + 示例 trace + README 媒体图
 docs/                         产品 / 规划 / 工程 / AI 协作文档
 scripts/                      开发辅助脚本
 ```

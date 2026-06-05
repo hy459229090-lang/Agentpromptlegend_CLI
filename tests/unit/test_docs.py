@@ -16,9 +16,24 @@ def test_readme_covers_install_mock_provider_and_privacy():
     """REQ-DIST-003: README keeps install, mock play, provider, and privacy paths."""
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     zh_text = (ROOT / "README.zh.md").read_text(encoding="utf-8")
+    examples_readme = (ROOT / "examples/README.md").read_text(encoding="utf-8")
+    media_files = (
+        "examples/ouro-readme-storefront.svg",
+        "examples/ouro-battle-canvas.svg",
+        "examples/ouro-after-action.svg",
+    )
 
     assert "完整中文文档 / Full Chinese README" in text
+    assert "English Store Page" in text
+    assert "双语首页 / Bilingual README" in zh_text
     assert "Real TUI Captures" in text
+    for media_file in media_files:
+        assert media_file in text
+        assert media_file in zh_text
+        assert (ROOT / media_file).is_file()
+        assert "<svg" in (ROOT / media_file).read_text(encoding="utf-8")
+    assert "README media captures" in examples_readme
+    assert "storefront-friendly" in examples_readme
     assert "RUN READY BOARD" in text
     assert "THE ECHO ALTAR / COUNTER WINDOW" in text
     assert "BATTLE RESULT BOARD" in text

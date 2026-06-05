@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent graphical TUI battle canvas</title>
+  <desc id="desc">A stylized terminal screenshot of the left hero versus right enemy battle stage with resource bars and a center effect lane.</desc>
+  <defs>
+    <linearGradient id="terminal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#101820"/>
+      <stop offset="0.65" stop-color="#121318"/>
+      <stop offset="1" stop-color="#1c1714"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .top { font-size: 22px; fill: #f0d38a; font-weight: 700; }
+      .text { font-size: 20px; fill: #dce5dd; }
+      .small { font-size: 16px; fill: #9baab0; }
+      .green { fill: #8dd98a; }
+      .red { fill: #df776e; }
+      .gold { fill: #f0b464; }
+      .cyan { fill: #8ecae6; }
+      .panel { fill: #0b1117; stroke: #465761; stroke-width: 1.4; rx: 10; }
+      .stage { fill: url(#terminal); stroke: #70808a; stroke-width: 2; rx: 10; }
+      .muted { fill: #65737a; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#070a0e"/>
+  <rect x="50" y="40" width="1180" height="640" class="stage"/>
+  <text x="82" y="84" class="mono top">█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀ BEAT T009 HERO ▀▀█</text>
+  <rect x="82" y="112" width="350" height="450" class="panel"/>
+  <rect x="456" y="112" width="365" height="450" class="panel"/>
+  <rect x="844" y="112" width="354" height="450" class="panel"/>
+  <text x="106" y="148" class="mono top">HERO [CNDL] Astia</text>
+  <text x="480" y="148" class="mono top">▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓</text>
+  <text x="868" y="148" class="mono top">ENEMY [k] ACOLYTE</text>
+  <text x="106" y="190" class="mono text">VOX seal the chant</text>
+  <text x="106" y="236" class="mono text">ACT&gt;▄██▄░</text>
+  <text x="106" y="270" class="mono text">   ▐▓c▓██</text>
+  <text x="106" y="304" class="mono text">    ▟██▙</text>
+  <text x="106" y="350" class="mono small">[W:STF] c==*  Black Candle Staff</text>
+  <text x="106" y="390" class="mono green">BUILD [ONLINE] shadow/control</text>
+  <text x="106" y="436" class="mono text">HP ████████████ 100/100</text>
+  <text x="106" y="470" class="mono text">MP ████████░░░░ 54/72</text>
+  <text x="106" y="504" class="mono gold">ATB READY</text>
+  <text x="106" y="536" class="mono small">SKILL STG* HEX4 FOC*</text>
+  <text x="480" y="198" class="mono cyan">DIRECTOR T:WIN P:RDY F:INT</text>
+  <text x="480" y="236" class="mono text">TEMPO RAIL H100 ████ E081 ███░ WIN</text>
+  <text x="480" y="286" class="mono gold">          ░▒▓▓██&gt;</text>
+  <text x="480" y="326" class="mono gold">        SEAL -16 HP</text>
+  <text x="480" y="366" class="mono text">        ▓▓ SLN ▓▓░░░░░░░░</text>
+  <text x="480" y="420" class="mono text">PLAN CONTROL | PROMPT HIT</text>
+  <text x="480" y="454" class="mono text">ACTION HEX -&gt; k</text>
+  <text x="480" y="488" class="mono text">JUDGE  VALID | -16 HP</text>
+  <text x="480" y="522" class="mono small">DELTA MP72&gt;54 I:N ATB:H*</text>
+  <text x="868" y="190" class="mono text">ENM armor cracking</text>
+  <text x="868" y="236" class="mono text">     ░▄▒▄░       &lt;TGT</text>
+  <text x="868" y="270" class="mono text">      ▐▒k▒</text>
+  <text x="868" y="304" class="mono text">       ▟▒</text>
+  <text x="868" y="350" class="mono gold">THREAT WINDOW 1/1</text>
+  <text x="868" y="390" class="mono red">HIT -16 HP SLN</text>
+  <text x="868" y="436" class="mono text">HP ███████░░░░░ 34/70</text>
+  <text x="868" y="470" class="mono text">ATB ███████████░</text>
+  <text x="868" y="504" class="mono gold">INTENT SILENCED</text>
+  <text x="868" y="536" class="mono small">STACK -c██░ &gt;k███</text>
+  <rect x="82" y="584" width="1116" height="92" class="panel"/>
+  <text x="106" y="622" class="mono top">ACTION</text>
+  <text x="210" y="622" class="mono text">Hex Seal -&gt; Black Candle Acolyte | VALID | -16 HP</text>
+  <text x="106" y="654" class="mono small">INTENT control the fastest threat   RISK spends tempo resource   ALIGN Prompt: Control hit | Build: shadow/control</text>
+</svg>
