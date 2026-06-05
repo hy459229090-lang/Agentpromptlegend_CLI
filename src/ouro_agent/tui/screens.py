@@ -2376,22 +2376,32 @@ def _render_battle_film_lines(
     lang: str,
 ) -> list[str]:
     if lang == "zh":
-        header = f"{label('model_turn', lang)} / 战斗分镜"
+        if record is not None and record.side == "enemy":
+            header = "敌方行动 / 战斗分镜"
+        else:
+            header = f"{label('model_turn', lang)} / 战斗分镜"
         model_label = "模型"
+        enemy_label = "敌方"
         judge_label = "裁判"
         log_label = label("log", lang)
         no_log = label("no_events", lang)
     else:
-        header = f"{label('model_turn', lang)} / BEAT FILM"
+        if record is not None and record.side == "enemy":
+            header = "ENEMY TURN / BEAT FILM"
+        else:
+            header = f"{label('model_turn', lang)} / BEAT FILM"
         model_label = "MODEL"
+        enemy_label = "ENEMY"
         judge_label = "JUDGE"
         log_label = label("log", lang)
         no_log = label("no_events", lang)
 
+    actor_label = model_label
     if record is None:
         model_text = label("awaiting", lang)
     elif record.side == "enemy":
-        model_text = f"LOCAL AI -> {_director_text(frame.action_label, lang)}"
+        actor_label = enemy_label
+        model_text = _battle_film_enemy_action_text(record, frame, lang=lang)
     else:
         model_text = _director_text(frame.action_label, lang)
 
@@ -2400,10 +2410,29 @@ def _render_battle_film_lines(
 
     return [
         header,
-        f"[01 {model_label}] {label('action_label', lang)}: {model_text}",
+        f"[01 {actor_label}] {label('action_label', lang)}: {model_text}",
         f"[02 {judge_label}] {label('judge_label', lang)}: {judge_text}",
         f"[03 {log_label}] {latest_log}",
     ]
+
+
+def _battle_film_enemy_action_text(record: TurnRecord, frame: BattleFrame, *, lang: str) -> str:
+    text = _director_text(frame.action_label, lang)
+    if lang == "zh":
+        return text
+    action_type = str((record.enemy_action or {}).get("type", ""))
+    suffixes = {
+        "basic_attack": "STRIKE",
+        "attack": "STRIKE",
+        "chant_charge": "CHARGE",
+        "chant_release": "RELEASE",
+        "silenced": "SILENCED",
+    }
+    suffix = suffixes.get(action_type)
+    if suffix:
+        base = text.rsplit(" ", 1)[0] if text.endswith(f" {action_type}") else text
+        return f"{base} {suffix}"
+    return text
 
 
 def _battle_film_log_text(logs: list[str], *, no_log: str) -> str:

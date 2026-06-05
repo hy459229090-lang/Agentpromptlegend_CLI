@@ -1406,6 +1406,11 @@ def test_no_animation_seed7_frame_sequence_is_stable(bundle, language, width):
         assert "ACTION" in screen or "行动" in screen
         if record.side == "hero":
             assert "Judge:" in screen or "裁判:" in screen
+            assert "[01 MODEL]" in screen or "[01 模型]" in screen
+        if record.side == "enemy":
+            assert "ENEMY TURN / BEAT FILM" in screen or "敌方行动 / 战斗分镜" in screen
+            assert "[01 ENEMY]" in screen or "[01 敌方]" in screen
+            assert "LOCAL AI ->" not in screen
         for line in screen.splitlines():
             assert visual_width(line) <= width
 
