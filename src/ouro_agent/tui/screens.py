@@ -4175,7 +4175,66 @@ def render_battle_report(
     if status_details:
         lines.append("")
         lines.extend(status_details)
+    lines.extend(["", *_render_play_next_board(state, records, lang=lang)])
     return "\n".join(_wrap_screen_lines(lines, width))
+
+
+def _battle_report_prompt_style(state: BattleState, records: list[TurnRecord]) -> str:
+    for record in records:
+        if record.prompt_style:
+            return record.prompt_style
+    return _hero_default_prompt_style(state.hero.id)
+
+
+def _render_play_next_board(
+    state: BattleState,
+    records: list[TurnRecord],
+    *,
+    lang: str,
+) -> list[str]:
+    style = _battle_report_prompt_style(state, records)
+    next_seed = state.seed + 1
+    hero_id = state.hero.id
+    rematch = (
+        f"ouro play --mock --hero {hero_id} "
+        f"--prompt-style {style} --seed {next_seed}"
+    )
+    if lang == "zh":
+        title = "PLAY NEXT BOARD :: 下一局闭环面板"
+        lines = [
+            title,
+            "  [复盘] ouro status | ouro run-report",
+            "  [图鉴] ouro codex",
+            f"  [配置] ouro list-heroes | ouro hero-card {hero_id} --prompt-style {style}",
+            f"  [重开] {rematch}",
+        ]
+        if state.result == "defeat":
+            lines.append("  [建议] 先复盘最后回合，再用 control/guarded 重开。")
+        elif state.result == "victory":
+            lines.append("  [建议] 保持当前打法，再用下一 seed 做压力样本。")
+        else:
+            lines.append("  [建议] 先回放观察关键窗口，再继续固定种子练习。")
+        return lines
+
+    title = "PLAY NEXT BOARD"
+    lines = [
+        f"{title} :: NEXT FIGHT LOOP",
+        "  [REVIEW] ouro status | ouro run-report",
+        "  [CODEX] ouro codex",
+        f"  [LOADOUT] ouro list-heroes | ouro hero-card {hero_id} --prompt-style {style}",
+        f"  [REMATCH] {rematch}",
+    ]
+    if state.result == "defeat":
+        lines.append(
+            "  [GUIDANCE] Review this run first, then retry with control/guarded."
+        )
+    elif state.result == "victory":
+        lines.append("  [GUIDANCE] Keep the plan, then raise pressure with next seed.")
+    else:
+        lines.append(
+            "  [GUIDANCE] Replay one fixed-seed sample to settle intent timing."
+        )
+    return lines
 
 
 def _battle_report_skill_name(state: BattleState, skill_id: str) -> str:

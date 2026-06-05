@@ -324,6 +324,15 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "Skill usage: skill_" not in report
     assert "Damage dealt" in report
     assert "Fallbacks" in report
+    assert "PLAY NEXT BOARD" in report
+    assert (
+        "  [REMATCH] ouro play --mock --hero hero_shadow_apprentice "
+        "--prompt-style control --seed 2" in report
+    )
+    assert "  [REVIEW] ouro status | ouro run-report" in report
+    assert "[CODEX] ouro codex" in report
+    assert "ouro hero-card hero_shadow_apprentice --prompt-style control" in report
+    assert "  [GUIDANCE] Keep the plan, then raise pressure with next seed." in report
 
 
 def test_battle_report_shows_prompt_impact(bundle):
@@ -416,6 +425,8 @@ def test_battle_report_shows_trace_based_defeat_lessons(bundle):
     assert "Next Run Advice:" in report
     assert "Targeting:" in report
     assert "Targeting drift turns: 1" in report
+    assert "PLAY NEXT BOARD" in report
+    assert "  [GUIDANCE] Review this run first, then retry with control/guarded." in report
 
 
 def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, capsys):
@@ -461,6 +472,12 @@ def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, cap
     assert "Next Build Pick:" in out
     assert "BATTLE COMPLETE" in out
     assert "BATTLE REPORT" in out
+    assert "PLAY NEXT BOARD" in out
+    assert (
+        "  [REMATCH] ouro play --mock --hero hero_shadow_apprentice "
+        "--prompt-style control --seed 2" in out
+    )
+    assert "  [REVIEW] ouro status | ouro run-report" in out
     assert out.isascii()
 
 

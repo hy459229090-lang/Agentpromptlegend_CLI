@@ -1,20 +1,6 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
 <p align="center">
-  <strong>中文介绍</strong>
-  ·
-  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
-  ·
-  <a href="README.md"><strong>双语首页 / Bilingual README</strong></a>
-  ·
-  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
-</p>
-
-<p align="center">
-  <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
-</p>
-
-<p align="center">
   <strong>训练一个英雄 Agent。调教 Prompt。看地牢用本地规则审判它。</strong><br>
   <sub>黑暗终端 AI 肉鸽：你负责构筑和策略，模型负责出招，本地引擎负责所有伤害、状态、奖励和胜负。</sub>
 </p>
@@ -27,18 +13,60 @@
 
 <table>
   <tr>
-    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
-    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
-    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
-  </tr>
-  <tr>
-    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
-    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
-    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
+    <td align="center"><strong>中文介绍</strong><br><sub>当前页面</sub></td>
+    <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文商店页</sub></a></td>
+    <td align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong><br><sub>中英入口</sub></a></td>
+    <td align="center"><strong>CLI 语言切换</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
   </tr>
 </table>
 
----
+<p align="center">
+  <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
+</p>
+
+## 先看游戏画面
+
+这些是当前 CLI 输出整理成的 README media captures，不是概念图。对应命令可用
+`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
+复现。SVG 资产保存在 `examples/`，README 可以直接展示游戏画面，而不是只放文本日志。
+
+<table>
+  <tr>
+    <td width="50%">
+      <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
+      <br><strong>图形化战斗舞台</strong><br>
+      左英雄、右怪物、中间弹道和本地裁判同屏；HP、MP、ATB、意图、风险、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。
+    </td>
+    <td width="50%">
+      <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
+      <br><strong>战后复盘屏</strong><br>
+      胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。
+    </td>
+  </tr>
+</table>
+
+```text
+RUN READY BOARD
+  [PROMPT] control / open by denying chant windows
+  [BUILD] [ONLINE] Online / Black Candle Interrupt
+  [CORE] shadow / control
+  [NEXT PICK] guard, armor, poison
+  [FIRST RULE] model chooses action, local judge resolves
+
+THE ECHO ALTAR / COUNTER WINDOW
+HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
+VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
+HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
+
+BATTLE RESULT BOARD
+  [RESULT] victory | HP 85/100 | MP 0/72
+  [TEMPO] hero 6 / enemy 6 / tick 50
+  [DAMAGE] dealt 173 / taken 15 / pressure controlled
+
+BATTLE TURN MAP
+  [FIRST HERO] Hex Seal
+  [READ] one hero hit created the swing
+```
 
 ## 这是什么
 
@@ -60,59 +88,18 @@
 
 因此它更接近“AI 驾驶的终端肉鸽”，而不是普通聊天机器人或日志生成器。
 
-## 游戏画面
-
-这些媒体图来自当前 CLI 输出的视觉整理；对应命令可用
-`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`，README 可以直接展示游戏画面，而不是只放文本日志。
-
 <table>
   <tr>
-    <td width="50%">
-      <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
-      <br><strong>图形化战斗舞台</strong><br>
-      左英雄、右怪物、中间弹道和裁判结果同屏，显示 HP、MP、ATB、意图、风险、Prompt 命中和 Build 状态。
-    </td>
-    <td width="50%">
-      <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
-      <br><strong>战后复盘与长期成长</strong><br>
-      不是只告诉你赢了，而是把回合节奏、反制窗口、下一局建议和 Codex 研究目标一起留下。
-    </td>
+    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
+    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
+    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
+  </tr>
+  <tr>
+    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
+    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
+    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
   </tr>
 </table>
-
-**开局配置：Prompt、Build、羁绊和下一步选择在进副本前就能看懂。**
-
-```text
-RUN READY BOARD
-  [PROMPT] control / open by denying chant windows
-  [BUILD] [ONLINE] Online / Black Candle Interrupt
-  [CORE] shadow / control
-  [NEXT PICK] guard, armor, poison
-  [FIRST RULE] model chooses action, local judge resolves
-```
-
-**战斗帧：低分辨率 Canvas、像素角色、弹道、数值、英雄台词和本地裁判同时出现。**
-
-```text
-THE ECHO ALTAR / COUNTER WINDOW
-HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
-VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
-HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
-```
-
-**战后复盘：先给玩家读得懂的结果板，再进入细节。**
-
-```text
-BATTLE RESULT BOARD
-  [RESULT] victory | HP 85/100 | MP 0/72
-  [TEMPO] hero 6 / enemy 6 / tick 50
-  [DAMAGE] dealt 173 / taken 15 / pressure controlled
-
-BATTLE TURN MAP
-  [FIRST HERO] Hex Seal
-  [READ] one hero hit created the swing
-```
 
 ## 为什么值得看
 

@@ -675,7 +675,13 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                 ("STRIP",),
                 ("LOG",),
             ),
-            "report": (("Result:",), ("Tactical Diagnosis:",), ("Build note:",)),
+            "report": (
+                ("Result:",),
+                ("Tactical Diagnosis:",),
+                ("Build note:",),
+                ("PLAY NEXT BOARD",),
+                ("ouro play --mock",),
+            ),
         },
         "zh": {
             "menu": (("mock-smart",), ("ouro.toml",), ("玩家旅程",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("ouro run --mock",), ("引导试玩",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
@@ -697,7 +703,13 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                 ("STRIP",),
                 ("LOG",),
             ),
-            "report": (("结果:",), ("战术诊断:",), ("Build 备注:",)),
+            "report": (
+                ("结果:",),
+                ("战术诊断:",),
+                ("Build 备注:",),
+                ("下一局闭环面板",),
+                ("[重开]",),
+            ),
         },
     }
 

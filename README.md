@@ -1,22 +1,8 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
 <p align="center">
-  <a href="README.zh.md"><strong>完整中文文档 / Full Chinese README</strong></a>
-  ·
-  <a href="#english-store-page"><strong>English Store Page</strong></a>
-  ·
-  <a href="#media-gallery--real-tui-captures"><strong>游戏画面 / Media Gallery</strong></a>
-  ·
-  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
-</p>
-
-<p align="center">
-  <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
-</p>
-
-<p align="center">
   <strong>Build one Agent. Tune the Prompt. Watch the dungeon judge it.</strong><br>
-  <sub>训练一个会自己下副本的黑暗英雄 Agent，然后看本地裁判把每一次选择结算成节奏、伤害、失败和成长。</sub>
+  <sub>像 Steam 页面一样先说清楚：这是一款黑暗终端 AI 肉鸽，不是工程日志，也不是聊天机器人外壳。</sub>
 </p>
 
 <p align="center">
@@ -24,6 +10,84 @@
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
+
+<table>
+  <tr>
+    <td align="center"><a href="README.zh.md"><strong>中文完整介绍</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>Read the English pitch</sub></a></td>
+    <td align="center"><a href="#media-gallery--real-tui-captures"><strong>游戏画面 / Media Gallery</strong><br><sub>Real TUI Captures</sub></a></td>
+    <td align="center"><strong>CLI 语言切换</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
+</p>
+
+## 先看游戏画面 / Media Gallery
+
+<a id="media-gallery--real-tui-captures"></a>
+
+### Real TUI Captures
+
+这些是当前 CLI 输出整理成的 README media captures，不是概念图。对应命令可用
+`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
+复现；SVG 资产保存在 `examples/`，首页先展示游戏画面，而不是让玩家先读工程日志。
+
+<table>
+  <tr>
+    <td width="50%">
+      <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
+      <br><strong>图形化战斗舞台 / Graphical Battle Stage</strong><br>
+      左英雄、右怪物、中间弹道和本地裁判同屏；HP、MP、ATB、意图、风险、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。
+    </td>
+    <td width="50%">
+      <img alt="After action report and Codex preview" src="examples/ouro-after-action.svg">
+      <br><strong>战后复盘屏 / After-Action Report</strong><br>
+      胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。
+    </td>
+  </tr>
+</table>
+
+```text
+RUN READY BOARD
+  [PROMPT] control / open by denying chant windows
+  [BUILD] [ONLINE] Online / Black Candle Interrupt
+  [CORE] shadow / control
+  [NEXT PICK] guard, armor, poison
+  [FIRST RULE] model chooses action, local judge resolves
+
+THE ECHO ALTAR / COUNTER WINDOW
+HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
+VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
+HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
+
+BATTLE RESULT BOARD
+  [RESULT] victory | HP 85/100 | MP 0/72
+  [TEMPO] hero 6 / enemy 6 / tick 50
+  [DAMAGE] dealt 173 / taken 15 / pressure controlled
+
+BATTLE TURN MAP
+  [FIRST HERO] Hex Seal
+  [READ] one hero hit created the swing
+```
+
+## 中文介绍
+
+### 像 Steam 页面一样先说清楚：这到底玩什么
+
+**暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
+而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
+自动战斗、犯错、打断吟唱、抢节奏或死在自己的判断里。
+
+模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
+**模型永远不决定伤害、掉落、胜负。**
+
+你真正玩的不是“按下技能按钮”，而是三件事：
+
+1. **训练前的构筑判断**：英雄、Prompt、装备、词条和 Build 会改变 Agent 的读局倾向。
+2. **战斗中的观战张力**：你看它是否保留 MP、是否打断吟唱、是否错过 Boss 窗口。
+3. **战后的复盘成长**：每局留下回合轨道、死亡历史、Codex 情报和下一局建议。
 
 <table>
   <tr>
@@ -38,81 +102,6 @@
   </tr>
 </table>
 
----
-
-## 中文介绍
-
-### 像 Steam 页面一样先说清楚：这到底玩什么
-
-**暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
-而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
-自动战斗、犯错、打断吟唱、抢节奏或死在自己的判断里。
-
-模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
-所以这不是聊天机器人套壳，而是一款把 **AI 决策变成可观看、可复盘、可调教玩法** 的 CLI 游戏。
-
-你真正玩的不是“按下技能按钮”，而是三件事：
-
-1. **训练前的构筑判断**：英雄、Prompt、装备、词条和 Build 会改变 Agent 的读局倾向。
-2. **战斗中的观战张力**：你看它是否保留 MP、是否打断吟唱、是否错过 Boss 窗口。
-3. **战后的复盘成长**：每局留下回合轨道、死亡历史、Codex 情报和下一局建议。
-
-<a id="media-gallery--real-tui-captures"></a>
-
-### 游戏画面 / Real TUI Captures
-
-这些媒体图来自当前 CLI 输出的视觉整理；对应命令可用
-`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`，README 直接展示游戏画面，而不是只放文本日志。
-
-<table>
-  <tr>
-    <td width="50%">
-      <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
-      <br><strong>图形化战斗舞台</strong><br>
-      左英雄、右怪物、中间弹道和裁判结果同屏，显示 HP、MP、ATB、意图、风险、Prompt 命中和 Build 状态。
-    </td>
-    <td width="50%">
-      <img alt="After action report and Codex preview" src="examples/ouro-after-action.svg">
-      <br><strong>战后复盘与长期成长</strong><br>
-      不是只告诉你赢了，而是把回合节奏、反制窗口、下一局建议和 Codex 研究目标一起留下。
-    </td>
-  </tr>
-</table>
-
-**开局配置：Prompt、Build、羁绊和下一步选择在进副本前就能看懂。**
-
-```text
-RUN READY BOARD
-  [PROMPT] control / open by denying chant windows
-  [BUILD] [ONLINE] Online / Black Candle Interrupt
-  [CORE] shadow / control
-  [NEXT PICK] guard, armor, poison
-  [FIRST RULE] model chooses action, local judge resolves
-```
-
-**战斗帧：低分辨率 Canvas、像素角色、弹道、数值、英雄台词和本地裁判同时出现。**
-
-```text
-THE ECHO ALTAR / COUNTER WINDOW
-HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
-VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
-HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
-```
-
-**战后复盘：先给玩家读得懂的结果板，再进入细节。**
-
-```text
-BATTLE RESULT BOARD
-  [RESULT] victory | HP 85/100 | MP 0/72
-  [TEMPO] hero 6 / enemy 6 / tick 50
-  [DAMAGE] dealt 173 / taken 15 / pressure controlled
-
-BATTLE TURN MAP
-  [FIRST HERO] Hex Seal
-  [READ] one hero hit created the swing
-```
-
 ### 为什么它值得试玩
 
 - **AI 决策是核心玩法。** 你调的是 Agent 的提示词、构筑和上下文；战斗中观察它是否会保留 MP、打断吟唱、处理 Boss 窗口。
@@ -121,7 +110,7 @@ BATTLE TURN MAP
 - **离线也能完整试玩。** 默认 mock provider 不联网、不需要 API key；真实 Provider 支持 OpenAI、Anthropic 和 OpenAI-compatible。
 - **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、反制错失、样本热力图和调参建议。
 
-### 一分钟试玩
+### 一分钟试玩 / Play Now
 
 ```bash
 pip install -e .
@@ -134,6 +123,15 @@ ouro run --mock
 
 ```bash
 ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
+```
+
+想看复盘和长期成长：
+
+```bash
+ouro status --lang zh
+ouro codex --lang zh
+ouro run-report --lang zh
+ouro history --lang zh --limit 5
 ```
 
 ---
