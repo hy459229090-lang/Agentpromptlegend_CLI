@@ -23,25 +23,37 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    english_intro = text.split("## Quickstart", 1)[0]
+    zh_intro = zh_text.split("## 快速开始", 1)[0]
 
     assert "完整中文文档 / Full Chinese README" in text
     assert "English Store Page" in text
     assert "双语首页 / Bilingual README" in zh_text
+    assert "Choose Your Page / 选择介绍页" in text
+    assert "选择介绍页 / Choose Your Page" in zh_text
     assert "Language / 语言" in text
     assert "语言切换 / Language" in zh_text
     assert "CLI 语言切换" in text
     assert "CLI 语言切换" in zh_text
-    assert "Build one Agent. Tune the Prompt. Watch the dungeon judge it." in text
-    assert "游戏速览 / Storefront Snapshot" in text
-    assert "游戏速览" in zh_text
-    assert "Build before the fight. Watch the Agent answer under pressure." in text
+    assert "Train one AI hero. Watch it survive your Prompt." in text
+    assert "训练一个 AI 英雄，让它带着你的 Prompt 下地牢。" in zh_text
+    assert "You are the builder behind the Agent." in text
+    assert "商店页速览" in zh_text
     assert "See the fight, not a scroll of logs." in text
     assert "Visual Target" in text
-    assert "Core Loop / 核心循环" in text
-    assert "Why It Plays / 为什么它值得试玩" in text
+    assert "Core Loop / 每局你会做什么" in text
+    assert "每局你会做什么" in zh_text
+    assert "Why It Plays / Key Features / 为什么它值得试玩" in text
+    assert "关键特色" in zh_text
     assert "Mock, offline, no API key" in text
-    assert "先说清楚：你到底玩什么" in zh_text
-    assert "一条命令试玩" in zh_text
+    assert "Play Now: No Network, No API Key" in text
+    assert "立即试玩：无网络，无 API key" in zh_text
+    assert "Current Playable Content / 当前可玩内容" in text
+    assert "当前可玩内容" in zh_text
+    assert "Guided first run" in text
+    assert "完整副本：路线、商店、休息、奖励和 Boss" in zh_text
+    assert "Recent Development" not in english_intro
+    assert "近期开发" not in zh_intro
     assert "模型永远不决定伤害、掉落、胜负。" in zh_text
     assert "像 Steam 页面一样先说清楚" not in text
     assert "像 Steam 页面一样先说清楚" not in zh_text
@@ -49,10 +61,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "玩家期待" in zh_text
     assert "Screenshots below are captured from reproducible CLI output" in text
     assert "下面的画面来自可复现的 CLI 输出" in zh_text
-    assert "游戏画面 / Media Gallery" in text
-    assert "先看游戏画面 / Media Gallery" in text
-    assert "Watch The Game First / 先看游戏画面 / Media Gallery" in text
-    assert "先看游戏画面" in zh_text
+    assert "Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘" in text
+    assert "画面：构筑、战斗、复盘" in zh_text
+    assert "Reproducible CLI Capture" in text
+    assert "可复现终端片段" in zh_text
     assert "Real TUI Captures" in text
     assert "Graphical Battle Stage" in text
     assert "After-Action Report" in text
@@ -79,9 +91,12 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "ouro --version" in text
     assert "ouro demo --lang en --seed 1" in text
     assert "ouro play --mock" in text
+    assert "The first play does not need a real model." in text
+    assert "第一次试玩不需要真实模型。" in zh_text
     assert "ouro config set provider openai" in text
     assert "ouro config set api_key_env OURO_API_KEY" in text
-    assert "API keys are **never** stored" in text
+    assert "API keys are" in text
+    assert "**never** stored" in text
     assert "ouro config preflight" in text
     assert "set (hidden)" in text
     assert "Mock requires no network and no API key" in text

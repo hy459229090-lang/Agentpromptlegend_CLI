@@ -1,26 +1,19 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
 <p align="center">
-  <strong>训练一个英雄 Agent。调教 Prompt。看地牢用本地规则审判它。</strong><br>
-  <sub>黑暗终端 AI 肉鸽：战前构筑、战中观战、战后复盘，让 Prompt 在本地规则里接受考验。</sub>
-</p>
-
-<p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-359%20passing-brightgreen">
-  <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
-  <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
+  <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
+  <sub>黑暗终端 AI 肉鸽：战前构筑、战中自动战斗、战后复盘；模型出招，本地裁判结算每一次命中。</sub>
 </p>
 
 <table>
   <tr>
-    <th colspan="5">语言切换 / Language</th>
+    <th colspan="4">选择介绍页 / Choose Your Page</th>
   </tr>
   <tr>
     <td align="center"><strong>中文介绍</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文商店页</sub></a></td>
     <td align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong><br><sub>中英入口</sub></a></td>
-    <td align="center"><a href="#一条命令试玩"><strong>一条命令试玩</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
-    <td align="center"><strong>CLI 语言切换</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
+    <td align="center"><a href="#play-now"><strong>立即试玩</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
 </table>
 
@@ -28,11 +21,15 @@
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
 </p>
 
-## 游戏速览
+<p align="center">
+  <strong>现在就能离线试玩。</strong> 首局不需要网络，不需要 API key，也不需要真实模型。
+</p>
 
-**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是在战斗里手动点技能，
-而是在战前准备一个英雄 Agent：选择英雄、装备、词条、Build、Prompt 风格和战术偏好。
-然后你看它进入地牢，读局、保留 MP、打断仪式、错过窗口、压低怪物血线，或死在自己的判断里。
+## 商店页速览
+
+**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是地下城里的剑士，
+而是战前调校 Agent 的构筑师：选择英雄、装备、词条、Build、Prompt 风格和战术偏好。
+开战后你不能救场，只能看它执行你的计划、暴露你的构筑缺陷，然后带着复盘回到下一局。
 
 | 玩家期待 | 你实际在做什么 | 它为什么不一样 |
 |----------|----------------|----------------|
@@ -53,11 +50,15 @@
   </tr>
 </table>
 
-## 先看游戏画面
+## 画面：构筑、战斗、复盘
 
 下面的画面来自可复现的 CLI 输出，不是概念图。对应命令可用
 `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`，README 第一屏先展示游戏画面、战斗节奏和复盘卖点。
+复现。SVG 资产保存在 `examples/`。
+
+1. **Run Ready Board**：展示你给 Agent 的 Prompt、Build 阶段、核心标签、下一次构筑选择和本地裁判规则。
+2. **Battle Stage**：左英雄、右怪物、中间弹道；模型选择行动，本地裁判结算效果。
+3. **After-Action Report**：胜负、节奏、失误、Codex 研究和下一局命令留在屏幕上。
 
 <table>
   <tr>
@@ -73,6 +74,9 @@
     </td>
   </tr>
 </table>
+
+<details>
+<summary>可复现终端片段 / Reproducible CLI Capture</summary>
 
 ```text
 RUN READY BOARD
@@ -101,36 +105,36 @@ BATTLE TURN MAP
   [FIRST HERO] Hex Seal
   [READ] one hero hit created the swing
 ```
+</details>
 
-## 先说清楚：你到底玩什么
+## 每局你会做什么
 
-它的重点不是让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
+1. **构筑 Agent**：选择英雄、装备、词条、Prompt 模板和 Build 方向。
+2. **放它进战斗**：战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
+3. **观看本地裁判结算**：本地引擎验证行动是否合法，并结算伤害、状态、资源、胜负和奖励。
+4. **带着伤痕重构下一局**：每场战斗都会留下本地 trace、战报、图鉴进度和 run archive。
 
-模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
-**模型永远不决定伤害、掉落、胜负。**
-
-1. **构筑 Agent**：玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
-2. **观看 Agent 出招**：战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
-3. **接受本地裁判**：本地引擎验证行动是否合法，并结算伤害、状态、资源、胜负和奖励。
-4. **把失败变成情报**：每场战斗都会留下本地 trace、战报、图鉴进度和 run archive，方便复盘下一局。
-
-因此它更接近“AI 驾驶的终端肉鸽”，而不是普通聊天机器人或日志生成器。
-
-## 为什么值得看
+## 关键特色
 
 - **AI 决策是核心玩法。** Prompt 不只是说明文字，而会影响 Agent 是否打断吟唱、是否保留 MP、是否优先处理高 ATB 敌人和 Boss 窗口。
 - **TUI 有游戏画面感。** 当前战斗屏已经包含低分辨率 Canvas、左右对战舞台、角色与怪物像素形象、武器小卡、弹道、命中浮字、`VOX` 英雄台词和 `ENM` 敌方回应。
 - **战斗不是黑盒。** `ENCOUNTER BRIEFING`、`MOMENTUM BOARD`、`CINEMATIC BEAT`、`BATTLE TURN MAP`、`BATTLE RESULT BOARD` 会解释威胁、势能、行动轨道和战后结论。
+- **模型强，但不能篡改规则。** 模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。**模型永远不决定伤害、掉落、胜负。**
 - **可离线试玩。** 默认 mock provider 无需网络、无需 API key，也能跑完整 demo、单场战斗、完整副本、图鉴、死亡历史和状态页。
-- **可接真实模型但不泄露密钥。** 支持 OpenAI、Anthropic、OpenAI-compatible；配置只保存环境变量名，实际 key 只从当前 shell 读取，并显示为 `set (hidden)`。
-- **有策划和数值工具。** `batch` 可批量试跑，输出胜率、节奏异常、MP 枯竭、反制错失、样本热力图和调参建议。
 
-## 一条命令试玩
+<a id="play-now"></a>
+
+## 立即试玩：无网络，无 API key
 
 ```bash
 pip install -e .
-ouro doctor --lang zh --content-dir content
 ouro demo --lang zh --seed 1
+```
+
+想直接打一场或跑完整副本：
+
+```bash
+ouro play --mock
 ouro run --mock
 ```
 
@@ -151,95 +155,25 @@ ouro history --lang zh --limit 5
 
 ---
 
-## 当前进度
+## 当前可玩内容
 
-| Slice | 内容 | 状态 |
-|-------|------|------|
-| 0 | 可安装 CLI、Provider 配置、ASCII-safe 主屏 | done |
-| A | 确定性 ATB 战斗、action schema、mock model、本地 trace | done |
-| i18n | UI / 内容 / Mock 旁白中英双语（中文默认，--lang en 切英文） | done |
-| Provider | `openai` / `anthropic` / `openai-compatible` 真实 adapter + 自动降级 | done |
-| B | 6 英雄 / 18 技能 / 15 装备 / 12 词条 / 5 羁绊 / 构筑结算 | done |
-| C-Experience | 主菜单、英雄/Prompt/Build 配置、实时动作帧、战报、批量试跑 | done |
-| D | 副本 / 路线 / 商店 / 奖励（完整肉鸽循环） | done |
-| F | 批量试跑 + 基础平衡统计 | done |
-| C-GameUI | 卡片 UI、角色动作、Build 快感、图鉴、Context 成长 | done |
-| C0 | BattleLLMSession、静态上下文、turn delta、session trace | done |
-| C1 | Build 面板、Buff/Debuff UI、怪物档次、图鉴阶段 | done |
-| C2 | 怪物家族、三档图鉴与内容 schema | done |
-| E | 图鉴持久化、Run 归档、死亡历史 | done |
+| 你能玩到什么 | 现在是否可用 | 推荐命令 |
+|--------------|--------------|----------|
+| 引导式首局试玩 | 可用 | `ouro demo --lang zh --seed 1` |
+| 单场 AI 战斗 | 可用 | `ouro play --mock` |
+| 完整副本：路线、商店、休息、奖励和 Boss | 可用 | `ouro run --mock` |
+| 英雄卡和 Build 配置 | 可用 | `ouro list-heroes` / `ouro hero-card hero_ash_guardian` |
+| 图鉴、状态、死亡历史和运行归档 | 可用 | `ouro status --lang zh` / `ouro codex --lang zh` |
+| 本地战斗回放 | 可用 | `ouro replay examples/traces/mvp_a_seed7_mock.trace.jsonl` |
+| 批量试跑与数值报告 | 可用 | `ouro batch --count 50 --seed 1` |
+
+<p align="center">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-359%20passing-brightgreen">
+  <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
+  <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
+</p>
 
 `359 测试通过`。任何测试都不联网。
-
----
-
-## 近期开发（2026-05-07）
-
-<details>
-<summary>开发日志和实现细节</summary>
-
-### Slice C-Experience & F - 批量试跑（已完成）
-
-**实现内容：**
-
-1. **批量战斗引擎** (`src/ouro_agent/engine/battle.py`)
-   - `BatchResult` 数据类：多场战斗聚合统计
-   - `run_batch()` 函数：支持批量运行和进度回调
-   - 统计指标：胜率、普攻占比、技能使用率、平均回合数、伤害统计
-
-2. **CLI Batch 命令** (`src/ouro_agent/cli/main.py`)
-   - `batch` 子命令用于数值平衡测试
-   - 参数：`--count`、`--seed`、`--hero`、`--enemies`、`--quiet`
-   - ASCII 进度条和详细汇总报告
-
-3. **测试** (`tests/unit/test_battle.py`)
-   - `test_batch_run_produces_reproducible_results()`
-   - `test_batch_run_is_reproducible_with_same_seed()`
-
-**使用方法：**
-
-```bash
-# 运行 50 场战斗（默认英雄/敌人）
-ouro --lang zh batch --count 50 --seed 1
-
-# 静默模式（无进度条）
-ouro --lang zh batch --count 100 --quiet
-
-# 自定义英雄和敌人
-ouro --lang zh batch --count 20 --hero hero_shadow_apprentice --enemies enemy_hungry_cultist
-```
-
-**示例输出：**
-```
-=== 批量运行报告 ===
-
-英雄: 阿斯缇娅
-敌人: 饥饿邪教徒, 黑烛侍祭
-
-总体统计:
-  总运行数: 50
-  胜利: 50 (100.0%)
-  战败: 0
-  超时: 0
-
-行动模式:
-  平均英雄回合: 6.0
-  平均普攻占比: 0.0%
-  平均技能使用率: 100.0%
-
-技能使用详情:
-  Shadow Sting：150
-  Hex Seal：100
-  Corrupted Focus：50
-```
-
-### Slice D - 完整肉鸽循环（已完成）
-
-这一阶段实现了可从开局走到 Boss 的单局流程：路线选择、战斗节点、
-奖励三选一、商店、休息、事件、结算、run archive 与下一局建议。
-详细实现以 `docs/product/06_需求追踪矩阵_20260503.md` 的证据记录为准。
-
-</details>
 
 ---
 
@@ -284,6 +218,9 @@ ouro play --mock
 
 ## 双语机制
 
+语言切换 / Language：CLI 语言切换使用 `ouro --lang zh` 或
+`ouro --lang en`，也可以通过 `ouro config set language` 保存默认语言。
+
 ID（`hero_shadow_apprentice`、`skill_shadow_sting` 等）始终英文，
 玩家可见文本中英双语。
 
@@ -300,9 +237,10 @@ ID（`hero_shadow_apprentice`、`skill_shadow_sting` 等）始终英文，
 
 ---
 
-## 真实 Provider 接入
+## 可选：接入真实模型
 
-API key **永远不**保存进配置文件。配置只存环境变量名（如
+第一次试玩不需要真实模型。默认 mock provider 已经可以完整离线游玩。
+如果后续要接入真实模型，API key **永远不**保存进配置文件。配置只存环境变量名（如
 `OPENAI_API_KEY`），实际值在调用时从 `os.environ` 读取。
 
 如果真实 provider 在战斗中失败（网络 / 鉴权 / 超时），引擎会
