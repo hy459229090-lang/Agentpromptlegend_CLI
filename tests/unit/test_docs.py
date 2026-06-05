@@ -22,16 +22,23 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-battle-canvas.svg",
         "examples/ouro-after-action.svg",
     )
+    battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
 
     assert "完整中文文档 / Full Chinese README" in text
     assert "English Store Page" in text
     assert "双语首页 / Bilingual README" in zh_text
+    assert "Build one Agent. Tune the Prompt. Watch the dungeon judge it." in text
+    assert "像 Steam 页面一样先说清楚" in text
+    assert "像 Steam 页面一样先说清楚" in zh_text
+    assert "游戏画面 / Media Gallery" in text
     assert "Real TUI Captures" in text
     for media_file in media_files:
         assert media_file in text
         assert media_file in zh_text
         assert (ROOT / media_file).is_file()
         assert "<svg" in (ROOT / media_file).read_text(encoding="utf-8")
+    assert "CINEMATIC BEAT" in battle_media
+    assert "FLOAT -16 HP | SLN" in battle_media
     assert "README media captures" in examples_readme
     assert "storefront-friendly" in examples_readme
     assert "RUN READY BOARD" in text

@@ -3,7 +3,7 @@
 <p align="center">
   <strong>中文介绍</strong>
   ·
-  <a href="README.md#english-store-page"><strong>English</strong></a>
+  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
   ·
   <a href="README.md"><strong>双语首页 / Bilingual README</strong></a>
   ·
@@ -15,16 +15,34 @@
 </p>
 
 <p align="center">
+  <strong>训练一个英雄 Agent。调教 Prompt。看地牢用本地规则审判它。</strong><br>
+  <sub>黑暗终端 AI 肉鸽：你负责构筑和策略，模型负责出招，本地引擎负责所有伤害、状态、奖励和胜负。</sub>
+</p>
+
+<p align="center">
   <img alt="tests badge" src="https://img.shields.io/badge/tests-357%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
+<table>
+  <tr>
+    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
+    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
+    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
+  </tr>
+  <tr>
+    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
+    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
+    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
+  </tr>
+</table>
+
 ---
 
 ## 这是什么
 
-### 训练一个会自己下副本的黑暗英雄 Agent
+### 像 Steam 页面一样先说清楚：这到底玩什么
 
 **暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
 而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
@@ -35,16 +53,12 @@
 
 它的重点不是让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
 
-1. 玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
-2. 战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
-3. 本地裁判验证行动是否合法，并结算伤害、状态、资源、胜负和奖励。
-4. 每场战斗都会留下本地 trace、战报、图鉴进度和 run archive，方便复盘下一局。
+1. **构筑 Agent**：玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
+2. **观看 Agent 出招**：战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
+3. **接受本地裁判**：本地引擎验证行动是否合法，并结算伤害、状态、资源、胜负和奖励。
+4. **把失败变成情报**：每场战斗都会留下本地 trace、战报、图鉴进度和 run archive，方便复盘下一局。
 
 因此它更接近“AI 驾驶的终端肉鸽”，而不是普通聊天机器人或日志生成器。
-
-| 类型 | 当前状态 | 试玩门槛 |
-|------|----------|----------|
-| CLI roguelike / auto-battler / prompt-building game | MVP release candidate | 默认 mock，无需网络，无需 API key |
 
 ## 游戏画面
 

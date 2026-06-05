@@ -3,7 +3,9 @@
 <p align="center">
   <a href="README.zh.md"><strong>完整中文文档 / Full Chinese README</strong></a>
   ·
-  <a href="#english-store-page"><strong>English</strong></a>
+  <a href="#english-store-page"><strong>English Store Page</strong></a>
+  ·
+  <a href="#media-gallery--real-tui-captures"><strong>游戏画面 / Media Gallery</strong></a>
   ·
   <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
@@ -13,16 +15,34 @@
 </p>
 
 <p align="center">
+  <strong>Build one Agent. Tune the Prompt. Watch the dungeon judge it.</strong><br>
+  <sub>训练一个会自己下副本的黑暗英雄 Agent，然后看本地裁判把每一次选择结算成节奏、伤害、失败和成长。</sub>
+</p>
+
+<p align="center">
   <img alt="tests badge" src="https://img.shields.io/badge/tests-357%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
+<table>
+  <tr>
+    <td><strong>类型</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
+    <td><strong>玩家幻想</strong><br>战前训练 Agent，战中观看它读局、犯错、反制和成长</td>
+    <td><strong>试玩门槛</strong><br>默认 mock，无需网络，无需 API key</td>
+  </tr>
+  <tr>
+    <td><strong>战斗规则</strong><br>模型只选择行动，本地引擎负责校验与结算</td>
+    <td><strong>画面目标</strong><br>图形化 TUI、左右对战、像素角色、弹道、浮字、分镜</td>
+    <td><strong>当前状态</strong><br>MVP release candidate，可安装、可试玩、可复盘</td>
+  </tr>
+</table>
+
 ---
 
 ## 中文介绍
 
-### 训练一个会自己下副本的黑暗英雄 Agent
+### 像 Steam 页面一样先说清楚：这到底玩什么
 
 **暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
 而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
@@ -31,15 +51,19 @@
 模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
 所以这不是聊天机器人套壳，而是一款把 **AI 决策变成可观看、可复盘、可调教玩法** 的 CLI 游戏。
 
-| 游戏身份 | 当前状态 | 试玩门槛 |
-|----------|----------|----------|
-| CLI roguelike / auto-battler / prompt-building game | MVP release candidate | 默认 mock，无需网络，无需 API key |
+你真正玩的不是“按下技能按钮”，而是三件事：
+
+1. **训练前的构筑判断**：英雄、Prompt、装备、词条和 Build 会改变 Agent 的读局倾向。
+2. **战斗中的观战张力**：你看它是否保留 MP、是否打断吟唱、是否错过 Boss 窗口。
+3. **战后的复盘成长**：每局留下回合轨道、死亡历史、Codex 情报和下一局建议。
+
+<a id="media-gallery--real-tui-captures"></a>
 
 ### 游戏画面 / Real TUI Captures
 
 这些媒体图来自当前 CLI 输出的视觉整理；对应命令可用
 `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`，README 可以直接展示真实画面语言，而不是只放日志。
+复现。SVG 资产保存在 `examples/`，README 直接展示游戏画面，而不是只放文本日志。
 
 <table>
   <tr>
@@ -89,13 +113,6 @@ BATTLE TURN MAP
   [READ] one hero hit created the swing
 ```
 
-### 你在游戏里做什么
-
-1. **配置 Agent**：选英雄、Prompt 模板、装备、词条和 Build 方向。
-2. **观看战斗**：AI 选择行动，本地裁判结算，TUI 展示意图、风险、伤害、窗口和节奏。
-3. **复盘失败**：查看 `BATTLE TURN MAP`、死亡历史、图鉴进度和下一局建议。
-4. **迭代构筑**：用新 Prompt、路线、奖励和 Codex 情报继续推进。
-
 ### 为什么它值得试玩
 
 - **AI 决策是核心玩法。** 你调的是 Agent 的提示词、构筑和上下文；战斗中观察它是否会保留 MP、打断吟唱、处理 Boss 窗口。
@@ -125,18 +142,31 @@ ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no
 
 ## English Store Page
 
-### Train one hero Agent, then watch the dungeon answer back
+### Train one hero Agent. Then watch the dungeon answer back.
 
 **Ouro Agent: Prompt Legend** is a dark terminal roguelike about building one
-AI-driven hero and watching it fight. You choose the hero, equipment, affixes,
-Build direction, Prompt style, and tactical bias. During combat, the model only
-chooses structured actions; the local engine validates those actions and resolves
-damage, status effects, victory, rewards, archives, and long-term progression.
+AI-driven hero before the fight starts. You choose the hero, equipment, affixes,
+Build direction, Prompt style, and tactical bias. Then you watch the Agent enter
+combat on its own.
 
-It is not a chatbot wrapped in combat text. It is a playable CLI auto-battler
+The model only chooses structured actions. The local engine validates those
+actions and resolves every hit, status effect, reward, defeat, archive, and
+long-term progression step. That boundary is the game: your Prompt can be clever,
+but the dungeon still has rules.
+
+This is not a chatbot wrapped in combat text. It is a playable CLI auto-battler
 where AI decisions become visible, tunable, and reviewable.
 
-What you get:
+**The loop**
+
+1. Build one hero Agent with a Prompt, equipment, affixes, and a tactical plan.
+2. Watch the battle stage: left hero, right enemy, projectile lane, VOX/ENM lines,
+   resource deltas, counter windows, judge result, and recent log.
+3. Read the after-action report: turn map, tactical diagnosis, Codex progress,
+   death history, and the next run recommendation.
+4. Tune the Prompt or Build, then send the Agent back in.
+
+**Why it works**
 
 - A deterministic mock mode that needs no network and no API key.
 - A graphical TUI battle stage with actor sprites, projectile lanes, VOX/ENM
@@ -145,8 +175,10 @@ What you get:
   with safe preflight and fallback behavior.
 - Persistent Codex progress, run archives, death history, status dashboards,
   replay, and batch balance reports.
+- Local rules own damage, drops, victory, and failure, so model behavior is
+  readable instead of magical.
 
-Quick start:
+**Quick start**
 
 ```bash
 pip install -e .
@@ -156,8 +188,8 @@ ouro play --mock
 ouro run --mock
 ```
 
-See the media gallery above for the current `Real TUI Captures`, or run the
-Unicode battle view directly:
+See the `Real TUI Captures` gallery above for the current screen language, or
+run the Unicode battle view directly:
 
 ```bash
 ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content

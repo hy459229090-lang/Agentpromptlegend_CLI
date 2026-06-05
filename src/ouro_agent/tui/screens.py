@@ -138,6 +138,15 @@ def render_battle_screen(
     lines.extend(_render_battle_momentum_panel(state, frame, last_record, width=width, lang=lang))
     lines.extend(_render_action_focus_panel(frame, width=width, lang=lang))
     lines.extend(
+        _render_cinematic_beat_panel(
+            state,
+            last_record,
+            frame=frame,
+            width=width,
+            lang=lang,
+        )
+    )
+    lines.extend(
         _render_build_climax_panel(
             build,
             bundle=bundle,
@@ -2076,6 +2085,107 @@ def _render_action_focus_panel(
     if frame.event_banner:
         lines.append(f"{banner_title}   {frame.event_banner}")
     return list(pixel_panel(action_title, [fit_text(line, max_text) for line in lines], width, tone=_frame_tone(frame)).lines)
+
+
+def _render_cinematic_beat_panel(
+    state: BattleState,
+    last_record: TurnRecord | None,
+    *,
+    frame: BattleFrame,
+    width: int,
+    lang: str,
+) -> list[str]:
+    title = "CINEMATIC BEAT" if lang == "en" else "战斗分镜 / CINEMATIC BEAT"
+    max_text = max(24, width - 10)
+
+    hero = state.hero
+    hero_hp_pct = hero.hp / max(1, hero.max_hp)
+    hero_mp_pct = hero.mp / max(1, hero.max_mp)
+    vox_raw = _select_hero_line(
+        hero_id=hero.id,
+        hp_pct=hero_hp_pct,
+        mp_pct=hero_mp_pct,
+        record=last_record,
+        frame=frame,
+        lang=lang,
+    )
+    enm_raw = _select_enemy_line(state, last_record, frame, lang=lang, width=max_text)
+    float_raw = _build_cinematic_float(frame, width=max_text)
+    strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text)
+    log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
+
+    body = [
+        f"VOX   {fit_text(_director_text(vox_raw, lang), max_text)}",
+        f"ENM   {fit_text(_director_text(enm_raw, lang), max_text)}",
+        f"FLOAT {fit_text(float_raw, max_text)}",
+        f"STRIP {fit_text(strip_raw, max_text)}",
+    ]
+    body.extend(
+        f"LOG   {fit_text(line, max_text)}" if line else f"LOG   {label('no_events', lang)}"
+        for line in log_lines
+    )
+    if not log_lines:
+        body.append(f"LOG   {label('no_events', lang)}")
+
+    return list(pixel_panel(title, body, width, tone=_frame_tone(frame)).lines)
+
+
+def _select_enemy_line(
+    state: BattleState,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    lang: str,
+    width: int,
+) -> str:
+    target = _screen_target(state, record)
+    line = _canvas_enemy_dialogue(
+        target,
+        record,
+        frame,
+        lang=lang,
+        width=width,
+    )
+    if line.startswith("ENM "):
+        line = line[4:]
+    return line
+
+
+def _build_cinematic_float(frame: BattleFrame, *, width: int) -> str:
+    if frame.floating_numbers:
+        values = [value for value in frame.floating_numbers if value]
+        if values:
+            return " | ".join(values)
+
+    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else ""
+    if impact:
+        return fit_text(impact, width)
+    return "none"
+
+
+def _build_cinematic_strip(
+    frame: BattleFrame,
+    *,
+    lang: str,
+    width: int,
+) -> str:
+    windup = "windup"
+    lane = frame.effect_glyph or frame.effect_kind or "lane"
+    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else "impact"
+    judge = frame.judge_label.split("|", 1)[0].strip() if frame.judge_label else "WAIT"
+
+    strip = f"{windup} -> {lane} -> {_director_text(impact, lang)} -> {_director_text(judge, lang)}"
+    return fit_text(_fit_visual(strip, width), width)
+
+
+def _build_cinematic_logs(logs: list[str], *, lang: str, width: int) -> list[str]:
+    if not logs:
+        return []
+    compacted: list[str] = []
+    for event in logs[:2]:
+        compact = _compact_battle_log_event(event)
+        compacted.append(_director_text(_fit_visual(compact, width), lang))
+    return compacted
 
 
 def _render_build_climax_panel(

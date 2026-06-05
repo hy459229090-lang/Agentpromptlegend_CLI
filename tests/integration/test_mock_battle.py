@@ -170,6 +170,12 @@ def test_battle_screen_is_ascii_safe(bundle):
     assert "ENEMIES" in screen
     assert "MODEL TURN" in screen
     assert "Echo Cost" in screen
+    assert "CINEMATIC BEAT" in screen
+    assert "VOX" in screen
+    assert "ENM" in screen
+    assert "FLOAT" in screen
+    assert "STRIP" in screen
+    assert "LOG" in screen
 
 
 def test_battle_screen_uses_duel_layout_build_and_session(bundle):
@@ -234,6 +240,12 @@ def test_battle_screen_uses_duel_layout_build_and_session(bundle):
     assert "RISK" in screen
     assert "ALIGN" in screen
     assert any(effect in screen for effect in ("-- seal -->", "-- sting ->", "-- focus ->"))
+    assert "CINEMATIC BEAT" in screen
+    assert "VOX" in screen
+    assert "ENM" in screen
+    assert "FLOAT" in screen
+    assert "STRIP" in screen
+    assert "LOG" in screen
 
 
 def test_battle_screen_has_80_column_compact_duel_snapshot(bundle):
@@ -440,6 +452,11 @@ def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, cap
     assert "IMPACT" in out
     assert "FAIL IF" in out
     assert "COUNTER CLOCK" in out
+    assert "CINEMATIC BEAT" in out
+    assert "VOX" in out
+    assert "ENM" in out
+    assert "FLOAT" in out
+    assert "STRIP" in out
     assert "Problem:" in out
     assert "Next Build Pick:" in out
     assert "BATTLE COMPLETE" in out

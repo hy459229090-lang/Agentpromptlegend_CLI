@@ -60,7 +60,7 @@
   <text x="868" y="504" class="mono gold">INTENT SILENCED</text>
   <text x="868" y="536" class="mono small">STACK -c██░ &gt;k███</text>
   <rect x="82" y="584" width="1116" height="92" class="panel"/>
-  <text x="106" y="622" class="mono top">ACTION</text>
-  <text x="210" y="622" class="mono text">Hex Seal -&gt; Black Candle Acolyte | VALID | -16 HP</text>
-  <text x="106" y="654" class="mono small">INTENT control the fastest threat   RISK spends tempo resource   ALIGN Prompt: Control hit | Build: shadow/control</text>
+  <text x="106" y="622" class="mono top">CINEMATIC BEAT</text>
+  <text x="330" y="622" class="mono text">VOX There. The wick forgets its prayer.  ENM armor cracking</text>
+  <text x="106" y="654" class="mono small">FLOAT -16 HP | SLN   STRIP windup -&gt; --x seal -- -&gt; HIT-16 MP72&gt;54 INT:N -&gt; VALID   LOG CAST HEX -MP18</text>
 </svg>
