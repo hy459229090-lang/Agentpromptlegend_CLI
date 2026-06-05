@@ -1208,7 +1208,11 @@ def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, languag
     assert "[03 LOG]" in screen or "[03 战斗日志]" in screen
     assert "Hex Seal -> Hungry Cultist" in screen or "禁咒封印 -> 饥饿邪教徒" in screen
     assert "VALID | -16 HP" in screen or "有效 | -16 HP" in screen
-    assert "Hungry Cultist is sil" in screen
+    assert "CAST HEX HIT-16" in screen
+    assert "SLN CULTIST" in screen
+    log_lines = [line for line in screen.splitlines() if "[03 LOG]" in line or "[03 战斗日志]" in line]
+    assert log_lines
+    assert all("..." not in line for line in log_lines)
     for line in screen.splitlines():
         assert visual_width(line) <= width
 

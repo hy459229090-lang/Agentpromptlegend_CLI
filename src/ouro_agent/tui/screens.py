@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections import Counter
 import os
+import re
 
 from ouro_agent.art.battle_assets import enemy_sprite as asset_enemy_sprite
 from ouro_agent.art.battle_assets import hero_sprite as asset_hero_sprite
@@ -2348,9 +2349,7 @@ def _render_battle_film_lines(
     judge_text = _director_text(frame.judge_label, lang)
     if frame.impact_line:
         judge_text = f"{judge_text} | {_director_text(frame.impact_line, lang)}"
-    latest_log = state.log[-1] if state.log else no_log
-    if len(state.log) >= 2:
-        latest_log = f"{state.log[-2]} / {state.log[-1]}"
+    latest_log = _battle_film_log_text(state.log[-2:], no_log=no_log)
 
     return [
         header,
@@ -2358,6 +2357,53 @@ def _render_battle_film_lines(
         f"[02 {judge_label}] {label('judge_label', lang)}: {judge_text}",
         f"[03 {log_label}] {latest_log}",
     ]
+
+
+def _battle_film_log_text(logs: list[str], *, no_log: str) -> str:
+    if not logs:
+        return no_log
+    return " / ".join(_compact_battle_log_event(log) for log in logs)
+
+
+def _compact_battle_log_event(log: str) -> str:
+    text = " ".join(log.split())
+    lower = text.lower()
+    amount = _first_number(text)
+    mp = _mp_cost_token(text)
+    if "casts hex seal" in lower:
+        return _join_tokens("CAST HEX", mp, f"HIT-{amount}" if "damage" in lower and amount else "")
+    if "casts shadow sting" in lower:
+        return _join_tokens("CAST STING", mp)
+    if "casts corrupted focus" in lower:
+        return _join_tokens("CAST FOCUS", mp)
+    if "chant breaks" in lower or "under silence" in lower:
+        return "CHANT BREAK"
+    if "continues a low chant" in lower:
+        return "CHANT +1"
+    if "releases a shadow chant" in lower:
+        return f"CHANT -{amount}" if amount else "CHANT RELEASE"
+    if "shield absorbs" in lower:
+        return f"SHD -{amount}" if amount else "SHD ABSORB"
+    if "hits astia" in lower:
+        return f"STRIKE -{amount}" if amount else "STRIKE"
+    if "is silenced" in lower:
+        target = "CULTIST" if "hungry cultist" in lower else "ENEMY"
+        return f"SLN {target}"
+    return _fit_visual(text, 42)
+
+
+def _mp_cost_token(text: str) -> str:
+    match = re.search(r"-MP\s*(\d+)", text)
+    return f"-MP{match.group(1)}" if match else ""
+
+
+def _first_number(text: str) -> str:
+    match = re.search(r"\d+", text)
+    return match.group(0) if match else ""
+
+
+def _join_tokens(*tokens: str) -> str:
+    return " ".join(token for token in tokens if token)
 
 
 def _battle_win_plan(
