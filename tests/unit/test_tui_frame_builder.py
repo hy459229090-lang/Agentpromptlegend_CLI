@@ -242,6 +242,12 @@ def test_unicode_battle_screen_canvas_width_matrix(bundle, width):
     assert "SELECT" in screen
     assert "IMPACT" in screen
     assert "HIT -16 HP SLN" in screen
+    assert "HIT-16 MP72>72 INT:Y" in screen
+    assert "next inter..." not in screen
+    if width <= 88:
+        assert "ENEMY [c] CULTIST" in screen
+    else:
+        assert "ENEMY [c] HUNGRY CULTIST" in screen
     assert "ACTION HEX -> c" in screen
     assert "ACTION Hex Seal" not in screen
     assert "Hex Seal -> Hungry Cultist" in screen
@@ -887,6 +893,8 @@ def test_unicode_battle_screen_adds_stagecraft_focus_markers(bundle):
     assert "<TGT" in screen
     assert "RETICLE [WINDOW]" in screen
     assert "THREAT WINDOW" in screen
+    assert "ENEMY [k] ACOLYTE" in screen
+    assert "ENEMY [k] Black Candle A..." not in screen
     assert "[W:STF] c==*" in screen
     assert "[ONLINE] shadow" in screen
     assert "░▓███░" in screen
@@ -1114,6 +1122,9 @@ def test_unicode_battle_screen_draws_tempo_rail_inside_canvas(bundle, width):
     assert "SEAL -19 HP" in screen
     assert "ACTION HEX -> K" in screen
     assert "JUDGE  VALID | -19 HP" in screen
+    tempo_lines = [line for line in screen.splitlines() if "TEMPO RAIL" in line or "RAIL H" in line]
+    assert tempo_lines
+    assert all("..." not in line for line in tempo_lines)
     for line in screen.splitlines():
         assert visual_width(line) <= width
 

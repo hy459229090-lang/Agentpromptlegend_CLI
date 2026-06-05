@@ -385,7 +385,7 @@ def _render_canvas_duel_panel(
     _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero)
 
     enemy_title = (
-        f"ENEMY [{target.short_glyph}] {target.name}"
+        _canvas_enemy_title(target, right_w - 3)
         if target is not None
         else "ENEMY -"
     )
@@ -479,7 +479,7 @@ def _render_canvas_duel_panel(
     if frame.counter_clock:
         surface.draw_text(center_x + 1, 14, fit_text(_canvas_counter_rail_label(frame.counter_clock), center_w - 2))
     elif frame.impact_line:
-        surface.draw_text(center_x + 1, 14, fit_text(frame.impact_line, center_w - 2))
+        surface.draw_text(center_x + 1, 14, fit_text(_canvas_impact_label(frame.impact_line), center_w - 2))
     _draw_canvas_delta_ribbon(surface, center_x + 1, 15, center_w - 2, frame, state)
 
     rendered = _colorize_canvas_lines(
@@ -603,6 +603,36 @@ def _canvas_enemy_threat_badge(target: Enemy, frame: BattleFrame) -> str:
     if target.hp / max(1, target.max_hp) <= 0.3:
         return "THREAT LOW HP"
     return f"THREAT {target.tier.upper()}"
+
+
+def _canvas_enemy_title(target: Enemy, width: int) -> str:
+    choices = _canvas_enemy_stage_name_choices(target)
+    for choice in choices:
+        title = f"ENEMY [{target.short_glyph}] {choice}"
+        if visual_width(title) <= width:
+            return title
+    return f"ENEMY [{target.short_glyph}]"
+
+
+def _canvas_enemy_stage_name(target: Enemy) -> str:
+    return _canvas_enemy_stage_name_choices(target)[0]
+
+
+def _canvas_enemy_stage_name_choices(target: Enemy) -> tuple[str, ...]:
+    name = target.name.upper()
+    replacements = (
+        ("BLACK CANDLE ", ""),
+        ("HOLLOW ", ""),
+        ("ASH ", ""),
+    )
+    for old, new in replacements:
+        name = name.replace(old, new)
+    words = [word for word in name.split() if word]
+    if len(words) > 2:
+        words = words[-2:]
+    primary = " ".join(words) or target.short_glyph.upper()
+    fallback = words[-1] if words else target.short_glyph.upper()
+    return (primary, fallback, target.short_glyph.upper())
 
 
 def _draw_canvas_enemy_intent(
@@ -789,6 +819,47 @@ def _canvas_counter_ready_label(text: str) -> str:
     if lower.endswith("ready"):
         return "READY"
     return "CHECK"
+
+
+def _canvas_impact_label(impact_line: str) -> str:
+    parts: list[str] = []
+    for raw_part in impact_line.split("|"):
+        part = raw_part.strip()
+        if not part:
+            continue
+        compact = _canvas_impact_part(part)
+        if compact:
+            parts.append(compact)
+    return " ".join(parts) if parts else impact_line
+
+
+def _canvas_impact_part(part: str) -> str:
+    lower = part.lower()
+    if lower.startswith("-") and " hp" in lower:
+        damage = part.split(" ", 1)[0].lstrip("-")
+        suffix = " DOWN" if "down" in lower else ""
+        return f"HIT-{damage}{suffix}"
+    if lower.startswith("hp ") and "->" in part:
+        return "HP" + part.split(" ", 1)[1].replace("->", ">")
+    if lower.startswith("mp ") and "->" in part:
+        return "MP" + part.split(" ", 1)[1].replace("->", ">")
+    if lower == "next interrupt: yes":
+        return "INT:Y"
+    if lower == "next interrupt: no":
+        return "INT:N"
+    if lower == "chant released":
+        return "CAST:REL"
+    if lower == "window opened":
+        return "WIN:OPEN"
+    if lower in {"attack", "basic_attack"}:
+        return "STRIKE"
+    if lower == "chant_charge":
+        return "CHARGE"
+    if lower == "chant_release":
+        return "RELEASE"
+    if lower.startswith("fallback:"):
+        return "FB:" + _canvas_action_token(part.split(":", 1)[1].strip())
+    return _canvas_action_token(part)
 
 
 def _canvas_action_label(
@@ -1295,20 +1366,29 @@ def _draw_canvas_tempo_rail(
         return
     hero_atb = max(0, min(100, int(state.hero.atb)))
     enemy_atb = max(0, min(100, int(target.atb))) if target is not None else 0
-    if width < 30:
-        bar_width = 2
-        prefix = "RAIL"
-    elif width < 42:
-        bar_width = 4
-        prefix = "TEMPO RAIL"
-    else:
-        bar_width = 8
-        prefix = "TEMPO RAIL"
-    hero_bar = _canvas_tempo_bar(hero_atb, bar_width)
-    enemy_bar = _canvas_tempo_bar(enemy_atb, bar_width)
     state_label = _canvas_tempo_state(state, target, frame)
-    line = f"{prefix} H{hero_atb:03d} {hero_bar} E{enemy_atb:03d} {enemy_bar} {state_label}"
-    surface.draw_text(x, y, fit_text(line, width))
+    line = _canvas_tempo_line(hero_atb, enemy_atb, state_label, width)
+    surface.draw_text(x, y, line)
+
+
+def _canvas_tempo_line(hero_atb: int, enemy_atb: int, state_label: str, width: int) -> str:
+    candidates = (
+        ("TEMPO RAIL", 8, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+        ("TEMPO RAIL", 4, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+        ("TEMPO RAIL", 2, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+        ("RAIL", 2, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+        ("RAIL", 1, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+        ("T", 1, f"H{hero_atb:03d}", f"E{enemy_atb:03d}"),
+    )
+    for prefix, bar_width, hero_label, enemy_label in candidates:
+        line = (
+            f"{prefix} {hero_label} {_canvas_tempo_bar(hero_atb, bar_width)} "
+            f"{enemy_label} {_canvas_tempo_bar(enemy_atb, bar_width)} {state_label}"
+        )
+        if visual_width(line) <= width:
+            return line
+    fallback = f"T H{hero_atb:03d} E{enemy_atb:03d} {state_label}"
+    return fallback if visual_width(fallback) <= width else fit_text(fallback, width)
 
 
 def _canvas_tempo_bar(value: int, width: int) -> str:
