@@ -1,6 +1,6 @@
-# Agent Prompt Legend CLI / 暗影代理：祷文传说
+# Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
-**Language / 语言**: [中文](#中文) | [English](#english) | [完整中文文档](README.zh.md)
+**Language / 语言**: **中文** | [English](#english) | [完整中文文档 / Full Chinese README](README.zh.md)
 
 [![tests](https://img.shields.io/badge/tests-354%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
@@ -8,63 +8,81 @@
 
 ## 中文
 
-### AI 会自己下副本，你负责把它训练成英雄
+### 训练一个会自己下副本的黑暗英雄 Agent
 
-**暗影代理：祷文传说** 是一款命令行 AI 肉鸽。你不在战斗中手动点技能，
-而是在战前配置英雄、装备、词条、Prompt 和战术风格，然后观看这个 Agent
-自动战斗。模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、
-状态、胜负、奖励和长期存档。
+**暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
+而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
+自动战斗、犯错、打断吟唱、抢节奏或死在自己的判断里。
 
-这不是聊天机器人套壳。它的核心玩法是：**让 AI 决策变得可观看、可复盘、
-可调教**。
+模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
+所以这不是聊天机器人套壳，而是一款把 **AI 决策变成可观看、可复盘、可调教玩法** 的 CLI 游戏。
 
-| 类型 | 当前状态 | 试玩门槛 |
-|------|----------|----------|
+| 游戏身份 | 当前状态 | 试玩门槛 |
+|----------|----------|----------|
 | CLI roguelike / auto-battler / prompt-building game | MVP release candidate | 默认 mock，无需网络，无需 API key |
 
-### 游戏画面
+### 游戏画面 / Real TUI Captures
 
-真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`：
+下面都是当前版本的真实输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`。
+
+**开局配置：Prompt、Build、羁绊和下一步选择在进副本前就能看懂。**
 
 ```text
-█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
-█ HERO [CNDL] Astia        █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓ █ ENEMY [c] Hungry Cultist █
-█ VOX There. The wick...   █        . candle .                    █ ENM armor cracking   █
-█ ACT>▄██▄░                █ DIRECTOR T:WIN P:RDY F:INT           █     ▄▒▄        <TGT  █
-█    ▐▓c▓██                █              ░▒▓▓██>                 █    ▐▒x▒              █
-█  HP ████████████ 100/100 █            SEAL -16 HP               █ HP ███████░ 34/50    █
-█  MP ████████░░░░ 54/72   █ ACTION Hex Seal -> Hungry Cultist    █ THREAT WINDOW 0/1    █
-█  ATB READY               █ JUDGE  VALID | -16 HP                █ RETICLE [WINDOW]     █
-█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+RUN READY BOARD
+  [PROMPT] control / open by denying chant windows
+  [BUILD] [ONLINE] Online / Black Candle Interrupt
+  [CORE] shadow / control
+  [NEXT PICK] guard, armor, poison
+  [FIRST RULE] model chooses action, local judge resolves
+
+BUILD: [ONLINE] Online  Active Resonances: Corruption School
+Best Next Picks: guard, armor, poison
 ```
 
-```text
->==============================[ MOMENTUM BOARD ]==============================<
-| [FLOW] WINDOW | enemy ATB 99                                                 |
-| [LANE] HERO [########] 100/100 vs ENEMY [#######-] 104/120                   |
-| [TARGET] Hungry Cultist                                                      |
-| [SWING] hero hit -16 HP                                                      |
-| [READ] answer the window before damage races ahead                           |
->==============================================================================<
-```
+**图形化战斗舞台：左右站位、像素角色、弹道、数值、台词和裁判结果同屏。**
 
 ```text
+█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ BEAT T009 HERO ▀▀█
+█ HERO [CNDL] Astia       █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓  █ ENEMY [c] CULTIST █
+█ VOX seal the chant      █ DIRECTOR T:WIN P:RDY F:INT        █ ENM armor cracking█
+█ ACT>▄██▄░               █ TEMPO RAIL H100 ████ E081 ███░ WIN█      ▄▒▄    <TGT █
+█    ▐▓c▓██               █              ░▒▓▓██>              █     ▐▒x▒         █
+█  ░▓███░ [ONLINE] shadow █            SEAL -16 HP            █ HIT -16 HP SLN   █
+█ HP ████████████ 100/100 █ WOUND -16 ███░ 34/50 HOLD         █ HP ███████░ 34/50█
+█ MP ████████░░░░ 54/72   █ PLAN CONTROL | PROMPT HIT         █ INTENT SILENCED  █
+█ ATB READY               █ ACTION HEX -> c                   █ FX SLN1          █
+█ SKILL STG* HEX4 FOC*    █ DELTA MP72>54 I:N ATB:H*          █ STACK >c██░ -k███ █
+█▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+```
+
+**战后复盘：不是只告诉你赢了，而是告诉你这局节奏如何形成。**
+
+```text
+BATTLE RESULT BOARD
+  [RESULT] victory | HP 85/100 | MP 0/72
+  [TEMPO] hero 6 / enemy 6 / tick 50
+  [ACTION] basic:skill 0:6 / fallbacks 0
+  [DAMAGE] dealt 173 / taken 15 / pressure controlled
+
 BATTLE TURN MAP
-  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 ->
-  H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
-  [FIRST HERO] skill_hex_seal
+  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 -> H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
+  [FIRST HERO] Hex Seal
   [IMPACT] peak hit 48 / enemy damage 14
   [READ] one hero hit created the swing
+
+Status Details:
+  - [c] SLN silence x1 / 1t
+  - [k] CRP corrupt x2 / 3t
 ```
 
-### 你在游戏里做什么
+### 你在游戏里做什么 / Player Journey
 
 1. **配置 Agent**：选英雄、Prompt 模板、装备、词条和 Build 方向。
 2. **观看战斗**：AI 选择行动，本地裁判结算，TUI 展示意图、风险、伤害、窗口和节奏。
 3. **复盘失败**：查看 `BATTLE TURN MAP`、死亡历史、图鉴进度和下一局建议。
 4. **迭代构筑**：用新 Prompt、路线、奖励和 Codex 情报继续推进。
 
-### 为什么这个项目有意思
+### 为什么它值得试玩
 
 - **AI 决策是玩法，不是背景文案。** 你调的是 Agent 的提示词、构筑和上下文；
   战斗中观察它是否会保留 MP、打断吟唱、处理 Boss 窗口。
@@ -96,13 +114,16 @@ ouro --lang en play --mock --seed 2 --unicode --color always --no-trace
 
 ## English
 
-**Agent Prompt Legend CLI** is a command-line AI roguelike where you configure
-one hero Agent, then watch it fight automatically. The model chooses structured
-actions; the local engine validates them and resolves damage, statuses, victory,
-rewards, archives, and progression.
+### Train one hero Agent, then watch the dungeon answer back
 
-The design goal is not "chatbot writes a battle log." The goal is a playable
-terminal roguelike where AI decisions are visible, debuggable, and tunable.
+**Ouro Agent: Prompt Legend** is a dark terminal roguelike about building one
+AI-driven hero and watching it fight. You choose the hero, equipment, affixes,
+Build direction, Prompt style, and tactical bias. During combat, the model only
+chooses structured actions; the local engine validates those actions and resolves
+damage, status effects, victory, rewards, archives, and long-term progression.
+
+It is not a chatbot wrapped in combat text. It is a playable CLI auto-battler
+where AI decisions become visible, tunable, and reviewable.
 
 What you get:
 
@@ -118,7 +139,9 @@ Quick start:
 
 ```bash
 pip install -e .
+ouro --version
 ouro demo --lang en --seed 1
+ouro play --mock
 ouro run --mock
 ```
 
@@ -265,9 +288,9 @@ Action Patterns:
   Avg skill usage ratio: 100.0%
 
 Skill Usage Detail:
-  skill_shadow_sting: 150
-  skill_hex_seal: 100
-  skill_corrupted_focus: 50
+  Shadow Sting: 150
+  Hex Seal: 100
+  Corrupted Focus: 50
 ```
 
 </details>

@@ -1,12 +1,6 @@
-# 暗影代理：祷文传说 / Agent Prompt Legend CLI
+# 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
 **语言 / Language**: **中文** | [English](README.md#english)
-
-> AI 会自己下副本，你负责把它训练成英雄。
->
-> 这是一款命令行 AI 肉鸽。你配置一名英雄、Build、Prompt 和战术风格，
-> 然后看它在自动战斗中做选择；本地引擎负责裁判、伤害、胜负、奖励和长期存档。
-> **模型永远不决定伤害、掉落、胜负。**
 
 [![tests](https://img.shields.io/badge/tests-354%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
@@ -14,8 +8,16 @@
 
 ## 这是什么
 
-**暗影代理：祷文传说** 的重点不是让模型“讲故事”，而是让模型成为一名
-可训练、可观察、可复盘的战斗 Agent：
+### 训练一个会自己下副本的黑暗英雄 Agent
+
+**暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你不在战斗中手动点技能，
+而是在战前配置英雄、装备、词条、Build、Prompt 和战术风格，然后观看这个 Agent
+自动战斗、犯错、打断吟唱、抢节奏或死在自己的判断里。
+
+模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
+**模型永远不决定伤害、掉落、胜负。**
+
+它的重点不是让模型“讲故事”，而是让模型成为一名可训练、可观察、可复盘的战斗 Agent：
 
 1. 玩家选择英雄、装备、词条、Prompt 模板和 Build 方向。
 2. 战斗中模型只输出结构化行动，例如施放技能、选择目标、观察或防御。
@@ -30,37 +32,56 @@
 
 ## 游戏画面
 
-真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`：
+下面都是当前版本的真实 TUI 输出，来自 `ouro --lang en play --mock --seed 2 --unicode --no-trace`。
+
+**开局配置：Prompt、Build、羁绊和下一步选择在进副本前就能看懂。**
 
 ```text
-█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
-█ HERO [CNDL] Astia        █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓ █ ENEMY [c] Hungry Cultist █
-█ VOX There. The wick...   █        . candle .                    █ ENM armor cracking   █
-█ ACT>▄██▄░                █ DIRECTOR T:WIN P:RDY F:INT           █     ▄▒▄        <TGT  █
-█    ▐▓c▓██                █              ░▒▓▓██>                 █    ▐▒x▒              █
-█  HP ████████████ 100/100 █            SEAL -16 HP               █ HP ███████░ 34/50    █
-█  MP ████████░░░░ 54/72   █ ACTION Hex Seal -> Hungry Cultist    █ THREAT WINDOW 0/1    █
-█  ATB READY               █ JUDGE  VALID | -16 HP                █ RETICLE [WINDOW]     █
-█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+RUN READY BOARD
+  [PROMPT] control / open by denying chant windows
+  [BUILD] [ONLINE] Online / Black Candle Interrupt
+  [CORE] shadow / control
+  [NEXT PICK] guard, armor, poison
+  [FIRST RULE] model chooses action, local judge resolves
+
+BUILD: [ONLINE] Online  Active Resonances: Corruption School
+Best Next Picks: guard, armor, poison
 ```
 
-```text
->==============================[ MOMENTUM BOARD ]==============================<
-| [FLOW] WINDOW | enemy ATB 99                                                 |
-| [LANE] HERO [########] 100/100 vs ENEMY [#######-] 104/120                   |
-| [TARGET] Hungry Cultist                                                      |
-| [SWING] hero hit -16 HP                                                      |
-| [READ] answer the window before damage races ahead                           |
->==============================================================================<
-```
+**图形化战斗舞台：左右站位、像素角色、弹道、数值、台词和裁判结果同屏。**
 
 ```text
+█▀▀ THE ECHO ALTAR / COUNTER WINDOW ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ BEAT T009 HERO ▀▀█
+█ HERO [CNDL] Astia       █ ▓SELECT▓▓▓ █WINDOW███ ▓JUDGE▓▓▓▓  █ ENEMY [c] CULTIST █
+█ VOX seal the chant      █ DIRECTOR T:WIN P:RDY F:INT        █ ENM armor cracking█
+█ ACT>▄██▄░               █ TEMPO RAIL H100 ████ E081 ███░ WIN█      ▄▒▄    <TGT █
+█    ▐▓c▓██               █              ░▒▓▓██>              █     ▐▒x▒         █
+█  ░▓███░ [ONLINE] shadow █            SEAL -16 HP            █ HIT -16 HP SLN   █
+█ HP ████████████ 100/100 █ WOUND -16 ███░ 34/50 HOLD         █ HP ███████░ 34/50█
+█ MP ████████░░░░ 54/72   █ PLAN CONTROL | PROMPT HIT         █ INTENT SILENCED  █
+█ ATB READY               █ ACTION HEX -> c                   █ FX SLN1          █
+█ SKILL STG* HEX4 FOC*    █ DELTA MP72>54 I:N ATB:H*          █ STACK >c██░ -k███ █
+█▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+```
+
+**战后复盘：不是只告诉你赢了，而是告诉你这局节奏如何形成。**
+
+```text
+BATTLE RESULT BOARD
+  [RESULT] victory | HP 85/100 | MP 0/72
+  [TEMPO] hero 6 / enemy 6 / tick 50
+  [ACTION] basic:skill 0:6 / fallbacks 0
+  [DAMAGE] dealt 173 / taken 15 / pressure controlled
+
 BATTLE TURN MAP
-  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 ->
-  H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
-  [FIRST HERO] skill_hex_seal
+  [FLOW] H009-16 -> E010CHG -> E012 -> H017-48 -> E019 -> H025 -> E028-14 -> H034-47 -> E037CHG -> H042-15 -> E046BRK -> H050-47
+  [FIRST HERO] Hex Seal
   [IMPACT] peak hit 48 / enemy damage 14
   [READ] one hero hit created the swing
+
+Status Details:
+  - [c] SLN silence x1 / 1t
+  - [k] CRP corrupt x2 / 3t
 ```
 
 ## 为什么值得看
@@ -181,9 +202,9 @@ ouro --lang zh batch --count 20 --hero hero_shadow_apprentice --enemies enemy_hu
   平均技能使用率：100.0%
 
 技能使用明细：
-  skill_shadow_sting：150
-  skill_hex_seal：100
-  skill_corrupted_focus：50
+  Shadow Sting：150
+  Hex Seal：100
+  Corrupted Focus：50
 ```
 
 ### Slice D - 完整肉鸽循环（已完成）

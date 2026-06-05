@@ -15,7 +15,17 @@ ROOT = Path(__file__).resolve().parents[2]
 def test_readme_covers_install_mock_provider_and_privacy():
     """REQ-DIST-003: README keeps install, mock play, provider, and privacy paths."""
     text = (ROOT / "README.md").read_text(encoding="utf-8")
+    zh_text = (ROOT / "README.zh.md").read_text(encoding="utf-8")
 
+    assert "完整中文文档 / Full Chinese README" in text
+    assert "Real TUI Captures" in text
+    assert "RUN READY BOARD" in text
+    assert "THE ECHO ALTAR / COUNTER WINDOW" in text
+    assert "BATTLE RESULT BOARD" in text
+    assert "[FIRST HERO] Hex Seal" in text
+    assert "skill_hex_seal" not in text
+    assert "skill_hex_seal" not in zh_text
+    assert "游戏画面" in zh_text
     assert "pip install -e ." in text
     assert "pipx install git+https://github.com" in text
     assert "ouro --version" in text
