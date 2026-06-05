@@ -48,6 +48,34 @@ def _hex_record() -> TurnRecord:
     )
 
 
+def _focus_record(hero_id: str = "hero_shadow_apprentice") -> TurnRecord:
+    return TurnRecord(
+        tick=25,
+        actor_id=hero_id,
+        side="hero",
+        raw_text="analysis: stabilize before the chant release",
+        validation=None,
+        action=HeroAction(
+            type="cast_skill",
+            skill_id="skill_corrupted_focus",
+            targets=(hero_id,),
+        ),
+        judge=JudgeOutcome(
+            valid=True,
+            reason="cast_skill resolved",
+            summary=f"cast_skill skill_corrupted_focus -> {hero_id}",
+            damage=0,
+            target_ids=(hero_id,),
+            skill_id="skill_corrupted_focus",
+            action_kind="cast_skill",
+        ),
+        battle_session_id="be_focus",
+        static_context_hash="ctx_focus",
+        delta_context_id="be_focus_d0001",
+        usage_latency_ms=12,
+    )
+
+
 def test_battle_frame_exposes_director_fields(bundle):
     loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
     state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
@@ -66,6 +94,20 @@ def test_battle_frame_exposes_director_fields(bundle):
     assert frame.event_banner in {"CHARGE BROKEN", "SEAL PLACED"}
     assert frame.session_usage is not None
     assert frame.session_usage.ritual_time_ms == 12
+
+
+def test_battle_frame_support_skill_exposes_shield_impact(bundle):
+    """REQ-SUPPORTFX-001: support skills should expose their visible payoff."""
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    state.hero.mp = 42
+    state.hero.add_status(StatusEffect("status_shield", stacks=8, duration=2))
+
+    frame = build_battle_frame(state, _focus_record(state.hero.id))
+
+    assert frame.impact_line is not None
+    assert "SHD 8 shield" in frame.impact_line
+    assert "MP 42->42" in frame.impact_line
 
 
 def test_pixel_skin_panels_are_ascii_and_fixed_width():
@@ -534,6 +576,40 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
         assert "JUDGE" in screen
         for line in screen.splitlines():
             assert visual_width(line) <= width
+
+
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_support_skill_payoff(bundle, width):
+    """REQ-SUPPORTFX-001: self-buffs should not look like zero-damage attacks."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    state.hero.mp = 42
+    state.hero.add_status(StatusEffect("status_shield", stacks=8, duration=2))
+    state.log.append("Astia casts Corrupted Focus. -MP 0, cd 3.")
+    target = state.enemies[0]
+    target.max_hp = 70
+    target.hp = 70
+
+    screen = render_battle_screen(
+        state,
+        _focus_record(state.hero.id),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "FOCUS SHD+8" in screen
+    assert "SUPPORT SHD+8" in screen
+    assert "VALID SHD+8 MP42>42 INT:Y" in screen
+    assert "CAST FOCUS SHD -MP0" in screen
+    assert "SHADOW -0 HP" not in screen
+    assert "WOUND" not in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
 
 
 @pytest.mark.parametrize("width", [80, 100, 120])

@@ -471,6 +471,7 @@ def _render_canvas_duel_panel(
         state.hero,
         target,
         last_record,
+        frame,
     )
     _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
     action = fit_text(_canvas_action_label(frame, last_record, target, hero=state.hero), center_w - 2)
@@ -708,10 +709,14 @@ def _draw_canvas_damage_rail(
     hero: Hero,
     target: Enemy | None,
     record: TurnRecord | None,
+    frame: BattleFrame,
 ) -> None:
     if width < 20:
         return
-    if _canvas_pain_damage(record) > 0:
+    support_label = _canvas_support_rail_label(record, frame)
+    if support_label:
+        surface.draw_text(x, y, fit_text(support_label, width))
+    elif _canvas_pain_damage(record) > 0:
         surface.draw_text(x, y, fit_text(_canvas_pain_label(hero, record), width))
     elif target is not None:
         surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record), width))
@@ -780,6 +785,44 @@ def _canvas_pain_bar(hero: Hero) -> str:
     return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
+def _canvas_support_rail_label(record: TurnRecord | None, frame: BattleFrame) -> str:
+    if not _is_canvas_support_record(record):
+        return ""
+    return f"SUPPORT {_canvas_support_token(frame)}"
+
+
+def _canvas_support_effect_label(record: TurnRecord | None, frame: BattleFrame) -> str:
+    if not _is_canvas_support_record(record):
+        return ""
+    if record is not None and record.action is not None and record.action.type == "defend":
+        tag = "GUARD"
+    elif record is not None:
+        tag = _canvas_skill_action_tag(record, frame)
+    else:
+        tag = "SUPPORT"
+    return f"{tag} {_canvas_support_token(frame)}"
+
+
+def _canvas_support_token(frame: BattleFrame) -> str:
+    for delta in frame.resource_deltas:
+        label_code = delta.label.upper()
+        if label_code in {"SHD", "FOC", "GRD", "HST"}:
+            amount = delta.text.split(" ", 1)[0]
+            return f"{label_code}+{amount}"
+    return "READY"
+
+
+def _is_canvas_support_record(record: TurnRecord | None) -> bool:
+    if record is None or record.side != "hero" or record.action is None:
+        return False
+    if record.action.type == "defend":
+        return True
+    if record.action.type != "cast_skill":
+        return False
+    targets = tuple(str(target_id) for target_id in record.action.targets)
+    return bool(targets) and record.actor_id in targets
+
+
 def _canvas_counter_rail_label(counter_clock: str | None) -> str:
     if not counter_clock:
         return "CUT WATCH"
@@ -836,6 +879,9 @@ def _canvas_impact_label(impact_line: str) -> str:
 
 def _canvas_impact_part(part: str) -> str:
     lower = part.lower()
+    support_match = re.match(r"^(shd|foc|grd|hst)\s+(\d+)\b", lower)
+    if support_match:
+        return f"{support_match.group(1).upper()}+{support_match.group(2)}"
     if lower.startswith("-") and " hp" in lower:
         damage = part.split(" ", 1)[0].lstrip("-")
         suffix = " DOWN" if "down" in lower else ""
@@ -1562,6 +1608,9 @@ def _block_effect_lane(record: TurnRecord | None, frame: BattleFrame, width: int
             return block_effect_rows("break", "CHANT BROKEN", width)
         return block_effect_rows("enemy_strike", f"STRIKE -{amount} HP", width)
     if record.action is not None:
+        support_label = _canvas_support_effect_label(record, frame)
+        if support_label:
+            return block_effect_rows("guard", support_label, width)
         if record.action.type == "basic_attack":
             return block_effect_rows("strike", f"STRIKE -{damage} HP", width)
         if record.action.type == "defend":
@@ -2382,7 +2431,7 @@ def _compact_battle_log_event(log: str) -> str:
     if "casts shadow sting" in lower:
         return _join_tokens("CAST STING", mp)
     if "casts corrupted focus" in lower:
-        return _join_tokens("CAST FOCUS", mp)
+        return _join_tokens("CAST FOCUS", "SHD", mp)
     if "chant breaks" in lower or "under silence" in lower:
         return "CHANT BREAK"
     if "continues a low chant" in lower:

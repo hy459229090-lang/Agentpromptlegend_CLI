@@ -427,6 +427,8 @@ def _impact_line(state: BattleState, record: TurnRecord) -> str | None:
         else:
             parts.append(f"-{judge.damage} HP")
     if action and action.type == "cast_skill" and action.skill_id:
+        if state.hero.id in action.targets:
+            parts.extend(_hero_support_impact_parts(state.hero))
         skill = state.hero.find_skill(action.skill_id)
         if skill is not None:
             before_mp = min(state.hero.max_mp, state.hero.mp + skill.mp_cost)
@@ -436,6 +438,20 @@ def _impact_line(state: BattleState, record: TurnRecord) -> str | None:
     if not judge.valid:
         parts.append(f"fallback: {judge.fallback_to or 'none'}")
     return " | ".join(parts) if parts else judge.reason
+
+
+def _hero_support_impact_parts(hero: Hero) -> list[str]:
+    parts: list[str] = []
+    for status_id, label in (
+        ("status_shield", "SHD"),
+        ("status_focus", "FOC"),
+        ("status_guard", "GRD"),
+        ("status_haste", "HST"),
+    ):
+        status = hero.find_status(status_id)
+        if status is not None and status.stacks > 0:
+            parts.append(f"{label} {status.stacks} {STATUS_SHORT_NAMES[status_id][1]}")
+    return parts
 
 
 def _resource_deltas(state: BattleState, record: TurnRecord) -> tuple[ResourceDelta, ...]:
