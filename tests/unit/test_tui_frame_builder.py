@@ -835,7 +835,7 @@ def test_unicode_battle_screen_adds_stagecraft_focus_markers(bundle):
 
 @pytest.mark.parametrize("width", [80, 100, 120])
 def test_unicode_battle_screen_draws_enemy_intent_inside_canvas(bundle, width):
-    """REQ-ENEMYINTENT-001: Canvas stage should show compact enemy intent."""
+    """REQ-ENEMYINTENT-001/REQ-INTENTCLEAN-001: Canvas stage should show clean intent."""
     from ouro_agent.tui.screens import render_battle_screen
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
@@ -884,6 +884,7 @@ def test_unicode_battle_screen_draws_enemy_intent_inside_canvas(bundle, width):
     assert "ACTION Hex Seal" in chanting
     assert "JUDGE  VALID | -16 HP" in chanting
 
+    target.atb = 100
     target.add_status(StatusEffect("status_silence", stacks=1, duration=1))
     silenced = render_battle_screen(
         state,
@@ -895,6 +896,7 @@ def test_unicode_battle_screen_draws_enemy_intent_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "INTENT SILENCED" in silenced
+    assert "INTENT SILENCEDDY" not in silenced
 
     target.statuses.clear()
     target.chant_charge_turns = 0

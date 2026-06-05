@@ -560,6 +560,7 @@ def _draw_canvas_enemy_intent(
 ) -> None:
     if width < 12:
         return
+    surface.fill_rect(x, y, width, 1, " ")
     surface.draw_text(x, y, fit_text(_canvas_enemy_intent_label(target, frame), width))
 
 
