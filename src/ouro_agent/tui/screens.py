@@ -83,7 +83,7 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
     "reticle": {"en": "RETICLE", "zh": "准星"},
     "threat": {"en": "THREAT", "zh": "威胁"},
     "focus": {"en": "FOCUS", "zh": "焦点"},
-    "select": {"en": "SELECT", "zh": "SELECT"},
+    "select": {"en": "SELECT", "zh": "选定"},
 }
 
 
@@ -376,7 +376,7 @@ def _render_canvas_duel_panel(
     title = _canvas_label("canvas_title", lang)
     event = _stage_event_title(frame, lang)
     surface.draw_text(3, 0, f" {title} / {event} ")
-    _draw_canvas_beat_badge(surface, width, frame)
+    _draw_canvas_beat_badge(surface, width, frame, lang=lang)
 
     side_w = 24 if width <= 88 else 30
     left_w = side_w
@@ -426,6 +426,7 @@ def _render_canvas_duel_panel(
         max_mp=state.hero.max_mp,
         atb=state.hero.atb,
         width=left_w - 6,
+        lang=lang,
     )
     _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses)
     _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero, lang=lang)
@@ -467,6 +468,7 @@ def _render_canvas_duel_panel(
             max_mp=None,
             atb=target.atb,
             width=right_w - 6,
+            lang=lang,
         )
         _draw_canvas_status_chips(surface, right_x + 2, 12, right_w - 6, target.statuses)
         _draw_canvas_enemy_intent(surface, right_x + 2, 13, right_w - 6, target, frame, lang=lang)
@@ -535,7 +537,7 @@ def _render_canvas_duel_panel(
         ),
         center_w - 2,
     )
-    judge = fit_text(f"{_canvas_label('judge', lang)}  {frame.judge_label}", center_w - 2)
+    judge = fit_text(f"{_canvas_label('judge', lang)}  {_canvas_judge_label(frame.judge_label, lang=lang)}", center_w - 2)
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
     if frame.counter_clock:
@@ -652,23 +654,37 @@ def _draw_canvas_stagecraft(
     surface.fill_rect(right_x + 3, 6, enemy_shadow_w, 1, glyphs.mid)
 
     hero_actor = record is None or record.side == "hero"
-    hero_mark = "ACT>" if hero_actor else "TGT"
-    enemy_mark = "<TGT" if hero_actor else "<ACT"
+    if lang == "zh":
+        hero_mark = "动>" if hero_actor else "标<"
+        enemy_mark = "<标" if hero_actor else "动<"
+    else:
+        hero_mark = "ACT>" if hero_actor else "TGT"
+        enemy_mark = "<TGT" if hero_actor else "<ACT"
     surface.draw_text(left_x, 3, hero_mark)
     if target is not None:
         surface.draw_text(right_x + max(0, right_w - 4), 3, enemy_mark)
         surface.draw_text(right_x + 1, 7, fit_text(_canvas_enemy_threat_badge(target, frame, lang=lang), right_w - 2))
         if frame.counter_clock or frame.counter_hint:
+            reticle = (
+                f"{_canvas_label('reticle', lang)} [窗口]"
+                if lang == "zh"
+                else f"{_canvas_label('reticle', lang)} [WINDOW]"
+            )
             surface.draw_text(
                 right_x + 1,
                 9,
-                fit_text(f"{_canvas_label('reticle', lang)} [WINDOW]", right_w - 2),
+                fit_text(reticle, right_w - 2),
             )
         else:
+            reticle = (
+                f"{_canvas_label('reticle', lang)} [目标]"
+                if lang == "zh"
+                else f"{_canvas_label('reticle', lang)} [TARGET]"
+            )
             surface.draw_text(
                 right_x + 1,
                 9,
-                fit_text(f"{_canvas_label('reticle', lang)} [TARGET]", right_w - 2),
+                fit_text(reticle, right_w - 2),
             )
 
 
@@ -678,6 +694,16 @@ def _canvas_enemy_threat_badge(
     lang: str,
 ) -> str:
     threat = _canvas_label("threat", lang)
+    if lang == "zh":
+        if not target.is_alive:
+            return f"{threat} 清"
+        if frame.counter_clock or frame.counter_hint or target.chant_progress:
+            return f"{threat} 追踪 {target.chant_progress}/{target.chant_charge_turns or 1}"
+        if target.atb >= 95:
+            return f"{threat} 蓄势"
+        if target.hp / max(1, target.max_hp) <= 0.3:
+            return f"{threat} 低"
+        return f"{threat} {_canvas_enemy_tier_label(target.tier, lang=lang)}"
     if not target.is_alive:
         return f"{threat} CLEARED"
     if frame.counter_clock or frame.counter_hint or target.chant_progress:
@@ -687,6 +713,37 @@ def _canvas_enemy_threat_badge(
     if target.hp / max(1, target.max_hp) <= 0.3:
         return f"{threat} LOW HP"
     return f"{threat} {target.tier.upper()}"
+
+
+def _canvas_enemy_tier_label(tier: str, *, lang: str) -> str:
+    if lang != "zh":
+        return tier.upper()
+    return {
+        "trace": "追踪",
+        "ritebound": "仪式",
+        "archive_bound": "档案",
+    }.get(tier, tier)
+
+
+def _canvas_judge_label(judge_label: str, *, lang: str) -> str:
+    if lang != "zh":
+        return judge_label
+    head, sep, tail = judge_label.partition("|")
+    head_text = {
+        "WAIT": "等待",
+        "VALID": "有效",
+        "LOCAL": "本地",
+        "INVALID": "无效",
+        "FALLBACK": "降级",
+    }.get(head.strip().upper(), head.strip())
+    tail_text = tail.strip()
+    if tail_text:
+        tail_text = (
+            tail_text.replace("HP", "HP")
+            .replace("SHD", "护盾")
+            .replace("SILENCED", "沉默")
+        )
+    return f"{head_text} {sep} {tail_text}".strip() if sep else head_text
 
 
 def _canvas_enemy_title(target: Enemy, width: int, *, lang: str) -> str:
@@ -742,6 +799,24 @@ def _canvas_enemy_intent_label(
     lang: str,
 ) -> str:
     intent = _canvas_label("intent", lang)
+    if lang == "zh":
+        if not target.is_alive:
+            return f"{intent} 清"
+        if target.find_status("status_silence") is not None:
+            return f"{intent} 沉默"
+        if target.chant_charge_turns or target.chant_progress or frame.counter_clock or frame.counter_hint:
+            total = max(1, target.chant_charge_turns)
+            current = max(0, min(total, target.chant_progress))
+            if current >= total:
+                return f"{intent} 释放"
+            if current > 0:
+                return f"{intent} 咏唱 {current}/{total}"
+            return f"{intent} 咏唱 观测"
+        if target.atb >= 95:
+            return f"{intent} 攻击 就绪"
+        if target.hp / max(1, target.max_hp) <= 0.3:
+            return f"{intent} 失衡"
+        return f"{intent} 攻击"
     if not target.is_alive:
         return f"{intent} CLEARED"
     if target.find_status("status_silence") is not None:
@@ -817,7 +892,7 @@ def _canvas_wound_label(target: Enemy, record: TurnRecord | None, *, lang: str) 
     label = _canvas_label("wound", lang)
     damage = _canvas_wound_damage(target, record)
     hp_text = f"{target.hp}/{target.max_hp}"
-    state = _canvas_wound_state(target)
+    state = _canvas_wound_state(target, lang=lang)
     if damage > 0:
         return f"{label} -{damage} {_canvas_wound_bar(target)} {hp_text} {state}"
     return f"{label} {_canvas_wound_bar(target)} {hp_text} {state}"
@@ -831,11 +906,17 @@ def _canvas_wound_damage(target: Enemy, record: TurnRecord | None) -> int:
     return max(0, int(record.judge.damage))
 
 
-def _canvas_wound_state(target: Enemy) -> str:
+def _canvas_wound_state(target: Enemy, *, lang: str = "en") -> str:
     if not target.is_alive:
+        if lang == "zh":
+            return "倒下"
         return "DOWN"
     if target.hp / max(1, target.max_hp) <= 0.3:
+        if lang == "zh":
+            return "处决"
         return "EXE"
+    if lang == "zh":
+        return "稳住"
     return "HOLD"
 
 
@@ -851,7 +932,7 @@ def _canvas_pain_label(hero: Hero, record: TurnRecord | None, *, lang: str) -> s
     label = _canvas_label("pain", lang)
     damage = _canvas_pain_damage(record)
     hp_text = f"{hero.hp}/{hero.max_hp}"
-    state = _canvas_pain_state(hero)
+    state = _canvas_pain_state(hero, lang=lang)
     return f"{label} -{damage} {_canvas_pain_bar(hero)} {hp_text} {state}"
 
 
@@ -862,11 +943,17 @@ def _canvas_pain_damage(record: TurnRecord | None) -> int:
     return max(0, damage) if isinstance(damage, int) else 0
 
 
-def _canvas_pain_state(hero: Hero) -> str:
+def _canvas_pain_state(hero: Hero, *, lang: str = "en") -> str:
     if not hero.is_alive:
+        if lang == "zh":
+            return "倒下"
         return "FALL"
     if hero.hp / max(1, hero.max_hp) <= 0.3:
+        if lang == "zh":
+            return "危险"
         return "CRIT"
+    if lang == "zh":
+        return "安全"
     return "SAFE"
 
 
@@ -1014,30 +1101,54 @@ def _canvas_action_label(
 ) -> str:
     action = _canvas_label("action", lang)
     if record is None:
+        if lang == "zh":
+            return f"{action} 待机"
         return f"{action} WAIT"
     if record.side == "enemy":
-        return f"{action} {_canvas_label('canvas_enemy', lang)} {_canvas_enemy_action_tag(record, frame)}"
+        return f"{action} {_canvas_label('canvas_enemy', lang)} {_canvas_enemy_action_tag(record, frame, lang=lang)}"
     if record.action is None:
+        if lang == "zh":
+            return f"{action} 英雄 待机"
         return f"{action} HERO CHECK"
     action_type = str(record.action.type)
     target_code = _canvas_action_target_code(record, target, hero)
     if action_type == "cast_skill":
         return f"{action} {_canvas_skill_action_tag(record, frame)} -> {target_code}"
     if action_type == "basic_attack":
+        if lang == "zh":
+            return f"{action} 普攻 -> {target_code}"
         return f"{action} BASIC -> {target_code}"
     if action_type == "defend":
+        if lang == "zh":
+            return f"{action} 防御 -> {target_code}"
         return f"{action} GUARD -> {target_code}"
     if action_type == "observe":
+        if lang == "zh":
+            return f"{action} 观察 -> {target_code}"
         return f"{action} OBSERVE -> {target_code}"
     if action_type == "change_stance":
+        if lang == "zh":
+            return f"{action} 姿态 -> {target_code}"
         return f"{action} STANCE -> {target_code}"
     if action_type == "use_item":
+        if lang == "zh":
+            return f"{action} 道具 -> {target_code}"
         return f"{action} ITEM -> {target_code}"
     return f"{action} {_canvas_action_token(action_type)} -> {target_code}"
 
 
-def _canvas_enemy_action_tag(record: TurnRecord, frame: BattleFrame) -> str:
+def _canvas_enemy_action_tag(record: TurnRecord, frame: BattleFrame, *, lang: str) -> str:
     action_type = str((record.enemy_action or {}).get("type", "basic_attack"))
+    if lang == "zh":
+        if action_type == "chant_charge":
+            return "蓄力"
+        if action_type == "chant_release":
+            return "释放"
+        if action_type in {"attack", "basic_attack"}:
+            return "攻击"
+        if action_type == "silenced" or "silenced" in frame.action_label.lower():
+            return "沉默"
+        return _canvas_action_token(action_type)
     if action_type == "chant_charge":
         return "CHARGE"
     if action_type == "chant_release":
@@ -1105,13 +1216,20 @@ def _canvas_action_token(value: str) -> str:
     return "".join(word[:1].upper() for word in words)[:8]
 
 
-def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame) -> None:
-    label_text = _canvas_beat_badge_label(frame)
+def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame, lang: str) -> None:
+    label_text = _canvas_beat_badge_label(frame, lang=lang)
     x = max(3, width - visual_width(label_text) - 3)
     surface.draw_text(x, 0, label_text)
 
 
-def _canvas_beat_badge_label(frame: BattleFrame) -> str:
+def _canvas_beat_badge_label(frame: BattleFrame, lang: str) -> str:
+    if lang == "zh":
+        phase = {
+            "model_waiting": "等待",
+            "hero_action": "英雄",
+            "enemy_action": "敌方",
+        }.get(frame.phase, frame.phase)
+        return f" 节拍 T{frame.tick:03d} {phase} "
     phase = {
         "model_waiting": "WAIT",
         "hero_action": "HERO",
@@ -1134,11 +1252,29 @@ def _draw_canvas_plan_ribbon(
 
 
 def _canvas_plan_label(frame: BattleFrame, *, lang: str) -> str:
-    return f"{_canvas_label('plan', lang)} {_canvas_plan_mode(frame)} | {_canvas_plan_source(frame)}"
+    return f"{_canvas_label('plan', lang)} {_canvas_plan_mode(frame, lang=lang)} | {_canvas_plan_source(frame, lang=lang)}"
 
 
-def _canvas_plan_mode(frame: BattleFrame) -> str:
+def _canvas_plan_mode(frame: BattleFrame, *, lang: str = "en") -> str:
     intent = frame.intent.lower()
+    if lang == "zh":
+        if frame.phase == "enemy_action":
+            if "chant" in intent:
+                return "中断"
+            return "承压"
+        if "read the field" in intent:
+            return "读场"
+        if "interrupt" in intent or "control" in intent:
+            return "反制"
+        if "stabilize" in intent:
+            return "稳住"
+        if "finish" in intent:
+            return "收束"
+        if "pressure" in intent:
+            return "压迫"
+        if "conserve" in intent:
+            return "待机"
+        return "战术"
     if frame.phase == "enemy_action":
         if "chant" in intent:
             return "ANSWER"
@@ -1158,7 +1294,24 @@ def _canvas_plan_mode(frame: BattleFrame) -> str:
     return "TACTIC"
 
 
-def _canvas_plan_source(frame: BattleFrame) -> str:
+def _canvas_plan_source(frame: BattleFrame, *, lang: str = "en") -> str:
+    if lang == "zh":
+        align = frame.align.lower()
+        if "pending" in align:
+            return "待机"
+        if "counter" in align:
+            return "反制"
+        if "control" in align:
+            return "命中"
+        if "build" in align:
+            return "建构"
+        if "fallback" in align or "basic" in align:
+            return "应对"
+        if "local" in align:
+            return "本机"
+        if "missed" in align:
+            return "失效"
+        return "提示"
     align = frame.align.lower()
     if "pending" in align:
         return "PENDING"
@@ -1367,6 +1520,7 @@ def _draw_canvas_actor_hud(
     max_mp: int | None,
     atb: int,
     width: int,
+    lang: str,
 ) -> None:
     glyphs = get_glyph_set("unicode")
     bar_width = max(6, width - 8)
@@ -1375,21 +1529,21 @@ def _draw_canvas_actor_hud(
     surface.draw_bar(x + 3, y, bar_width, hp / max(1, max_hp), glyphs)
     surface.draw_text(x + 4 + bar_width, y, f"{hp}/{max_hp}")
     if hp / max(1, max_hp) <= 0.3:
-        alerts.append("HP CRIT")
+        alerts.append("HP 危险" if lang == "zh" else "HP CRIT")
     if mp is not None and max_mp is not None:
         mp_row = y + 1
         surface.draw_text(x, mp_row, "MP")
         surface.draw_bar(x + 3, mp_row, bar_width, mp / max(1, max_mp), glyphs)
         surface.draw_text(x + 4 + bar_width, mp_row, f"{mp}/{max_mp}")
         if mp / max(1, max_mp) <= 0.25:
-            alerts.append("MP LOW")
+            alerts.append("MP 低" if lang == "zh" else "MP LOW")
         atb_row = y + 2
     else:
         atb_row = y + 1
     surface.draw_text(x, atb_row, "ATB")
     surface.draw_bar(x + 4, atb_row, max(5, bar_width - 1), min(atb, 100) / 100, glyphs)
     if atb >= 100:
-        alerts.append("ATB READY")
+        alerts.append("ATB 就绪" if lang == "zh" else "ATB READY")
     if alerts:
         surface.draw_text(x, y + 3, fit_text(" ".join(alerts), width))
 
@@ -1711,6 +1865,16 @@ def _canvas_skill_code(skill) -> str:
 
 def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame, lang: str) -> tuple[str, str, str]:
     judge = _canvas_label("judge", lang)
+    if lang == "zh":
+        if record is None:
+            return ("选定", "等待", judge)
+        if frame.counter_hint and "[MISSED]" in frame.counter_hint:
+            return ("选定", "错失", judge)
+        if frame.counter_hint or frame.counter_clock:
+            return ("选定", "窗口", judge)
+        if frame.event_banner in {"CLIMAX HIT", "KILL CONFIRMED", "BOSS DOWN"}:
+            return ("选定", "裁决", judge)
+        return ("选定", "命中", judge)
     if record is None:
         return ("SELECT", "WAIT", judge)
     if frame.counter_hint and "[MISSED]" in frame.counter_hint:

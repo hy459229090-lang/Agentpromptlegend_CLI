@@ -859,6 +859,7 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
     for zh_width in (80, 100, 120):
         zh_loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
         zh_state = zh_loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+        zh_state.hero.atb = 100
         zh_screen = render_battle_screen(
             zh_state,
             _hex_record(),
@@ -882,6 +883,29 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         assert "ENM      Agent" not in zh_screen
         assert "盯住威胁" not in zh_screen
         assert "盯住威胁" in zh_wait
+        assert "节拍" in zh_wait
+        assert "选定" in zh_wait
+        assert "等待" in zh_wait
+        assert "读场" in zh_wait
+        assert "待机" in zh_wait
+        assert "[目标]" in zh_wait
+        assert "攻击" in zh_wait
+        assert "ATB 就绪" in zh_wait
+        assert "裁判  等待" in zh_wait
+        assert "稳住" in zh_screen
+        trace_state = zh_loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+        trace_state.enemies[0].chant_charge_turns = 2
+        trace_state.enemies[0].chant_progress = 1
+        zh_trace = render_battle_screen(
+            trace_state,
+            None,
+            provider_label="mock",
+            seed=1,
+            language="zh",
+            width=zh_width,
+            unicode_mode=True,
+        )
+        assert "追踪" in zh_trace
         assert "英雄" in zh_screen
         assert "敌方" in zh_screen
         assert "导演" in zh_screen
@@ -900,6 +924,32 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             ]
             assert segments
             assert all(any("\u4e00" <= ch <= "\u9fff" for ch in segment) for segment in segments)
+        assert "动>" in zh_wait
+        assert "<标" in zh_wait
+        canvas_blocks = []
+        for candidate in (zh_screen, zh_wait, zh_trace):
+            canvas_blocks.append(
+                "\n".join(line for line in candidate.splitlines() if line.startswith("█"))
+            )
+        canvas_block = "\n".join(canvas_blocks)
+        for bad in (
+            "BEAT T",
+            "SELECT",
+            "WINDOW",
+            "HOLD",
+            "[WINDOW]",
+            "[TARGET]",
+            "READ | PENDING",
+            "INTENT STRIKE",
+            "THREAT TRACE",
+            "威胁 TRACE",
+            "ACT>",
+            "<TGT",
+            "ATB READY",
+            "裁判  WAIT",
+            "裁判  VALID",
+        ):
+            assert bad not in canvas_block
         assert "waiting for first echo" not in zh_wait
         assert ". candle ." not in zh_wait
         assert ". broken arch ." not in zh_wait
@@ -927,8 +977,9 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             "RETICLE ",
         ):
             assert bad not in canvas
-        for line in zh_screen.splitlines():
-            assert visual_width(line) <= zh_width
+        for candidate in (zh_screen, zh_wait, zh_trace):
+            for line in candidate.splitlines():
+                assert visual_width(line) <= zh_width
 
 
 def test_unicode_battle_screen_embeds_resource_thresholds_in_canvas(bundle):
