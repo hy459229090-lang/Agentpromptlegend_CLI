@@ -3864,6 +3864,7 @@ def render_start_screen(
 ) -> str:
     lang = language
     view = redacted_view(config, language=lang)
+    title = "OURO AGENT :: PROMPT LEGEND" if lang == "en" else "暗影代理 :: 祷文传说"
     line = "=" * min(width, 100)
     subtitle = (
         "Configure one Agent. The model chooses; the local judge decides."
@@ -3885,15 +3886,27 @@ def render_start_screen(
     )
     lines = [
         line,
-        "OURO AGENT :: PROMPT LEGEND",
+        title,
         subtitle,
         line,
         "",
-        f"Provider: {provider_label}    Model: {view['model']}    Seed: {seed}",
+        (
+            f"Provider: {provider_label}    Model: {view['model']}    Seed: {seed}"
+            if lang == "en"
+            else f"供应商: {provider_label}    模型: {view['model']}    种子: {seed}"
+        ),
         "",
         "+------------------+  +------------------+  +------------------+",
-        "|  HERO            |  |  PROMPT          |  |  LOCAL JUDGE     |",
-        "|  stats/build     |  |  style/intent    |  |  damage/victory  |",
+        (
+            "|  HERO            |  |  PROMPT          |  |  LOCAL JUDGE     |"
+            if lang == "en"
+            else "|  英雄            |  |  提示词          |  |  本地裁判         |"
+        ),
+        (
+            "|  stats/build     |  |  style/intent    |  |  damage/victory  |"
+            if lang == "en"
+            else "|  属性/构筑        |  |  风格/意图       |  |  伤害/胜负       |"
+        ),
         "+------------------+  +------------------+  +------------------+",
         "",
     ]
@@ -3970,17 +3983,23 @@ def render_encounter_briefing(
     plan = _encounter_opening_plan(enemies, progress, lang=lang)
     build_line = f"{progress.stage.badge} {build.archetype(lang)}"
     if progress.best_next_picks:
-        build_line += " / next " + ", ".join(pick["tag"] for pick in progress.best_next_picks[:2])
+        build_line += (
+            " / 下次 " + ", ".join(pick["tag"] for pick in progress.best_next_picks[:2])
+            if lang == "zh"
+            else " / next " + ", ".join(pick["tag"] for pick in progress.best_next_picks[:2])
+        )
     max_text = max(24, width - 4)
     if lang == "zh":
         body = [
-            f"[ENEMY] {roster}",
-            f"[THREAT] {threat}",
-            f"[BUILD] {build_line}",
-            f"[WINDOW] {window}",
-            f"[PLAN] {plan}",
+            f"[敌人] {roster}",
+            f"[威胁] {threat}",
+            f"[构筑] {build_line}",
+            f"[窗口] {window}",
+            f"[计划] {plan}",
         ]
-        return "\n".join(pixel_panel("ENCOUNTER BRIEFING :: 遭遇简报", [fit_text(line, max_text) for line in body], width, tone="counter").lines)
+        return "\n".join(
+            pixel_panel("遭遇简报", [fit_text(line, max_text) for line in body], width, tone="counter").lines
+        )
     body = [
         f"[ENEMY] {roster}",
         f"[THREAT] {threat}",
@@ -4068,12 +4087,12 @@ def _render_run_ready_board(
     core_tags = " / ".join(HERO_CORE_TAGS.get(hero.id, ())[:2]) or "-"
     if lang == "zh":
         return [
-            "RUN READY BOARD :: 入局确认",
-            f"  [PROMPT] {style} / {opener}",
-            f"  [BUILD] {progress.stage.badge} {progress.stage_name} / {build.archetype(lang)}",
-            f"  [CORE] {core_tags}",
-            f"  [NEXT PICK] {next_pick}",
-            "  [FIRST RULE] 模型选择行动，本地裁判结算",
+            "入局确认",
+            f"  [提示词] {style} / {opener}",
+            f"  [构筑] {progress.stage.badge} {progress.stage_name} / {build.archetype(lang)}",
+            f"  [核心] {core_tags}",
+            f"  [下次选择] {next_pick}",
+            "  [第一规则] 模型选择行动，本地裁判结算",
         ]
     return [
         "RUN READY BOARD",

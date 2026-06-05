@@ -1014,8 +1014,12 @@ def test_dynamic_next_pick_in_battle_screen(bundle):
 
 
 def test_start_and_setup_screens_show_playable_entry_context(bundle):
+    from ouro_agent.tui.screens import (
+        render_encounter_briefing,
+        render_run_setup_screen,
+        render_start_screen,
+    )
     from ouro_agent.config import OuroConfig
-    from ouro_agent.tui.screens import render_run_setup_screen, render_start_screen
 
     config = OuroConfig(provider="mock", model="mock-smart", language="en")
     hero = bundle.get_hero("hero_shadow_apprentice")
@@ -1029,6 +1033,30 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
         provider_label="mock",
         prompt_style="control",
         language="en",
+    )
+    start_zh = render_start_screen(
+        config,
+        provider_label="mock",
+        seed=7,
+        language="zh",
+    )
+    setup_zh = render_run_setup_screen(
+        hero,
+        bundle,
+        build,
+        provider_label="mock",
+        prompt_style="control",
+        language="zh",
+    )
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
+    encounter_state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    encounter = render_encounter_briefing(
+        encounter_state,
+        bundle,
+        build,
+        language="zh",
+        width=100,
     )
 
     assert start.isascii()
@@ -1047,6 +1075,47 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "resonance_corruption_school" not in setup
     assert "[W:*]" in setup
 
+    assert "暗影代理 :: 祷文传说" in start_zh
+    assert "供应商: mock" in start_zh
+    assert "模型: mock-smart" in start_zh
+    assert "种子: 7" in start_zh
+    assert "|  英雄" in start_zh
+    assert "|  提示词" in start_zh
+    assert "|  本地裁判" in start_zh
+    assert "属性/构筑" in start_zh
+    assert "风格/意图" in start_zh
+    assert "伤害/胜负" in start_zh
+    assert "入局确认" in setup_zh
+    assert "[提示词]" in setup_zh
+    assert "[构筑]" in setup_zh
+    assert "[核心]" in setup_zh
+    assert "[下次选择]" in setup_zh
+    assert "[第一规则]" in setup_zh
+    assert "遭遇简报" in encounter
+    assert "[敌人]" in encounter
+    assert "[威胁]" in encounter
+    assert "[构筑]" in encounter
+    assert "[窗口]" in encounter
+    assert "[计划]" in encounter
+
+    for chrome in (
+        "Provider:",
+        "Model:",
+        "Seed:",
+        "HERO",
+        "LOCAL JUDGE",
+        "RUN READY BOARD",
+        "[PROMPT]",
+        "[NEXT PICK]",
+        "ENCOUNTER BRIEFING",
+        "[ENEMY]",
+        "[THREAT]",
+        "[WINDOW]",
+        "[PLAN]",
+    ):
+        assert chrome not in start_zh
+        assert chrome not in setup_zh
+        assert chrome not in encounter
 
 def test_story_surfaces_show_route_boss_battle_and_codex_fragments(bundle):
     """REQ-STORY-001: story text appears before fights, on routes, and in Codex."""
