@@ -454,8 +454,15 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
     )
-    if target is not None:
-        _draw_canvas_wound_rail(surface, center_x + 1, 9, center_w - 2, target, last_record)
+    _draw_canvas_damage_rail(
+        surface,
+        center_x + 1,
+        9,
+        center_w - 2,
+        state.hero,
+        target,
+        last_record,
+    )
     _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
     action = fit_text(f"ACTION {frame.action_label}", center_w - 2)
     judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
@@ -606,17 +613,21 @@ def _canvas_cast_bar(current: int, total: int) -> str:
     return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
-def _draw_canvas_wound_rail(
+def _draw_canvas_damage_rail(
     surface: Surface,
     x: int,
     y: int,
     width: int,
-    target: Enemy,
+    hero: Hero,
+    target: Enemy | None,
     record: TurnRecord | None,
 ) -> None:
     if width < 20:
         return
-    surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record), width))
+    if _canvas_pain_damage(record) > 0:
+        surface.draw_text(x, y, fit_text(_canvas_pain_label(hero, record), width))
+    elif target is not None:
+        surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record), width))
 
 
 def _canvas_wound_label(target: Enemy, record: TurnRecord | None) -> str:
@@ -648,6 +659,36 @@ def _canvas_wound_bar(target: Enemy) -> str:
     glyphs = get_glyph_set("unicode")
     width = 4
     ratio = target.hp / max(1, target.max_hp)
+    filled = round(width * max(0.0, min(1.0, ratio)))
+    return glyphs.solid * filled + glyphs.light * (width - filled)
+
+
+def _canvas_pain_label(hero: Hero, record: TurnRecord | None) -> str:
+    damage = _canvas_pain_damage(record)
+    hp_text = f"{hero.hp}/{hero.max_hp}"
+    state = _canvas_pain_state(hero)
+    return f"PAIN -{damage} {_canvas_pain_bar(hero)} {hp_text} {state}"
+
+
+def _canvas_pain_damage(record: TurnRecord | None) -> int:
+    if record is None or record.side != "enemy":
+        return 0
+    damage = (record.enemy_action or {}).get("damage", 0)
+    return max(0, damage) if isinstance(damage, int) else 0
+
+
+def _canvas_pain_state(hero: Hero) -> str:
+    if not hero.is_alive:
+        return "FALL"
+    if hero.hp / max(1, hero.max_hp) <= 0.3:
+        return "CRIT"
+    return "SAFE"
+
+
+def _canvas_pain_bar(hero: Hero) -> str:
+    glyphs = get_glyph_set("unicode")
+    width = 4
+    ratio = hero.hp / max(1, hero.max_hp)
     filled = round(width * max(0.0, min(1.0, ratio)))
     return glyphs.solid * filled + glyphs.light * (width - filled)
 

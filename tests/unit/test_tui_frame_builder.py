@@ -516,6 +516,80 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
             assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_pain_rail_on_enemy_damage(bundle, width):
+    """REQ-PAINRAIL-001: Enemy damage frames should focus the hero HP rail."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    def enemy_hit(damage: int) -> TurnRecord:
+        return TurnRecord(
+            tick=12,
+            actor_id="enemy_hungry_cultist",
+            side="enemy",
+            raw_text=None,
+            validation=None,
+            action=None,
+            judge=None,
+            enemy_action={"type": "attack", "damage": damage},
+            battle_session_id="be_pain_rail",
+            static_context_hash="ctx_pain_rail",
+        )
+
+    state.hero.max_hp = 50
+    state.hero.hp = 41
+    safe = render_battle_screen(
+        state,
+        enemy_hit(9),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "PAIN" in safe
+    assert "-9" in safe
+    assert "41/50" in safe
+    assert "SAFE" in safe
+    assert "HIT -9 HP" in safe
+    assert "WOUND" not in safe
+
+    state.hero.hp = 12
+    crit = render_battle_screen(
+        state,
+        enemy_hit(18),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "12/50" in crit
+    assert "CRIT" in crit
+
+    state.hero.hp = 0
+    fall = render_battle_screen(
+        state,
+        enemy_hit(12),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "0/50" in fall
+    assert "FALL" in fall
+
+    for screen in (safe, crit, fall):
+        assert "PLAN" in screen
+        assert "ACTION" in screen
+        assert "JUDGE" in screen
+        for line in screen.splitlines():
+            assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
     from ouro_agent.tui.screens import render_battle_screen
 

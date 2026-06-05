@@ -2,7 +2,7 @@
 
 **Language / 语言**: [中文](#中文) | [English](#english) | [完整中文文档](README.zh.md)
 
-[![tests](https://img.shields.io/badge/tests-345%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
+[![tests](https://img.shields.io/badge/tests-348%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
 ---
 
@@ -142,7 +142,7 @@ ouro run --mock
 | C2 | Monster families, tiered codex/content schema | done |
 | E | Codex persistence, run archive, death history | done |
 
-`345 tests passing`. No real network calls in any test.
+`348 tests passing`. No real network calls in any test.
 
 ---
 
