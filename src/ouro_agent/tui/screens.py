@@ -4124,17 +4124,36 @@ def _render_hero(hero: Hero, *, lang: str, unicode_mode: bool) -> list[str]:
 
 
 def _render_enemy(idx: int, enemy: Enemy, *, lang: str, unicode_mode: bool) -> str:
-    hp_bar = bar(enemy.hp, enemy.max_hp, width=8, unicode_mode=unicode_mode)
-    atb_bar = bar(min(enemy.atb, 100), 100, width=10, unicode_mode=unicode_mode)
-    status = ", ".join(_format_status(s) for s in enemy.statuses)
+    hp_bar = bar(enemy.hp, enemy.max_hp, width=6, unicode_mode=unicode_mode)
+    atb_bar = bar(min(enemy.atb, 100), 100, width=6, unicode_mode=unicode_mode)
+    status = _roster_status_chips(enemy.statuses)
     status_part = f" {status}" if status else ""
     state_tag = label("down", lang) if not enemy.is_alive else ""
-    name_field = pad_right(enemy.name, 22)
+    name_field = pad_right(_roster_enemy_name(enemy), 16)
     return (
         f"{idx}. [{enemy.short_glyph}] {name_field} "
         f"HP {hp_bar} {enemy.hp}/{enemy.max_hp}   "
         f"ATB {atb_bar}{status_part} {state_tag}"
     ).rstrip()
+
+
+def _roster_status_chips(statuses: list) -> str:
+    if not statuses:
+        return ""
+    chips = [_canvas_status_chip(status) for status in statuses[:3]]
+    hidden = len(statuses) - len(chips)
+    if hidden > 0:
+        chips.append(f"+{hidden}")
+    return "FX " + " ".join(chips)
+
+
+def _roster_enemy_name(enemy: Enemy) -> str:
+    if visual_width(enemy.name) <= 16:
+        return enemy.name
+    for choice in _canvas_enemy_stage_name_choices(enemy):
+        if visual_width(choice) <= 16:
+            return choice.title()
+    return enemy.short_glyph.upper()
 
 
 def _render_turn(record: TurnRecord | None, *, lang: str) -> list[str]:

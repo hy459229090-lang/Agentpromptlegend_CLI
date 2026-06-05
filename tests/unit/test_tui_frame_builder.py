@@ -806,6 +806,9 @@ def test_unicode_battle_screen_draws_status_chips_inside_canvas(bundle, width):
 
     assert "FX SHD7" in screen
     assert "FX SLN1 CRP2" in screen
+    roster_lines = [line for line in screen.splitlines() if "ENEMY ROSTER" in line or "[c] Hungry Cultist" in line]
+    assert any("FX SLN1 CRP2" in line for line in roster_lines)
+    assert all("corrup..." not in line and "silenc..." not in line for line in roster_lines)
     assert "TEMPO RAIL" in screen or "RAIL" in screen
     assert "STACK" in screen
     assert "ACTION HEX -> c" in screen
