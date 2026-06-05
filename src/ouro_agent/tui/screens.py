@@ -451,6 +451,7 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
     )
+    _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
     action = fit_text(f"ACTION {frame.action_label}", center_w - 2)
     judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
     surface.draw_text(center_x + 1, 12, action)
@@ -568,6 +569,62 @@ def _canvas_enemy_intent_label(target: Enemy, frame: BattleFrame) -> str:
     if target.hp / max(1, target.max_hp) <= 0.3:
         return "INTENT FALTER"
     return "INTENT STRIKE"
+
+
+def _draw_canvas_plan_ribbon(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    frame: BattleFrame,
+) -> None:
+    if width < 16:
+        return
+    surface.draw_text(x, y, fit_text(_canvas_plan_label(frame), width))
+
+
+def _canvas_plan_label(frame: BattleFrame) -> str:
+    return f"PLAN {_canvas_plan_mode(frame)} | {_canvas_plan_source(frame)}"
+
+
+def _canvas_plan_mode(frame: BattleFrame) -> str:
+    intent = frame.intent.lower()
+    if frame.phase == "enemy_action":
+        if "chant" in intent:
+            return "ANSWER"
+        return "BRACE"
+    if "read the field" in intent:
+        return "READ"
+    if "interrupt" in intent or "control" in intent:
+        return "CONTROL"
+    if "stabilize" in intent:
+        return "GUARD"
+    if "finish" in intent:
+        return "FINISH"
+    if "pressure" in intent:
+        return "BURST"
+    if "conserve" in intent:
+        return "CONSERVE"
+    return "TACTIC"
+
+
+def _canvas_plan_source(frame: BattleFrame) -> str:
+    align = frame.align.lower()
+    if "pending" in align:
+        return "PENDING"
+    if "counter" in align:
+        return "COUNTER"
+    if "control" in align:
+        return "PROMPT HIT"
+    if "build" in align:
+        return "BUILD SKILL"
+    if "fallback" in align or "basic" in align:
+        return "FALLBACK"
+    if "local" in align:
+        return "LOCAL AI"
+    if "missed" in align:
+        return "PROMPT MISS"
+    return "PROMPT"
 
 
 def _colorize_canvas_lines(lines: list[str], *, tone: str, color_mode: str) -> list[str]:

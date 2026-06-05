@@ -52,9 +52,9 @@ def test_qa_note_records_fixed_seed_evidence_and_manual_template():
     text = QA_NOTE.read_text(encoding="utf-8")
 
     assert "venv312/bin/python -m pytest" in text
-    assert "333 passed" in text
+    assert "336 passed" in text
     assert "scripts/release_check.py --evidence-only" in text
-    assert "Evidence counts OK: 333 tests collected; 247 release-bound text files." in text
+    assert "Evidence counts OK: 336 tests collected; 247 release-bound text files." in text
     assert "scripts/release_scope.py --stage-plan" in text
     assert "test_release_scope_prints_read_only_stage_plan_without_mutating_index" in text
     assert "scripts/acceptance_check.py" in text

@@ -246,6 +246,71 @@ def test_unicode_battle_screen_canvas_width_matrix(bundle, width):
         assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
+    """REQ-HEROPLAN-001: Canvas stage should show the compact tactical plan."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    waiting = render_battle_screen(
+        state,
+        None,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "PLAN READ | PENDING" in waiting
+
+    action = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "PLAN CONTROL | PROMPT HIT" in action
+    assert "ACTION Hex Seal" in action
+    assert "JUDGE  VALID | -16 HP" in action
+
+    enemy = state.enemies[0]
+    enemy.chant_charge_turns = 1
+    enemy.chant_progress = 1
+    enemy_record = TurnRecord(
+        tick=10,
+        actor_id=enemy.id,
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_plan",
+        static_context_hash="ctx_plan",
+    )
+    counter = render_battle_screen(
+        state,
+        enemy_record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "PLAN ANSWER | COUNTER" in counter
+    assert "ACTION Hungry Cultist" in counter
+    assert "JUDGE  LOCAL" in counter
+
+    for screen in (waiting, action, counter):
+        for line in screen.splitlines():
+            assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
     from ouro_agent.tui.screens import render_battle_screen
 
