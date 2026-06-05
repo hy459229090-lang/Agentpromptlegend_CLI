@@ -1012,6 +1012,52 @@ def test_dynamic_next_pick_in_battle_screen(bundle):
     assert all("NEED:" not in line for line in next_pick_lines)
     assert "BUILD STAGE: pending" in screen_without_build
 
+    screen_zh = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        unicode_mode=False,
+        language="zh",
+        bundle=bundle,
+        build=build,
+    )
+    assert "武器" in screen_zh
+    assert "裂痕短杖" in screen_zh
+    assert "构筑 [ONLINE]" in screen_zh
+    assert "暗影 3/3" in screen_zh
+    assert "控制 2/3" in screen_zh
+    assert "下次选择:" in screen_zh
+    assert "词条" in screen_zh
+    assert "遗物" in screen_zh
+    assert "还需:" in screen_zh
+    next_lines_zh = [line for line in screen_zh.splitlines() if "下次选择:" in line]
+    assert next_lines_zh
+    assert all(" relic" not in line for line in next_lines_zh)
+    need_lines_zh = [line for line in screen_zh.splitlines() if "还需:" in line]
+    assert need_lines_zh
+    assert all(" for " not in line for line in need_lines_zh)
+    assert any("推进" in line for line in need_lines_zh)
+    assert "BLACK CANDLE STAFF" not in screen_zh.upper()
+    assert "NEXT PICK:" not in screen_zh
+    assert "NEED:" not in screen_zh
+
+    screen_zh_canvas = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        unicode_mode=True,
+        language="zh",
+        bundle=bundle,
+        build=build,
+    )
+    assert "裂痕短杖" in screen_zh_canvas
+    assert "[ONLINE] 暗影" in screen_zh_canvas
+    assert "暗影/控制" in screen_zh_canvas
+    assert "[ONLINE] shadow" not in screen_zh_canvas
+    assert "shadow/control" not in screen_zh_canvas
+
 
 def test_start_and_setup_screens_show_playable_entry_context(bundle):
     from ouro_agent.tui.screens import (
@@ -1088,13 +1134,29 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "入局确认" in setup_zh
     assert "[提示词]" in setup_zh
     assert "[构筑]" in setup_zh
+    assert "[ONLINE] 在线 / 黑烛打断" in setup_zh
     assert "[核心]" in setup_zh
     assert "[下次选择]" in setup_zh
+    assert "标签:" in setup_zh
+    assert "标签: 暗影" in setup_zh
+    assert "标签: 暗影, 图鉴" in setup_zh
+    assert "标签: 暗影, 腐化" in setup_zh
+    assert "标签: 暗影, 控制" in setup_zh
+    assert "[普通]" in setup_zh
+    assert "[英雄]" in setup_zh
+    assert "暗影" in setup_zh
+    assert "图鉴" in setup_zh
+    assert "腐化" in setup_zh
+    assert "控制" in setup_zh
+    assert "tags:" not in setup_zh
+    assert "Online / 黑烛打断" not in setup_zh
     assert "[第一规则]" in setup_zh
     assert "遭遇简报" in encounter
     assert "[敌人]" in encounter
     assert "[威胁]" in encounter
     assert "[构筑]" in encounter
+    assert "下次 防守, 护甲" in encounter
+    assert "下次 guard" not in encounter
     assert "[窗口]" in encounter
     assert "[计划]" in encounter
 

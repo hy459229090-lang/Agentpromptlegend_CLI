@@ -141,6 +141,7 @@ def render_battle_screen(
                 lang=lang,
                 unicode_mode=unicode_mode,
                 enhanced_bars=enhanced_bars,
+                build=build,
             )
         )
     else:
@@ -155,6 +156,7 @@ def render_battle_screen(
                 width=width,
                 color_mode=color_mode,
                 scene_text=scene,
+                build=build,
             )
         )
     lines.append("")
@@ -215,6 +217,7 @@ def _render_compact_duel_panel(
     lang: str,
     unicode_mode: bool,
     enhanced_bars: bool = False,
+    build: ResolvedBuild | None = None,
 ) -> list[str]:
     target = _screen_target(state, last_record)
     hero_sprite = _hero_sprite(state.hero, last_record)[:3]
@@ -245,8 +248,11 @@ def _render_compact_duel_panel(
         lines.append(roster)
     hero_statuses = _status_groups(state.hero.statuses, lang=lang)
     lines.extend(line for line in hero_statuses if "Status: -" not in line)
-    weapon, build = _hero_icons(state.hero)
-    lines.append(f"{label('hud_weapon', lang)} {weapon[:28]}  {label('hud_build', lang)} {build[:32]}")
+    weapon, build_badge = _hero_icons(state.hero, build=build, lang=lang)
+    lines.append(
+        f"{label('hud_weapon', lang)} {weapon[:28]}  "
+        f"{label('hud_build', lang)} {build_badge[:32]}"
+    )
     return [line[:80] for line in lines]
 
 
@@ -294,6 +300,7 @@ def _render_duel_panel(
     width: int = 100,
     color_mode: str = "never",
     scene_text: str | None = None,
+    build: ResolvedBuild | None = None,
 ) -> list[str]:
     if unicode_mode:
         return _render_canvas_duel_panel(
@@ -304,6 +311,7 @@ def _render_duel_panel(
             width=width,
             color_mode=color_mode,
             scene_text=scene_text,
+            build=build,
         )
 
     target = _screen_target(state, last_record)
@@ -365,6 +373,7 @@ def _render_canvas_duel_panel(
     width: int,
     color_mode: str = "never",
     scene_text: str | None = None,
+    build: ResolvedBuild | None = None,
 ) -> list[str]:
     """Render the main duel as a low-resolution terminal canvas."""
     target = _screen_target(state, last_record)
@@ -414,8 +423,17 @@ def _render_canvas_duel_panel(
     )
     surface.draw_text(2, 2, _canvas_hero_dialogue(state, last_record, frame, lang=lang, width=left_w - 3))
     surface.draw_sprite(4, 3, hero_art)
-    weapon, build_badge = _hero_icons(state.hero)
-    _draw_canvas_weapon_plate(surface, 2, 7, left_w - 3, state.hero.id, weapon, build_badge)
+    weapon, build_badge = _hero_icons(state.hero, build=build, lang=lang)
+    _draw_canvas_weapon_plate(
+        surface,
+        2,
+        7,
+        left_w - 3,
+        state.hero.id,
+        weapon,
+        build_badge,
+        lang=lang,
+    )
     _draw_canvas_actor_hud(
         surface,
         3,
@@ -576,6 +594,7 @@ def _draw_canvas_weapon_plate(
     hero_id: str,
     weapon: str,
     build_badge: str,
+    lang: str,
 ) -> None:
     card = hero_weapon_card_art(hero_id)
     art_width = min(8, max(0, width // 3))
@@ -583,7 +602,13 @@ def _draw_canvas_weapon_plate(
         surface.draw_text(x, y + row_offset, fit_text(row, art_width))
     text_x = x + art_width + 1
     text_width = max(6, width - art_width - 1)
-    weapon_row, build_row, tag_row = _canvas_weapon_plate_rows(card, weapon, build_badge, text_width)
+    weapon_row, build_row, tag_row = _canvas_weapon_plate_rows(
+        card,
+        weapon,
+        build_badge,
+        text_width,
+        lang=lang,
+    )
     surface.draw_text(text_x, y, weapon_row)
     surface.draw_text(text_x, y + 1, build_row)
     surface.draw_text(text_x, y + 2, tag_row)
@@ -594,16 +619,25 @@ def _canvas_weapon_plate_rows(
     weapon: str,
     build_badge: str,
     width: int,
+    *,
+    lang: str,
 ) -> tuple[str, str, str]:
     weapon_icon = card.icon or weapon.split(" ", 1)[0]
     stage = card.badge or build_badge.split(" ", 1)[0]
-    tags = _canvas_build_tags(card.build_shift or build_badge)
+    tags = _display_canvas_build_tags(_canvas_build_tags(card.build_shift or build_badge), lang)
     first_tag = tags.split("/", 1)[0] if tags else ""
     weapon_row = _canvas_fit_choice(weapon_icon, weapon.split(" ", 1)[0], width)
     build_primary = f"{stage} {first_tag}".strip()
     build_row = _canvas_fit_choice(build_primary, stage, width)
     tag_row = _canvas_fit_choice(tags, _canvas_short_build_tags(tags), width)
     return weapon_row, build_row, tag_row
+
+
+def _display_canvas_build_tags(tags: str, lang: str) -> str:
+    if lang != "zh":
+        return tags
+    parts = [part for part in tags.replace("/", " ").split() if part]
+    return "/".join(_display_build_tag(part, lang) for part in parts)
 
 
 def _canvas_build_tags(text: str) -> str:
@@ -2314,7 +2348,11 @@ def _render_build_line(
     *,
     lang: str = DEFAULT_LANGUAGE,
 ) -> list[str]:
-    weapon, build_badge = _hero_icons(hero)
+    weapon, build_badge = _hero_icons(
+        hero,
+        build=build,
+        lang=lang,
+    )
 
     lines = [f"{label('hud_weapon', lang)} {weapon}        {label('hud_build', lang)} {build_badge}"]
 
@@ -2331,8 +2369,12 @@ def _render_build_line(
             seen_picks.add(tag)
             need = pick["need"]
             res_name = pick["resonance_name"].get(lang) or pick["resonance_name"].get("en", "")
-            next_picks.append(f"{tag} affix / {res_name} relic")
-            need_tags.append(f"{tag} +{need}")
+            relic_label = "遗物" if lang == "zh" else "relic"
+            next_picks.append(
+                f"{_display_build_tag(tag, lang)} "
+                f"{'词条' if lang == 'zh' else 'affix'} / {res_name} {relic_label}"
+            )
+            need_tags.append(f"{_display_build_tag(tag, lang)} +{need}")
 
         if next_picks:
             shown_picks = next_picks[:2]
@@ -2341,15 +2383,16 @@ def _render_build_line(
                 shown_picks.append(extra)
             next_pick_str = " | ".join(shown_picks)
             need_str = ", ".join(need_tags[:2])
-            next_stage = {
-                BuildStage.SEED: label("build_stage_seed", lang),
-                BuildStage.PAIR: label("build_stage_pair", lang),
-                BuildStage.ONLINE: label("build_stage_online", lang),
-                BuildStage.HIGH_ROLL: label("build_stage_high", lang),
-                BuildStage.LOCKED_IN: label("build_stage_locked", lang),
-            }.get(progress.stage, label("build_stage_next", lang))
+            next_stage = _build_stage_display(
+                progress.stage,
+                progress.stage_name,
+                lang=lang,
+            )
             lines.append(f"{label('next_pick', lang)}: {next_pick_str}")
-            lines.append(f"{label('need', lang)}: {need_str} for {next_stage}")
+            if lang == "en":
+                lines.append(f"{label('need', lang)}: {need_str} for {next_stage}")
+            else:
+                lines.append(f"{label('need', lang)}: {need_str} 推进 {next_stage}")
         else:
             lines.append(label("build_complete", lang))
     else:
@@ -2358,8 +2401,99 @@ def _render_build_line(
     return lines
 
 
-def _hero_icons(hero: Hero) -> tuple[str, str]:
-    return battle_weapon_line(hero.short_tag)
+def _build_stage_display(
+    stage: BuildStage,
+    stage_name: str,
+    *,
+    lang: str,
+) -> str:
+    if lang != "zh":
+        return stage_name
+    return {
+        BuildStage.SEED: "种子",
+        BuildStage.PAIR: "成对",
+        BuildStage.ONLINE: "在线",
+        BuildStage.HIGH_ROLL: "高光",
+        BuildStage.LOCKED_IN: "锁定",
+    }.get(stage, stage_name)
+
+
+def _display_build_tag(tag: str, lang: str) -> str:
+    if lang != "zh":
+        return tag
+    return {
+        "shadow": "暗影",
+        "control": "控制",
+        "codex": "图鉴",
+        "corruption": "腐化",
+        "guard": "防守",
+        "armor": "护甲",
+        "poison": "毒素",
+        "cleanse": "净化",
+        "retribution": "反噬",
+        "gear": "机械",
+        "trap": "陷阱",
+        "hunter": "猎手",
+        "speed": "速度",
+        "bleed": "流血",
+        "execute": "处决",
+        "omen": "预兆",
+        "attrition": "消耗",
+        "fire": "火焰",
+        "echo": "回声",
+        "holy": "神圣",
+        "shield": "护盾",
+        "counter": "反击",
+        "risk": "风险",
+        "construct": "构装",
+        "support": "支援",
+        "damage": "伤害",
+        "buff": "增益",
+        "evade": "闪避",
+        "stealth": "潜行",
+    }.get(tag, tag)
+
+
+def _hero_icons(
+    hero: Hero,
+    *,
+    build: ResolvedBuild | None = None,
+    lang: str = DEFAULT_LANGUAGE,
+) -> tuple[str, str]:
+    weapon, build_badge = battle_weapon_line(hero.short_tag)
+    if lang == "zh" and build is not None and build.items:
+        icon_parts = weapon.split(" ", 2)
+        icon = f"{icon_parts[0]} {icon_parts[1]}" if len(icon_parts) >= 2 else weapon
+        item_name = build.items[0].display_name.get("zh") or build.items[0].display_name.get(
+            "en",
+            "",
+        )
+        if item_name:
+            weapon = f"{icon} {item_name}"
+    return weapon, _localize_build_badge_tags(build_badge, lang=lang)
+
+
+def _localize_build_badge_tags(value: str, lang: str) -> str:
+    if lang != "zh":
+        return value
+    parts = value.split()
+    localized = [
+        _display_build_tag(part, lang)
+        if part and not part.startswith("[") and "/" not in part
+        else part
+        for part in parts
+    ]
+    return " ".join(localized)
+
+
+def _format_tier_label(tier: str, lang: str) -> str:
+    if lang != "zh":
+        return tier
+    return {"common": "普通", "heroic": "英雄", "legendary": "传奇"}.get(tier, tier)
+
+
+def _format_tag_list(tags: tuple[str, ...], lang: str) -> str:
+    return ", ".join(_display_build_tag(tag, lang) for tag in tags[:4])
 
 
 def _render_session_panel(
@@ -3955,13 +4089,14 @@ def render_run_setup_screen(
     lines.append("")
     lines.extend(_render_equipment_panel(hero, bundle, build, lang=lang))
     lines.append("")
+    build_stage_name = _build_stage_display(progress.stage, progress.stage_name, lang=lang)
     lines.append(
-        f"{label('hud_build', lang)}: {progress.stage.badge} {progress.stage_name}  "
+        f"{label('hud_build', lang)}: {progress.stage.badge} {build_stage_name}  "
         f"{label('hero_card_active_resonances', lang)}: "
         f"{', '.join(active_resonance_names) if active_resonance_names else label('hero_card_none', lang)}"
     )
     if progress.best_next_picks:
-        picks = ", ".join(pick["tag"] for pick in progress.best_next_picks[:3])
+        picks = ", ".join(_display_build_tag(pick["tag"], lang) for pick in progress.best_next_picks[:3])
         lines.append(f"{label('hero_card_best_next_picks', lang)}: {picks}")
     return "\n".join(lines)
 
@@ -3983,10 +4118,14 @@ def render_encounter_briefing(
     plan = _encounter_opening_plan(enemies, progress, lang=lang)
     build_line = f"{progress.stage.badge} {build.archetype(lang)}"
     if progress.best_next_picks:
+        next_picks = ", ".join(
+            _display_build_tag(pick["tag"], lang)
+            for pick in progress.best_next_picks[:2]
+        )
         build_line += (
-            " / 下次 " + ", ".join(pick["tag"] for pick in progress.best_next_picks[:2])
+            " / 下次 " + next_picks
             if lang == "zh"
-            else " / next " + ", ".join(pick["tag"] for pick in progress.best_next_picks[:2])
+            else " / next " + next_picks
         )
     max_text = max(24, width - 4)
     if lang == "zh":
@@ -4081,15 +4220,22 @@ def _render_run_ready_board(
 ) -> list[str]:
     style = prompt_style or _hero_default_prompt_style(hero.id)
     opener = _hero_loadout_opener(hero.id, prompt_style=style, lang=lang)
+    stage_name = _build_stage_display(progress.stage, progress.stage_name, lang=lang)
     next_pick = "-"
     if progress.best_next_picks:
-        next_pick = ", ".join(pick["tag"] for pick in progress.best_next_picks[:3])
+        next_pick = ", ".join(
+            _display_build_tag(pick["tag"], lang) for pick in progress.best_next_picks[:3]
+        )
     core_tags = " / ".join(HERO_CORE_TAGS.get(hero.id, ())[:2]) or "-"
+    if lang == "zh":
+        core_tags = " / ".join(
+            _display_build_tag(tag, lang) for tag in HERO_CORE_TAGS.get(hero.id, ())[:2]
+        ) or core_tags
     if lang == "zh":
         return [
             "入局确认",
             f"  [提示词] {style} / {opener}",
-            f"  [构筑] {progress.stage.badge} {progress.stage_name} / {build.archetype(lang)}",
+            f"  [构筑] {progress.stage.badge} {stage_name} / {build.archetype(lang)}",
             f"  [核心] {core_tags}",
             f"  [下次选择] {next_pick}",
             "  [第一规则] 模型选择行动，本地裁判结算",
@@ -4177,24 +4323,24 @@ def _render_equipment_panel(
         return lines
     for item in build.items:
         name = item.display_name.get(lang)
-        tags = ", ".join(item.tags[:4])
+        tags = _format_tag_list(item.tags, lang)
         mods = _stat_mods_line(item.stat_mods)
         desc = item.description.get(lang)
-        lines.append(f"  [W:*] {name} [{item.tier}]  {mods}")
+        lines.append(f"  [W:*] {name} [{_format_tier_label(item.tier, lang)}]  {mods}")
         if tags:
-            lines.append(f"       tags: {tags}")
+            lines.append(f"       {'标签:' if lang == 'zh' else 'tags:'} {tags}")
         if desc:
             lines.append(f"       {desc}")
     if build.affixes:
         lines.append(f"  {label('hero_card_affixes', lang)}:")
     for affix in build.affixes:
         name = affix.display_name.get(lang)
-        tags = ", ".join(affix.tags[:4])
+        tags = _format_tag_list(affix.tags, lang)
         mods = _stat_mods_line(affix.stat_mods)
         desc = affix.description.get(lang)
         lines.append(f"    + {name}  {mods}")
         if tags:
-            lines.append(f"      tags: {tags}")
+            lines.append(f"      {'标签:' if lang == 'zh' else 'tags:'} {tags}")
         if desc:
             lines.append(f"      {desc}")
     return lines
