@@ -227,8 +227,8 @@ def test_cli_codex_shows_persisted_summary(bundle, content_root, isolated_home, 
     assert f"Codex : {codex_path()}" in out
     assert "CODEX :: MONSTER ARCHIVE" in out
     assert "Observed: 1/9" in out
-    assert "[OB] Black Candle Acolyte" in out
-    assert "[??] Black Candle Priest" in out
+    assert "[OB] [k] Black Candle Acolyte [I: Trace]" in out
+    assert "[??] [K] ???? [II: Ritebound]" in out
 
 
 def test_cli_codex_shows_persisted_detail(content_root, isolated_home, capsys):
@@ -253,7 +253,36 @@ def test_cli_codex_shows_persisted_detail(content_root, isolated_home, capsys):
     assert f"Codex : {codex_path()}" in out
     assert "EVENT: CODEX REVEAL [OB]" in out
     assert "Black Candle Acolyte" in out
+    assert "Family: Black Candle" in out
     assert "Encounters: 1" in out
+    assert "family_" not in out
+
+
+def test_cli_codex_accepts_public_card_code(content_root, isolated_home, capsys):
+    """REQ-CODEXATLAS-001: monster cards can be opened without internal IDs."""
+    progress = CodexProgress()
+    progress.record_encounter("family_black_candle", "trace")
+    save_codex_progress(progress)
+
+    rc = main(
+        [
+            "codex",
+            "k",
+            "--lang",
+            "en",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert f"Codex : {codex_path()}" in out
+    assert "EVENT: CODEX REVEAL [OB]" in out
+    assert "Black Candle Acolyte" in out
+    assert "Family: Black Candle" in out
+    assert "Encounters: 1" in out
+    assert "family_" not in out
 
 
 def test_prompt_codex_visibility_is_stage_and_tier_limited(bundle):
@@ -475,13 +504,21 @@ def test_codex_summary(bundle):
     assert "Gaps: unknown 6 / familiar 9 / mastered 9" in summary
     assert "Threat pool: chant 3 / fast 3 / brawler 3" in summary
     assert "Priority target: [??] Hungry Cultist" in summary
-    assert "Next: ouro codex <enemy_id> for counter plan" in summary
+    assert "Card c" in summary
+    assert "Next: ouro codex <card> for counter plan" in summary
     assert "MONSTER GALLERY BOARD" in summary
-    assert "[??] [c] ???? | trace | brawler | silhouette ????" in summary
-    assert "[OB] [k] Black Candle Acolyte | trace | chant | silhouette ~(k)~" in summary
-    assert "Next: open a monster card to reveal counter plan" in summary
+    assert "[??] [c] ???? [I: Trace]" in summary
+    assert "  Family:" in summary
+    assert "  Behavior:" in summary
+    assert "  Silhouette:" in summary
+    assert "  Card: c | -> encounter once" in summary
+    assert "[OB] [k] Black Candle Acolyte [I: Trace]" in summary
+    assert "Silhouette: ~(k)~" in summary
+    assert "Card: k | -> defeat to familiar" in summary
+    assert "Next: ouro codex <card> for counter plan" in summary
     assert "Hungry Cultist" in summary
     assert "Black Candle Acolyte" in summary
+    assert "enemy_" not in summary
     assert all(visual_width(line) <= 80 for line in summary.splitlines())
 
 
@@ -501,11 +538,13 @@ def test_codex_summary_counts_family_tier_progress(bundle):
     assert "Observed: 1/9" in summary
     assert "Gaps: unknown 8 / familiar 9 / mastered 9" in summary
     assert "Priority target: [??] Hungry Cultist" in summary
+    assert "Card c" in summary
     assert "MONSTER GALLERY BOARD" in summary
-    assert "[OB] Black Candle Acolyte" in summary
-    assert "[OB] [k] Black Candle Acolyte | trace | chant | silhouette ~(k)~" in summary
-    assert "[??] Black Candle Priest" in summary
-    assert "[??] Black Candle High Priest" in summary
+    assert "[OB] [k] Black Candle Acolyte [I: Trace]" in summary
+    assert "Card: k | -> defeat to familiar" in summary
+    assert "[??] [K] ???? [II: Ritebound]" in summary
+    assert "[??] [B] ???? [III: Archive-Bound]" in summary
+    assert "enemy_" not in summary
 
 
 def test_codex_summary_no_progress(bundle):
@@ -525,5 +564,38 @@ def test_codex_summary_no_progress(bundle):
     assert "MONSTER GALLERY BOARD" in summary
     assert "Gaps: unknown 9 / familiar 9 / mastered 9" in summary
     assert "Threat pool: chant 3 / fast 3 / brawler 3" in summary
-    assert "[??] [c] ???? | trace | brawler | silhouette ????" in summary
+    assert "[??] [c] ???? [I: Trace]" in summary
     assert "[??]" in summary
+    assert "Next: ouro codex <card> for counter plan" in summary
+    assert "Monsters:" not in summary
+    assert "enemy_" not in summary
+
+
+def test_codex_summary_zh_gallery_board(bundle):
+    """Chinese codex summary should keep the gallery board readable and command hints."""
+    from ouro_agent.tui.screens import render_codex_summary
+
+    progress = CodexProgress()
+    progress.record_encounter("family_black_candle", "trace")
+
+    summary = render_codex_summary(
+        bundle,
+        codex_progress=progress,
+        language="zh",
+    )
+
+    assert "CODEX :: MONSTER ARCHIVE" in summary or "图鉴 :: 怪物档案" in summary
+    assert "图鉴 :: 怪物档案" in summary
+    assert "CODEX HUNT BOARD :: 图鉴狩猎板" in summary
+    assert "怪物图鉴画廊" in summary
+    assert "优先目标:" in summary
+    assert "卡片 c" in summary
+    assert "下一步: ouro codex <卡片> 查看反制计划" in summary
+    assert "  家系: 黑烛教团" in summary
+    assert "  行为: 吟唱" in summary
+    assert "  剪影: ~(k)~" in summary
+    assert "  卡片: k | -> 击败至熟悉" in summary
+    assert "  Family:" not in summary
+    assert "  Behavior:" not in summary
+    assert "  Silhouette:" not in summary
+    assert "enemy_" not in summary

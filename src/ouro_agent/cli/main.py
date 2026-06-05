@@ -417,7 +417,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "enemy_id",
         nargs="?",
         default=None,
-        help="Optional enemy id for a detailed Codex card",
+        help="Optional enemy id, card code, or monster name for a detailed Codex card",
     )
     codex.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help=CONTENT_DIR_HELP)
     codex.set_defaults(handler=_cmd_codex)
@@ -458,6 +458,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
     replay = sub.add_parser("replay", help="Replay a local JSONL battle trace")
     replay.add_argument("trace_path", help="Path to a .trace.jsonl file")
+    replay.add_argument(
+        "--content-dir",
+        default=DEFAULT_CONTENT_DIR,
+        help=CONTENT_DIR_HELP,
+    )
     replay.add_argument(
         "--limit",
         type=int,
@@ -800,11 +805,13 @@ def _demo_next_commands(lang: str) -> str:
 def _cmd_replay(args: argparse.Namespace) -> int:
     config = load_config()
     lang = _resolve_lang(args, config)
+    content_dir = resolve_content_dir(args.content_dir)
     try:
         output = render_trace_replay(
             args.trace_path,
             language=lang,
             limit=args.limit or None,
+            content_dir=content_dir,
         )
     except TraceReplayError as err:
         sys.stderr.write(f"error: {err}\n")
@@ -1113,9 +1120,10 @@ def _cmd_codex(args: argparse.Namespace) -> int:
 
     sys.stdout.write(f"Codex : {codex_path()}\n\n")
     if args.enemy_id:
+        enemy_key = _resolve_codex_enemy_key(args.enemy_id, bundle, lang)
         sys.stdout.write(
             render_codex_card(
-                args.enemy_id,
+                enemy_key,
                 bundle,
                 codex_progress=progress,
                 language=lang,
@@ -1128,6 +1136,33 @@ def _cmd_codex(args: argparse.Namespace) -> int:
             + "\n"
         )
     return 0
+
+
+def _resolve_codex_enemy_key(query: str, bundle, lang: str) -> str:
+    if query in bundle.enemies:
+        return query
+
+    for enemy_id, enemy in bundle.enemies.items():
+        if enemy.short_glyph == query:
+            return enemy_id
+
+    normalized = _codex_cli_key(query)
+    for enemy_id, enemy in bundle.enemies.items():
+        candidates = [
+            enemy_id.removeprefix("enemy_"),
+            enemy.display_name.get(lang),
+            enemy.display_name.get("en"),
+            enemy.display_name.get("zh"),
+        ]
+        for candidate in candidates:
+            if candidate and _codex_cli_key(candidate) == normalized:
+                return enemy_id
+    return query
+
+
+def _codex_cli_key(value: str) -> str:
+    normalized = "".join(char.lower() if char.isalnum() else " " for char in value)
+    return "-".join(part for part in normalized.split() if part)
 
 
 def _cmd_runs(args: argparse.Namespace) -> int:

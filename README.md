@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-354%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-357%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
@@ -183,7 +183,7 @@ ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no
 | C2 | Monster families, tiered codex/content schema | done |
 | E | Codex persistence, run archive, death history | done |
 
-`354 tests passing`. No real network calls in any test.
+`357 tests passing`. No real network calls in any test.
 
 ---
 

@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
+
+from ouro_agent.content import ContentError, load_content_bundle, resolve_content_dir
 
 
 class TraceReplayError(ValueError):
@@ -44,7 +47,9 @@ def render_trace_replay(
     *,
     language: str = "en",
     limit: int | None = None,
+    content_dir: str | Path | None = "content",
 ) -> str:
+    name_by_id = _build_name_lookup(language=language, content_dir=content_dir)
     events = load_trace_events(path)
     start = _first(events, "battle_start") or events[0]
     end = _last(events, "battle_end")
@@ -91,6 +96,7 @@ def render_trace_replay(
             total_tokens,
             total_latency,
             labels,
+            name_by_id,
         )),
     ])
 
@@ -104,7 +110,7 @@ def render_trace_replay(
         labels["timeline"],
     ])
     for event in shown:
-        lines.extend(_format_timeline_event(event, labels))
+        lines.extend(_format_timeline_event(event, labels, name_by_id))
 
     if omitted:
         lines.append(labels["omitted"].format(count=omitted))
@@ -134,10 +140,11 @@ def _render_replay_director_board(
     total_tokens: int,
     total_latency: int,
     labels: dict[str, str],
+    name_by_id: dict[str, str],
 ) -> list[str]:
     first_action = "-"
     if hero_turns:
-        first_action = _format_action(hero_turns[0].get("action"))
+        first_action = _format_action(hero_turns[0].get("action"), name_by_id)
     result = end.get("result", "-") if end is not None else "-"
     tick = end.get("tick", "-") if end is not None else "-"
     return [
@@ -205,13 +212,17 @@ def _extract_damage(summary: object) -> int:
     return int(digits) if digits else 0
 
 
-def _format_timeline_event(event: dict[str, Any], labels: dict[str, str]) -> list[str]:
+def _format_timeline_event(
+    event: dict[str, Any],
+    labels: dict[str, str],
+    name_by_id: dict[str, str],
+) -> list[str]:
     tick = _as_int(event.get("tick"))
     if event.get("kind") == "hero_turn":
         judge = event.get("judge") if isinstance(event.get("judge"), dict) else {}
         line = (
-            f"  [{tick:03d}] HERO  {_format_action(event.get('action'))} | "
-            f"{labels['judge']}: {_clip(str(judge.get('summary') or '-'), 96)}"
+            f"  [{tick:03d}] HERO  {_format_action(event.get('action'), name_by_id)} | "
+            f"{labels['judge']}: {_format_judge_summary(judge.get('summary'), name_by_id)}"
         )
         lines = [line]
         analysis = event.get("model_analysis")
@@ -222,30 +233,118 @@ def _format_timeline_event(event: dict[str, Any], labels: dict[str, str]) -> lis
             lines.append(f"        {labels['narration']}: {_clip(str(narration), 120)}")
         return lines
 
-    actor = event.get("actor_id") or "enemy"
+    actor = _lookup_display_name(event.get("actor_id") or "enemy", name_by_id)
     return [
         (
             f"  [{tick:03d}] ENEMY {actor} | "
-            f"{labels['action']}: {_format_action(event.get('action'))}"
+            f"{labels['action']}: {_format_action(event.get('action'), name_by_id)}"
         )
     ]
 
 
-def _format_action(action: object) -> str:
+def _format_action(action: object, name_by_id: dict[str, str]) -> str:
     if not isinstance(action, dict):
         return "-"
     action_type = str(action.get("type") or "?")
     skill = action.get("skill_id")
     targets = action.get("targets")
-    parts = [action_type]
-    if skill:
-        parts.append(str(skill))
+    if action_type == "cast_skill" and isinstance(skill, str):
+        parts = [_lookup_display_name(skill, name_by_id)]
+    else:
+        parts = [_pretty_action_name(action_type)]
+
+    if action_type == "cast_skill":
+        skill = None
+    elif skill:
+        parts.append(_lookup_display_name(skill, name_by_id))
     if isinstance(targets, list) and targets:
-        parts.append("-> " + ", ".join(str(target) for target in targets))
+        target_text = ", ".join(
+            _lookup_display_name(target, name_by_id) for target in targets
+        )
+        parts.append(f"-> {target_text}")
     damage = action.get("damage")
-    if damage is not None:
+    if action_type != "cast_skill" and damage is not None:
         parts.append(f"damage={damage}")
     return " ".join(parts)
+
+
+def _format_judge_summary(
+    summary: object,
+    name_by_id: dict[str, str],
+) -> str:
+    if not isinstance(summary, str):
+        return "-"
+    text = _replace_display_ids(summary, name_by_id)
+    text = text.replace("Cast Skill ", "")
+    return _clip(text, 96)
+
+
+def _build_name_lookup(
+    *, language: str, content_dir: str | Path | None
+) -> dict[str, str]:
+    if not content_dir:
+        return {}
+    try:
+        bundle = load_content_bundle(resolve_content_dir(content_dir))
+    except (ContentError, OSError, ValueError):
+        return {}
+
+    names: dict[str, str] = {}
+    for hero_id, hero in bundle.heroes.items():
+        names[hero_id] = (
+            hero.display_name.get(language)
+            or hero.display_name.get("en")
+            or _pretty_print_id(hero_id)
+        )
+    for skill_id, skill in bundle.skills.items():
+        names[skill_id] = (
+            skill.display_name.get(language)
+            or skill.display_name.get("en")
+            or _pretty_print_id(skill_id)
+        )
+    for enemy_id, enemy in bundle.enemies.items():
+        names[enemy_id] = (
+            enemy.display_name.get(language)
+            or enemy.display_name.get("en")
+            or _pretty_print_id(enemy_id)
+        )
+    return names
+
+
+def _replace_display_ids(text: str, name_by_id: dict[str, str]) -> str:
+    name_lookup = dict(name_by_id)
+
+    def replace_token(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if "_" not in token:
+            return token
+        if token in name_lookup:
+            return name_lookup[token]
+        return _pretty_print_id(token)
+
+    return re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", replace_token, text)
+
+
+def _lookup_display_name(value: object, name_by_id: dict[str, str]) -> str:
+    if not isinstance(value, str):
+        return str(value)
+    if value in name_by_id:
+        return name_by_id[value]
+    return _pretty_print_id(value)
+
+
+def _pretty_action_name(action_type: str) -> str:
+    return _pretty_print_id(action_type)
+
+
+def _pretty_print_id(value: str) -> str:
+    if not value:
+        return value
+    for prefix in ("hero_", "enemy_", "skill_", "status_", "dungeon_", "node_"):
+        if value.startswith(prefix):
+            value = value[len(prefix) :]
+            break
+    return " ".join(part.capitalize() for part in value.split("_"))
 
 
 def _labels(language: str) -> dict[str, str]:

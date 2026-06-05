@@ -89,7 +89,7 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "354 passed" in changelog
+    assert "357 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
@@ -147,7 +147,7 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "354 passed" in audit
+    assert "357 passed" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
     assert "License 仍待决策" in audit
@@ -686,7 +686,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 354 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 357 tests collected; 247 release-bound text files." in (
         evidence_result.stdout
     )
 

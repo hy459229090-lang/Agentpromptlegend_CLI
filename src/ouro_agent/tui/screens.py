@@ -7047,7 +7047,9 @@ def render_codex_card(
         lines.append(_codex_line("Tier: " + tier_display, width))
 
         if family_id:
-            lines.append(_codex_line("Family: " + family_id, width))
+            family_label = "家系" if lang == "zh" else "Family"
+            family_name = _codex_gallery_family(enemy, lang=lang)
+            lines.append(_codex_line(f"{family_label}: {family_name}", width))
 
         lines.append(_codex_line("Glyph: [" + glyph + "]", width))
         lines.extend(_codex_sprite_lines(glyph, stage, width=width))
@@ -7303,17 +7305,6 @@ def render_codex_summary(
     lines.extend(_render_codex_gallery_board(bundle, codex_progress, lang=lang))
     lines.append("")
 
-    lines.append("Monsters:")
-    for enemy_id, enemy in bundle.enemies.items():
-        family_id = enemy.family_id or enemy_id
-        name = enemy.display_name.get(lang) or enemy.display_name.get("en", enemy_id)
-        if codex_progress:
-            stage = codex_progress.get_stage(family_id, enemy.tier)
-            badge = codex_stage_badge(stage)
-            lines.append(f"  {badge} {name} ({enemy_id})")
-        else:
-            lines.append(f"  [??] {name} ({enemy_id})")
-
     return "\n".join(lines)
 
 
@@ -7325,6 +7316,7 @@ def _render_codex_gallery_board(
 ) -> list[str]:
     title = "MONSTER GALLERY BOARD" if lang == "en" else "怪物图鉴画廊"
     lines = [title]
+    family_label, behavior_label, silhouette_label, card_label = _codex_gallery_field_labels(lang)
     for enemy_id, enemy in bundle.enemies.items():
         family_id = enemy.family_id or enemy_id
         stage = (
@@ -7342,23 +7334,29 @@ def _render_codex_gallery_board(
         threat = _codex_gallery_threat(enemy, lang=lang)
         silhouette = _codex_gallery_silhouette(enemy, stage)
         next_action = _codex_gallery_next_action(stage, lang=lang)
-        if lang == "zh":
-            line = (
-                f"  {badge} {glyph} {name} | {enemy.tier} | "
-                f"{threat} | {silhouette} | {next_action}"
-            )
-        else:
-            line = (
-                f"  {badge} {glyph} {name} | {enemy.tier} | "
-                f"{threat} | {silhouette} | {next_action}"
-            )
-        lines.append(fit_text(line, 80))
+        family = _codex_gallery_family(enemy, lang=lang)
+        card_code = _codex_gallery_card_code(enemy)
+        lines.append(fit_text(f"  {badge} {glyph} {name} [{enemy.tier_display(lang)}]", 80))
+        lines.append(fit_text(f"    {family_label}: {family}", 80))
+        lines.append(fit_text(f"    {behavior_label}: {threat}", 80))
+        lines.append(fit_text(f"    {silhouette_label}: {silhouette}", 80))
+        lines.append(fit_text(f"    {card_label}: {card_code} | -> {next_action}", 80))
     lines.append(
-        "Next: open a monster card to reveal counter plan"
+        "Next: ouro codex <card> for counter plan"
         if lang == "en"
-        else "下一步: 打开怪物卡查看反制计划"
+        else "下一步: ouro codex <卡片> 查看反制计划"
     )
     return lines
+
+
+def _codex_gallery_field_labels(lang: str) -> tuple[str, str, str, str]:
+    if lang == "zh":
+        return ("家系", "行为", "剪影", "卡片")
+    return ("Family", "Behavior", "Silhouette", "Card")
+
+
+def _codex_gallery_card_code(enemy: EnemyData) -> str:
+    return enemy.short_glyph or "?"
 
 
 def _codex_gallery_threat(enemy: EnemyData, *, lang: str) -> str:
@@ -7371,10 +7369,10 @@ def _codex_gallery_threat(enemy: EnemyData, *, lang: str) -> str:
 
 def _codex_gallery_silhouette(enemy: EnemyData, stage: CodexStage) -> str:
     if stage == CodexStage.UNKNOWN:
-        return "silhouette ????"
+        return "????"
     sprite = asset_enemy_sprite(enemy.short_glyph, "idle")
     row = next((line.strip() for line in sprite if line.strip()), "???")
-    return f"silhouette {row}"
+    return row
 
 
 def _codex_gallery_next_action(stage: CodexStage, *, lang: str) -> str:
@@ -7387,6 +7385,26 @@ def _codex_gallery_next_action(stage: CodexStage, *, lang: str) -> str:
     if stage == CodexStage.MASTERED:
         return "追猎循环" if lang == "zh" else "hunt loop"
     return "已追猎" if lang == "zh" else "hunted"
+
+
+def _codex_gallery_family(enemy: EnemyData, *, lang: str) -> str:
+    family_id = enemy.family_id or ""
+    if family_id.startswith("family_"):
+        family_id = family_id.removeprefix("family_")
+    family_id = family_id.replace("_", " ").strip()
+    if not family_id:
+        return "Unknown family" if lang == "en" else "未知家系"
+
+    if lang == "zh":
+        zh_family_map = {
+            "hungry cultist": "饥饿邪教",
+            "black candle": "黑烛教团",
+            "mire vermin": "瘟沼毒虫",
+            "ash warden": "灰烬守卫",
+        }
+        return zh_family_map.get(family_id, family_id)
+
+    return " ".join(part.capitalize() for part in family_id.split())
 
 
 def _render_codex_hunt_board(
@@ -7418,7 +7436,7 @@ def _render_codex_hunt_board(
             f"  缺口: 未观察 {unknown} / 未熟悉 {familiar_gap} / 未掌握 {mastered_gap}",
             f"  威胁池: {threat_pool}",
             f"  优先目标: {target}",
-            "  下一步: ouro codex <enemy_id> 查看反制计划",
+            "  下一步: ouro codex <卡片> 查看反制计划",
         ]
     else:
         title = "CODEX HUNT BOARD"
@@ -7427,7 +7445,7 @@ def _render_codex_hunt_board(
             f"  Gaps: unknown {unknown} / familiar {familiar_gap} / mastered {mastered_gap}",
             f"  Threat pool: {threat_pool}",
             f"  Priority target: {target}",
-            "  Next: ouro codex <enemy_id> for counter plan",
+            "  Next: ouro codex <card> for counter plan",
         ]
     return lines
 
@@ -7451,12 +7469,19 @@ def _codex_next_hunt_target(
     ]
     if not candidates:
         return "全部猎杀完成" if lang == "zh" else "all monsters hunted"
-    _, _, _, enemy_id, enemy, stage = min(candidates)
-    name = enemy.display_name.get(lang) or enemy.display_name.get("en", enemy_id)
+    _, _, _, _, enemy, stage = min(candidates)
+    name = enemy.display_name.get(lang) or enemy.display_name.get("en", "Unknown monster")
     badge = codex_stage_badge(stage)
+    card = _codex_gallery_card_code(enemy)
     if lang == "zh":
-        return f"{badge} {name} / {enemy.tier_display(lang)} / {enemy_id}"
-    return f"{badge} {name} / {enemy.tier_display(lang)} / {enemy_id}"
+        return (
+            f"{badge} {name} / {_codex_gallery_family(enemy, lang=lang)} / "
+            f"{enemy.tier_display(lang)} / 卡片 {card}"
+        )
+    return (
+        f"{badge} {name} / {_codex_gallery_family(enemy, lang=lang)} / "
+        f"{enemy.tier_display(lang)} / Card {card}"
+    )
 
 
 def _codex_summary_threat_pool(

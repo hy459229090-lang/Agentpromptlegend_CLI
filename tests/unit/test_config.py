@@ -297,7 +297,7 @@ def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
     assert "STEP 4: Codex readback" in out
     assert "CODEX :: MONSTER ARCHIVE" in out
     assert "Observed: 2/9" in out
-    assert "[OB] Hungry Cultist" in out
+    assert "[OB] [c] Hungry Cultist [I: Trace]" in out
     assert "STEP 5: Continue from here" in out
     assert "Next commands" in out
     assert "Full run" in out

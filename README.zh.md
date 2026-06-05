@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-354%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-357%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
@@ -153,7 +153,7 @@ ouro history --lang zh --limit 5
 | C2 | 怪物家族、三档图鉴与内容 schema | done |
 | E | 图鉴持久化、Run 归档、死亡历史 | done |
 
-`354 测试通过`。任何测试都不联网。
+`357 测试通过`。任何测试都不联网。
 
 ---
 
