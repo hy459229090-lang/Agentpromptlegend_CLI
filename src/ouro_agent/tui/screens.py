@@ -511,9 +511,56 @@ def _draw_canvas_weapon_plate(
         surface.draw_text(x, y + row_offset, fit_text(row, art_width))
     text_x = x + art_width + 1
     text_width = max(6, width - art_width - 1)
-    surface.draw_text(text_x, y, fit_text(weapon, text_width))
-    surface.draw_text(text_x, y + 1, fit_text(build_badge, text_width))
-    surface.draw_text(text_x, y + 2, fit_text(card.build_shift, text_width))
+    weapon_row, build_row, tag_row = _canvas_weapon_plate_rows(card, weapon, build_badge, text_width)
+    surface.draw_text(text_x, y, weapon_row)
+    surface.draw_text(text_x, y + 1, build_row)
+    surface.draw_text(text_x, y + 2, tag_row)
+
+
+def _canvas_weapon_plate_rows(
+    card,
+    weapon: str,
+    build_badge: str,
+    width: int,
+) -> tuple[str, str, str]:
+    weapon_icon = card.icon or weapon.split(" ", 1)[0]
+    stage = card.badge or build_badge.split(" ", 1)[0]
+    tags = _canvas_build_tags(card.build_shift or build_badge)
+    first_tag = tags.split("/", 1)[0] if tags else ""
+    weapon_row = _canvas_fit_choice(weapon_icon, weapon.split(" ", 1)[0], width)
+    build_primary = f"{stage} {first_tag}".strip()
+    build_row = _canvas_fit_choice(build_primary, stage, width)
+    tag_row = _canvas_fit_choice(tags, _canvas_short_build_tags(tags), width)
+    return weapon_row, build_row, tag_row
+
+
+def _canvas_build_tags(text: str) -> str:
+    if "]" in text:
+        return text.split("]", 1)[1].strip()
+    parts = text.split(" ", 1)
+    return parts[1].strip() if len(parts) > 1 else text.strip()
+
+
+def _canvas_short_build_tags(tags: str) -> str:
+    replacements = {
+        "control": "ctrl",
+        "execute": "exe",
+        "shield": "shd",
+        "poison": "psn",
+        "cleanse": "cln",
+    }
+    parts = [replacements.get(part, part) for part in tags.replace("/", " ").split() if part]
+    if len(parts) >= 2:
+        return f"{parts[0]}+{parts[1]}"
+    return parts[0] if parts else "tags"
+
+
+def _canvas_fit_choice(primary: str, fallback: str, width: int) -> str:
+    if visual_width(primary) <= width:
+        return primary
+    if visual_width(fallback) <= width:
+        return fallback
+    return fit_text(fallback, width)
 
 
 def _draw_canvas_stagecraft(

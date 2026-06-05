@@ -245,6 +245,13 @@ def test_unicode_battle_screen_canvas_width_matrix(bundle, width):
     assert "ACTION HEX -> c" in screen
     assert "ACTION Hex Seal" not in screen
     assert "Hex Seal -> Hungry Cultist" in screen
+    assert "[W:STF] c==*" in screen
+    assert "[W:STF] c==* Bl..." not in screen
+    assert "[ONLINE] shadow..." not in screen
+    if width <= 88:
+        assert "shadow+ctrl" in screen
+    else:
+        assert "shadow/control" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= width
 
