@@ -136,7 +136,15 @@ def render_battle_screen(
         lines.append("")
     lines.extend(_render_battle_momentum_panel(state, frame, last_record, width=width, lang=lang))
     lines.extend(_render_action_focus_panel(frame, width=width, lang=lang))
-    lines.extend(_render_build_climax_panel(build, bundle=bundle, width=width, lang=lang))
+    lines.extend(
+        _render_build_climax_panel(
+            build,
+            bundle=bundle,
+            width=width,
+            lang=lang,
+            show_opening=last_record is None and not state.log,
+        )
+    )
     lines.append("")
     lines.extend(_render_battle_objective_panel(state, frame, last_record, width=width, lang=lang))
     lines.append("")
@@ -1676,8 +1684,9 @@ def _render_build_climax_panel(
     bundle: ContentBundle | None,
     width: int,
     lang: str,
+    show_opening: bool,
 ) -> list[str]:
-    if build is None or bundle is None:
+    if build is None or bundle is None or not show_opening:
         return []
     progress = build.calculate_progress(bundle)
     event = None

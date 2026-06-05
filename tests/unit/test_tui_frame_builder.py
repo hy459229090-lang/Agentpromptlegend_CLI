@@ -1692,12 +1692,39 @@ def test_boss_phase_crossing_raises_climax_banner(bundle):
 
 
 def test_climax_banners_cover_kill_and_build_online(bundle):
-    """REQ-CLIMAX-001: kill and Build state should be visible as stage events."""
+    """REQ-CLIMAX-001/REQ-BUILDCLIMAX-001: Build and kill events keep distinct beats."""
     from ouro_agent.engine import resolve_build
     from ouro_agent.tui.screens import render_battle_screen
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
     state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    build = resolve_build(bundle.get_hero("hero_shadow_apprentice"), bundle)
+    opening = render_battle_screen(
+        state,
+        None,
+        provider_label="mock",
+        seed=7,
+        language="en",
+        width=100,
+        bundle=bundle,
+        build=build,
+    )
+    assert "EVENT   BUILD ONLINE" in opening or "EVENT   HIGH ROLL" in opening
+
+    state.log.append("Tick 9 Astia casts Hex Seal.")
+    later_wait = render_battle_screen(
+        state,
+        None,
+        provider_label="mock",
+        seed=7,
+        language="en",
+        width=100,
+        bundle=bundle,
+        build=build,
+    )
+    assert "EVENT   BUILD ONLINE" not in later_wait
+    assert "EVENT   HIGH ROLL" not in later_wait
+
     enemy = state.enemies[0]
     enemy.hp = 0
     record = TurnRecord(
@@ -1719,7 +1746,6 @@ def test_climax_banners_cover_kill_and_build_online(bundle):
             action_kind="basic_attack",
         ),
     )
-    build = resolve_build(bundle.get_hero("hero_shadow_apprentice"), bundle)
 
     frame = build_battle_frame(state, record)
     screen = render_battle_screen(
@@ -1735,8 +1761,9 @@ def test_climax_banners_cover_kill_and_build_online(bundle):
 
     assert frame.event_banner == "KILL CONFIRMED"
     assert "EVENT   KILL CONFIRMED" in screen
-    assert "EVENT   BUILD ONLINE" in screen or "EVENT   HIGH ROLL" in screen
-    for line in screen.splitlines():
+    assert "EVENT   BUILD ONLINE" not in screen
+    assert "EVENT   HIGH ROLL" not in screen
+    for line in (*opening.splitlines(), *later_wait.splitlines(), *screen.splitlines()):
         assert visual_width(line) <= 100
 
 
