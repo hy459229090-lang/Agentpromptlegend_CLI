@@ -398,6 +398,8 @@ def _render_canvas_duel_panel(
         target=target,
         frame=frame,
     )
+    if target is not None:
+        _draw_canvas_cast_meter(surface, right_x + 2, 8, right_w - 6, target)
     _draw_canvas_floating_numbers(surface, right_x + 2, 8, right_w - 4, last_record, frame)
     if target is not None:
         _draw_canvas_actor_hud(
@@ -570,6 +572,36 @@ def _canvas_enemy_intent_label(target: Enemy, frame: BattleFrame) -> str:
     if target.hp / max(1, target.max_hp) <= 0.3:
         return "INTENT FALTER"
     return "INTENT STRIKE"
+
+
+def _draw_canvas_cast_meter(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    target: Enemy,
+) -> None:
+    if width < 12 or not target.chant_charge_turns:
+        return
+    surface.draw_text(x, y, fit_text(_canvas_cast_meter_label(target), width))
+
+
+def _canvas_cast_meter_label(target: Enemy) -> str:
+    if not target.is_alive:
+        return "CAST --"
+    if target.find_status("status_silence") is not None:
+        return "CAST CUT"
+    total = max(1, target.chant_charge_turns)
+    current = max(0, min(total, target.chant_progress))
+    return f"CAST {_canvas_cast_bar(current, total)} {current}/{total}"
+
+
+def _canvas_cast_bar(current: int, total: int) -> str:
+    glyphs = get_glyph_set("unicode")
+    width = 4
+    ratio = current / max(1, total)
+    filled = round(width * max(0.0, min(1.0, ratio)))
+    return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
 def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame) -> None:

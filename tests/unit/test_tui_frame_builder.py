@@ -376,6 +376,61 @@ def test_unicode_battle_screen_draws_beat_badge_inside_canvas(bundle, width):
             assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_cast_meter_inside_canvas(bundle, width):
+    """REQ-CASTMETER-001: Canvas stage should show chant progress as a meter."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    target = state.enemies[0]
+    target.chant_charge_turns = 2
+    target.chant_progress = 1
+    record = TurnRecord(
+        tick=10,
+        actor_id=target.id,
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_cast_meter",
+        static_context_hash="ctx_cast_meter",
+    )
+
+    charging = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "CAST " in charging
+    assert "1/2" in charging
+    assert "INTENT CHANT 1/2" in charging
+    assert "RETICLE [WINDOW]" in charging
+
+    target.add_status(StatusEffect("status_silence", stacks=1, duration=1))
+    cut = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "CAST CUT" in cut
+    assert "INTENT SILENCED" in cut
+
+    for screen in (charging, cut):
+        for line in screen.splitlines():
+            assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
     from ouro_agent.tui.screens import render_battle_screen
 
