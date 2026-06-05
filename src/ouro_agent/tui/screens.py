@@ -389,7 +389,7 @@ def _render_canvas_duel_panel(
     for row in range(1, height - 1):
         surface.put(separator_a, row, glyphs.v)
         surface.put(separator_b, row, glyphs.v)
-    _draw_canvas_scene_texture(surface, center_x + 1, 2, center_w - 2, scene_text)
+    _draw_canvas_scene_texture(surface, center_x + 1, 2, center_w - 2, scene_text, lang=lang)
 
     hero_pose = _actor_pose(state.hero.id, last_record)
     if state.hero.hp / max(1, state.hero.max_hp) < 0.3 and hero_pose not in ("hit", "death"):
@@ -1317,7 +1317,7 @@ def _canvas_enemy_dialogue(
     elif target.atb >= 90:
         line = "next strike loaded" if lang == "en" else "下一击已装填"
     else:
-        line = "watching the agent" if lang == "en" else "盯住 Agent"
+        line = "watching the agent" if lang == "en" else "盯住威胁"
     return fit_text(f"ENM {line}", width)
 
 
@@ -1327,11 +1327,19 @@ def _draw_canvas_scene_texture(
     y: int,
     width: int,
     scene_text: str | None,
+    lang: str = "en",
 ) -> None:
     if width < 18:
         return
     scene = (scene_text or "").lower()
-    if "candle" in scene or "烛" in scene:
+    if lang == "zh":
+        if "candle" in scene or "烛" in scene:
+            motifs = ("░ ·烛影· ░", "  ░ 灰烬 ░  ", "░ · 断拱 · ░")
+        elif "ash" in scene or "灰" in scene:
+            motifs = ("░ ·回响· ░", "  ░ 岩尘 ░  ", "░ · 断拱 · ░")
+        else:
+            motifs = ("░ ·回响· ░", "  ░ 现场 ░  ", "░ · 轻响 · ░")
+    elif "candle" in scene or "烛" in scene:
         motifs = ("░  . candle .  ░", "  ░ wick ash ░  ", "░ . broken arch . ░")
     elif "ash" in scene or "灰" in scene:
         motifs = ("░  . ash .  ░", "  ░ ember dust ░  ", "░ . stone arch . ░")
@@ -1733,7 +1741,11 @@ def _block_effect_lane(
     lang: str = "en",
 ) -> list[str]:
     if record is None:
-        return block_effect_rows("wait", "░░░ waiting for first echo ░░░", width)
+        return block_effect_rows(
+            "wait",
+            "░░░ waiting for first echo ░░░" if lang == "en" else "░░░ 等待第一缕回声 ░░░",
+            width,
+        )
     damage = 0
     if record.judge is not None:
         damage = record.judge.damage

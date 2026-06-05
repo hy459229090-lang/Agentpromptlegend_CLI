@@ -868,9 +868,20 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             width=zh_width,
             unicode_mode=True,
         )
+        zh_wait = render_battle_screen(
+            zh_state,
+            None,
+            provider_label="mock",
+            seed=1,
+            language="zh",
+            width=zh_width,
+            unicode_mode=True,
+        )
         assert "VOX 封住咏唱" in zh_screen
         assert "ENM 护甲开裂" in zh_screen
         assert "ENM      Agent" not in zh_screen
+        assert "盯住威胁" not in zh_screen
+        assert "盯住威胁" in zh_wait
         assert "英雄" in zh_screen
         assert "敌方" in zh_screen
         assert "导演" in zh_screen
@@ -889,6 +900,12 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             ]
             assert segments
             assert all(any("\u4e00" <= ch <= "\u9fff" for ch in segment) for segment in segments)
+        assert "waiting for first echo" not in zh_wait
+        assert ". candle ." not in zh_wait
+        assert ". broken arch ." not in zh_wait
+        assert "等待第一缕回声" in zh_wait
+        assert "·烛影·" in zh_wait
+        assert "· 断拱 ·" in zh_wait
         canvas_lines = [line for line in zh_screen.splitlines() if line.startswith("█")][:25]
         canvas = "\n".join(canvas_lines)
         for bad in (
