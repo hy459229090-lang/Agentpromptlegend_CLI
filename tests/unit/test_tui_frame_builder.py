@@ -606,6 +606,7 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
     target = state.enemies[0]
     target.chant_charge_turns = 1
     target.chant_progress = 1
+    target.atb = 96
     hex_seal = state.hero.find_skill("skill_hex_seal")
     assert hex_seal is not None
     hex_seal.cooldown_remaining = 3
@@ -637,6 +638,8 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
     assert "CD3" in screen
     assert "ACTION ENEMY CHARGE" in screen
     assert "ACTION Black Candle Acolyte cha..." not in screen
+    assert "DELTA ATB:k96 CD:HEX3" in screen
+    assert "DELTA ATB Black Candle" not in screen
     assert "COUNTER CLOCK" in screen
     assert screen.count("COUNTER CLOCK") == 1
     assert "THE ECHO ALTAR / COUNTER WINDOW" in screen
@@ -760,7 +763,7 @@ def test_unicode_battle_screen_embeds_resource_thresholds_in_canvas(bundle):
     assert "HP CRIT" in screen
     assert "MP LOW" in screen
     assert "ATB READY" in screen
-    assert "DELTA MP 20->2 INT:no" in screen
+    assert "DELTA MP20>2 I:N HP25/100!" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100
 

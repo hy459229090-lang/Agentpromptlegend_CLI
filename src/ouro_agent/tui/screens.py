@@ -480,7 +480,7 @@ def _render_canvas_duel_panel(
         surface.draw_text(center_x + 1, 14, fit_text(_canvas_counter_rail_label(frame.counter_clock), center_w - 2))
     elif frame.impact_line:
         surface.draw_text(center_x + 1, 14, fit_text(frame.impact_line, center_w - 2))
-    _draw_canvas_delta_ribbon(surface, center_x + 1, 15, center_w - 2, frame)
+    _draw_canvas_delta_ribbon(surface, center_x + 1, 15, center_w - 2, frame, state)
 
     rendered = _colorize_canvas_lines(
         surface.render(),
@@ -1099,22 +1099,66 @@ def _draw_canvas_delta_ribbon(
     y: int,
     width: int,
     frame: BattleFrame,
+    state: BattleState,
 ) -> None:
     if not frame.resource_deltas:
         return
-    parts = [_compact_canvas_delta(delta.label, delta.text) for delta in frame.resource_deltas[:2]]
-    surface.draw_text(x, y, fit_text("DELTA " + " | ".join(parts), width))
+    parts = [_compact_canvas_delta(delta.label, delta.text, state) for delta in frame.resource_deltas[:2]]
+    surface.draw_text(x, y, fit_text("DELTA " + " ".join(parts), width))
 
 
-def _compact_canvas_delta(label_text: str, delta_text: str) -> str:
+def _compact_canvas_delta(label_text: str, delta_text: str, state: BattleState) -> str:
+    label_code = label_text.upper()
+    compact = _canvas_delta_actor_tokens(delta_text, state)
+    if label_code == "MP":
+        compact = compact.replace(" -> ", ">")
+        compact = compact.replace(" | interrupt ready: yes", " I:Y")
+        compact = compact.replace(" | interrupt ready: no", " I:N")
+        return f"MP{compact}"
+    if label_code == "HP":
+        compact = compact.replace(" -> ", ">")
+        compact = compact.replace(" | critical", "!")
+        return f"HP{compact}"
+    if label_code == "ATB":
+        if compact == "hero ready":
+            return "ATB:H*"
+        if compact.endswith(" ready"):
+            return f"ATB:{compact[:-6]}*"
+        if compact.endswith("/100"):
+            actor, _, value = compact.partition(" ")
+            return f"ATB:{actor}{value.split('/', 1)[0]}"
+        return f"ATB:{_canvas_action_token(compact)}"
+    if label_code == "CD":
+        skill, _, rest = compact.partition(" locked ")
+        if rest.endswith("t"):
+            return f"CD:{_canvas_skill_name_token(skill)}{rest[:-1]}"
+        return f"CD:{_canvas_action_token(compact)}"
+    if label_code == "SHD":
+        amount = compact.split(" ", 1)[0]
+        return f"SHD{amount}"
+    return f"{label_code}:{_canvas_action_token(compact)}"
+
+
+def _canvas_delta_actor_tokens(delta_text: str, state: BattleState) -> str:
     compact = delta_text
-    compact = compact.replace(" -> ", "->")
-    compact = compact.replace(" | interrupt ready: yes", " INT:yes")
-    compact = compact.replace(" | interrupt ready: no", " INT:no")
-    compact = compact.replace(" | critical", " CRIT")
-    compact = compact.replace(" shield | absorbs next hit", " SHD")
-    compact = compact.replace("hero ready", "READY")
-    return f"{label_text} {compact}"
+    for enemy in sorted(state.enemies, key=lambda candidate: visual_width(candidate.name), reverse=True):
+        compact = compact.replace(enemy.name, enemy.short_glyph)
+    return compact
+
+
+def _canvas_skill_name_token(skill_name: str) -> str:
+    known = {
+        "Shadow Sting": "STG",
+        "Hex Seal": "HEX",
+        "Corrupted Focus": "FOC",
+        "Tower Brace": "BRC",
+        "Ember Punish": "PUN",
+        "Ash Glare": "GLR",
+        "Pierce String": "PRS",
+        "Hook Break": "BRK",
+        "Eclipse Step": "STP",
+    }
+    return known.get(skill_name, _canvas_action_token(skill_name))
 
 
 def _draw_canvas_effect_lane(
