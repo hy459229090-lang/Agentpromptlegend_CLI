@@ -953,15 +953,53 @@ def _canvas_hero_dialogue(
     hero = state.hero
     hp_pct = hero.hp / hero.max_hp if hero.max_hp > 0 else 1.0
     mp_pct = hero.mp / hero.max_mp if hero.max_mp > 0 else 1.0
-    line = _select_hero_line(
-        hero_id=hero.id,
-        hp_pct=hp_pct,
-        mp_pct=mp_pct,
-        record=record,
-        frame=frame,
-        lang=lang,
-    )
+    line = _canvas_hero_voice_beat(hero, record, frame, hp_pct=hp_pct, mp_pct=mp_pct, lang=lang)
     return fit_text(f"VOX {line}", width)
+
+
+def _canvas_hero_voice_beat(
+    hero: Hero,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    hp_pct: float,
+    mp_pct: float,
+    lang: str,
+) -> str:
+    if not hero.is_alive:
+        return "candle out" if lang == "en" else "烛火熄灭"
+    if hp_pct <= 0.3:
+        return "hold the line" if lang == "en" else "守住血线"
+    if mp_pct <= 0.25:
+        return "count sparks" if lang == "en" else "省下火星"
+    if record is None:
+        if frame.event_banner and "BUILD" in frame.event_banner:
+            return "pattern online" if lang == "en" else "阵式上线"
+        return "read the room" if lang == "en" else "读场"
+    if record.side == "enemy":
+        action_type = str((record.enemy_action or {}).get("type", "attack"))
+        if action_type == "chant_charge":
+            return "cut the wick" if lang == "en" else "切断烛芯"
+        if action_type == "chant_release":
+            return "brace the rite" if lang == "en" else "顶住仪式"
+        if action_type == "silenced":
+            return "chant is cut" if lang == "en" else "咏唱已断"
+        damage = (record.enemy_action or {}).get("damage", 0)
+        if isinstance(damage, int) and damage > 0:
+            return "stay upright" if lang == "en" else "站稳"
+        return "watch the threat" if lang == "en" else "盯住威胁"
+    label_text = frame.action_label.lower()
+    if "hex seal" in label_text or "seal" in label_text or "charge broken" in (frame.event_banner or "").lower():
+        return "seal the chant" if lang == "en" else "封住咏唱"
+    if "shadow sting" in label_text or "sting" in label_text:
+        return "needle in shadow" if lang == "en" else "影针命中"
+    if "corrupted focus" in label_text or "focus" in label_text:
+        return "hold the flame" if lang == "en" else "稳住烛火"
+    if "basic attack" in label_text:
+        return "keep pressure" if lang == "en" else "保持压迫"
+    if frame.event_banner and "KILL" in frame.event_banner:
+        return "finish it" if lang == "en" else "收束"
+    return "commit the turn" if lang == "en" else "执行回合"
 
 
 def _canvas_enemy_dialogue(

@@ -732,7 +732,8 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         scene_text="ash candles flicker under a broken arch",
     )
 
-    assert "VOX There. The wick forg..." in screen
+    assert "VOX seal the chant" in screen
+    assert "VOX There. The wick forg..." not in screen
     assert "ENM armor cracking" in screen
     assert "candle" in screen
     assert "broken arch" in screen
