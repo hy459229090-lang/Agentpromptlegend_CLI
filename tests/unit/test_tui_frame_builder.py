@@ -138,10 +138,19 @@ def test_canvas_surface_draws_block_art_without_width_drift():
     surface.draw_box(0, 0, 32, 8, glyphs)
     surface.draw_sprite(3, 2, [" ▄██▄ ", " ▐▓c▓▌", "  ▟██▙"])
     surface.draw_bar(3, 6, 10, 0.6, glyphs)
+    surface.draw_text(1, 1, "VOX 读场")
+    surface.draw_text(1, 5, "ENM 护甲开裂")
+    overlay = Surface(12, 1)
+    overlay.draw_text(0, 0, "影针")
+    surface.compose(overlay, 18, 1)
+    surface.put(5, 5, "!")
     rendered = surface.render()
 
     assert any("▄██▄" in line for line in rendered)
     assert any("██████" in line or "█████" in line for line in rendered)
+    assert any("VOX 读场" in line for line in rendered)
+    assert any("影针" in line for line in rendered)
+    assert any("ENM ! 甲开裂" in line for line in rendered)
     assert all(visual_width(line) == 32 for line in rendered)
 
 
@@ -846,6 +855,32 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
     assert "▓██>h" not in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100
+
+    for zh_width in (80, 100, 120):
+        zh_loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
+        zh_state = zh_loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+        zh_screen = render_battle_screen(
+            zh_state,
+            _hex_record(),
+            provider_label="mock",
+            seed=1,
+            language="zh",
+            width=zh_width,
+            unicode_mode=True,
+        )
+        assert "VOX 封住咏唱" in zh_screen
+        assert "ENM 护甲开裂" in zh_screen
+        assert "ENM      Agent" not in zh_screen
+        for prefix in ("VOX", "ENM"):
+            segments = [
+                line.split(prefix, 1)[1].split("█", 1)[0]
+                for line in zh_screen.splitlines()
+                if f" {prefix} " in line
+            ]
+            assert segments
+            assert all(any("\u4e00" <= ch <= "\u9fff" for ch in segment) for segment in segments)
+        for line in zh_screen.splitlines():
+            assert visual_width(line) <= zh_width
 
 
 def test_unicode_battle_screen_embeds_resource_thresholds_in_canvas(bundle):

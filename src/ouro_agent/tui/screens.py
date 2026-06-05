@@ -1162,12 +1162,24 @@ def _canvas_hero_voice_beat(
         if isinstance(damage, int) and damage > 0:
             return "stay upright" if lang == "en" else "站稳"
         return "watch the threat" if lang == "en" else "盯住威胁"
+    skill_id = ""
+    if record.action is not None and record.action.skill_id:
+        skill_id = record.action.skill_id
+    elif record.judge is not None and record.judge.skill_id:
+        skill_id = record.judge.skill_id
+    skill_key = skill_id.lower()
     label_text = frame.action_label.lower()
-    if "hex seal" in label_text or "seal" in label_text or "charge broken" in (frame.event_banner or "").lower():
+    if (
+        "hex" in skill_key
+        or "seal" in skill_key
+        or "hex seal" in label_text
+        or "seal" in label_text
+        or "charge broken" in (frame.event_banner or "").lower()
+    ):
         return "seal the chant" if lang == "en" else "封住咏唱"
-    if "shadow sting" in label_text or "sting" in label_text:
+    if "sting" in skill_key or "shadow sting" in label_text or "sting" in label_text:
         return "needle in shadow" if lang == "en" else "影针命中"
-    if "corrupted focus" in label_text or "focus" in label_text:
+    if "focus" in skill_key or "corrupted focus" in label_text or "focus" in label_text:
         return "hold the flame" if lang == "en" else "稳住烛火"
     if "basic attack" in label_text:
         return "keep pressure" if lang == "en" else "保持压迫"
