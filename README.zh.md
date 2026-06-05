@@ -8,7 +8,7 @@
 > 然后看它在自动战斗中做选择；本地引擎负责裁判、伤害、胜负、奖励和长期存档。
 > **模型永远不决定伤害、掉落、胜负。**
 
-[![tests](https://img.shields.io/badge/tests-348%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
+[![tests](https://img.shields.io/badge/tests-350%20passing-brightgreen)]() [![python](https://img.shields.io/badge/python-3.11%2B-blue)]() [![providers](https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange)]()
 
 ---
 
@@ -122,7 +122,7 @@ ouro history --lang zh --limit 5
 | C2 | 怪物家族、三档图鉴与内容 schema | done |
 | E | 图鉴持久化、Run 归档、死亡历史 | done |
 
-`348 测试通过`。任何测试都不联网。
+`350 测试通过`。任何测试都不联网。
 
 ---
 

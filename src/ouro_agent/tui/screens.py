@@ -477,7 +477,7 @@ def _render_canvas_duel_panel(
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
     if frame.counter_clock:
-        surface.draw_text(center_x + 1, 14, fit_text(frame.counter_clock, center_w - 2))
+        surface.draw_text(center_x + 1, 14, fit_text(_canvas_counter_rail_label(frame.counter_clock), center_w - 2))
     elif frame.impact_line:
         surface.draw_text(center_x + 1, 14, fit_text(frame.impact_line, center_w - 2))
     _draw_canvas_delta_ribbon(surface, center_x + 1, 15, center_w - 2, frame)
@@ -700,6 +700,48 @@ def _canvas_pain_bar(hero: Hero) -> str:
     ratio = hero.hp / max(1, hero.max_hp)
     filled = round(width * max(0.0, min(1.0, ratio)))
     return glyphs.solid * filled + glyphs.light * (width - filled)
+
+
+def _canvas_counter_rail_label(counter_clock: str | None) -> str:
+    if not counter_clock:
+        return "CUT WATCH"
+    bar = ""
+    if "[" in counter_clock and "]" in counter_clock:
+        bar = counter_clock.split("[", 1)[1].split("]", 1)[0]
+        status_part = counter_clock.split("]", 1)[1].strip()
+    else:
+        status_part = counter_clock
+    status = status_part.split("|", 1)[0].strip() or "WATCH"
+    ready = "CHECK"
+    marker = "NEXT HERO CAN INTERRUPT:"
+    if marker in counter_clock:
+        ready = _canvas_counter_ready_label(counter_clock.split(marker, 1)[1].strip())
+    return f"CUT {_canvas_counter_bar(bar)} {status} {ready}"
+
+
+def _canvas_counter_bar(bar: str) -> str:
+    glyphs = get_glyph_set("unicode")
+    width = 5
+    padded = (bar + "-" * width)[:width]
+    return "".join(glyphs.solid if char == "#" else glyphs.light for char in padded)
+
+
+def _canvas_counter_ready_label(text: str) -> str:
+    lower = text.lower()
+    if not text:
+        return "CHECK"
+    if "no interrupt skill" in lower:
+        return "NO SKILL"
+    if "not ready:" in lower:
+        reason = text.split("not ready:", 1)[1].strip()
+        if reason.upper().startswith("CD "):
+            return "CD" + reason.split(None, 1)[1]
+        if reason.upper().startswith("MP "):
+            return "MP" + reason.split(None, 1)[1]
+        return reason.upper()
+    if lower.endswith("ready"):
+        return "READY"
+    return "CHECK"
 
 
 def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame) -> None:
@@ -1204,7 +1246,7 @@ def _block_effect_lane(record: TurnRecord | None, frame: BattleFrame, width: int
         kind = (record.enemy_action or {}).get("type", "attack")
         amount = (record.enemy_action or {}).get("damage", 0)
         if kind == "chant_charge":
-            return block_effect_rows("counter", frame.counter_clock or "COUNTER CLOCK", width)
+            return block_effect_rows("counter", _canvas_counter_rail_label(frame.counter_clock), width)
         if kind == "chant_release":
             return block_effect_rows("chant", f"CHANT RELEASE -{amount} HP", width)
         if kind == "silenced":
@@ -1321,7 +1363,7 @@ def _stage_director_canvas_line(
         "stabilize HP": "STABILIZE",
         "keep tempo": "TEMPO",
     }.get(focus, focus.upper()[:9])
-    if width < 44:
+    if width < 60:
         short_threat = {
             "WINDOW": "WIN",
             "RISING": "RISE",

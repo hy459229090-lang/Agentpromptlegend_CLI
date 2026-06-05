@@ -590,11 +590,18 @@ def test_unicode_battle_screen_draws_pain_rail_on_enemy_damage(bundle, width):
             assert visual_width(line) <= width
 
 
-def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
     from ouro_agent.tui.screens import render_battle_screen
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
     state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    target = state.enemies[0]
+    target.chant_charge_turns = 1
+    target.chant_progress = 1
+    hex_seal = state.hero.find_skill("skill_hex_seal")
+    assert hex_seal is not None
+    hex_seal.cooldown_remaining = 3
     record = TurnRecord(
         tick=10,
         actor_id="enemy_black_candle_acolyte",
@@ -613,15 +620,49 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
         provider_label="mock",
         seed=1,
         language="en",
-        width=100,
+        width=width,
         unicode_mode=True,
     )
 
     assert "WINDOW" in screen
+    assert "CUT " in screen
+    assert "FULL" in screen
+    assert "CD3" in screen
     assert "COUNTER CLOCK" in screen
+    assert screen.count("COUNTER CLOCK") == 1
     assert "THE ECHO ALTAR / COUNTER WINDOW" in screen
-    for line in screen.splitlines():
-        assert visual_width(line) <= 100
+    assert "COUNTER CLOCK [#####] FULL | NE..." not in screen
+
+    hex_seal.cooldown_remaining = 0
+    state.hero.mp = 12
+    mp_blocked = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "CUT " in mp_blocked
+    assert "MP12/18" in mp_blocked
+
+    state.hero.mp = 54
+    ready = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "CUT " in ready
+    assert "READY" in ready
+
+    for candidate in (screen, mp_blocked, ready):
+        for line in candidate.splitlines():
+            assert visual_width(line) <= width
 
 
 def test_unicode_battle_screen_uses_directed_effect_lane_and_hit_pose(bundle):
