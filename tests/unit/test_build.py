@@ -286,16 +286,36 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "Build Before -> After: [ONLINE] shadow/control" in text
     assert "AI Effect: AI favors interrupts and tempo skills." in text
     assert "HERO LOADOUT BOARD" in text
+    assert "ACTION KIT BOARD" in text
+    assert text.count("ACTION KIT BOARD") == 1
+    assert "[STG] Shadow Sting MP 12, cd 2 | Pos DAMAGE | Use convert MP to pressure | Build core/shadow" in text
+    assert "[HEX] Hex Seal MP 18, cd 4 | Pos CONTROL | Use seal chant windows | Build core/shadow/control" in text
+    assert "[FOC] Corrupted Focus MP 0, cd 3 | Pos SETUP | Use raise shield before danger | Build core/shadow" in text
     assert "[PROMPT] control / agent behavior" in text
     assert "[BUILD] [ONLINE] Online / Black Candle Interrupt" in text
     assert "[CORE] shadow / control" in text
     assert "[OPENER] open by denying chant windows" in text
     assert "[RUN] ouro run --mock --hero hero_shadow_apprentice --prompt-style control" in text
     assert "Corruption School" in text
+    assert "skill_shadow_sting" not in text
+    assert "skill_hex_seal" not in text
+    assert "skill_corrupted_focus" not in text
     assert "resonance_corruption_school" not in text
     assert "AI Bias:" in text
     assert "Prompt Template: control" in text
     assert "interrupt high-ATB" in text
+
+    zh_text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="zh",
+        prompt_style="control",
+    )
+    assert "ACTION KIT BOARD :: 技能行动套件" in zh_text
+    assert "Build 关系 核心/shadow/control" in zh_text
+    assert "封住吟唱窗口" in zh_text
+    assert "skill_hex_seal" not in zh_text
 
 
 def test_render_hero_card_unicode_shows_block_weapon_art(bundle):
@@ -328,6 +348,8 @@ def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
         assert "Weapon:" in text
         assert "Risk:" in text
         assert "HERO LOADOUT BOARD" in text
+        assert "ACTION KIT BOARD" in text
+        assert text.count("ACTION KIT BOARD") == 1
         assert "[PROMPT] hero default / agent behavior" in text
         assert f"[RUN] ouro run --mock --hero {hero_id}" in text
         assert "AI Bias:" in text

@@ -1567,7 +1567,12 @@ def _canvas_skill_chip(skill, current_mp: int) -> str:
 def _canvas_skill_code(skill) -> str:
     if skill.id in _CANVAS_SKILL_CODES:
         return _CANVAS_SKILL_CODES[skill.id]
-    words = [word for word in skill.display_name.replace("-", " ").split() if word]
+    display_name = getattr(skill.display_name, "get", None)
+    if callable(display_name):
+        source = display_name("en")
+    else:
+        source = str(skill.display_name)
+    words = [word for word in source.replace("-", " ").split() if word]
     if len(words) >= 2:
         return "".join(word[0] for word in words[:3]).upper()[:3]
     source = (words[0] if words else skill.id).replace("skill_", "")
@@ -4882,17 +4887,7 @@ def render_hero_card(
 
     progress = build.calculate_progress(bundle)
 
-    skills_lines: list[str] = []
-    for sid in hero.skills:
-        skill = bundle.get_skill(sid)
-        skills_lines.append(
-            f"  - {skill.display_name.get(lang)} ({skill.id}) "
-            f"{label('hero_card_mp', lang)} {skill.mp_cost}, {label('hero_card_cd', lang)} {skill.cooldown}"
-        )
-        desc = skill.visible_description.get(lang)
-        if desc:
-            for wrapped in _wrap_text(desc, 68)[:2]:
-                skills_lines.append(f"      {wrapped}")
+    skills_lines = _render_action_kit_board(hero, bundle, build, lang)
 
     items_lines = [
         f"  - {item.display_name.get(lang)} [{item.tier}] "
@@ -4938,7 +4933,7 @@ def render_hero_card(
     lines.extend(_render_build_progress_panel(progress, hero.id, bundle, lang))
     lines.append("")
 
-    lines.append(label("hero_card_skills", lang))
+    lines.append(label("hero_card_action_kit", lang))
     lines.extend(skills_lines)
     lines.append("")
     lines.append(label("hero_card_items", lang))
@@ -5225,6 +5220,128 @@ def _hero_strategy(hero_id: str, lang: str) -> list[str]:
 
 def _hero_card_icons(hero_id: str) -> tuple[str, str]:
     return hero_weapon_card(hero_id)
+
+
+_ACTION_KIT_TACTIC_PRIORITY = (
+    "control",
+    "interrupt",
+    "guard",
+    "shield",
+    "buff",
+    "evade",
+    "execute",
+    "bleed",
+    "poison",
+    "fire",
+    "gear",
+    "echo",
+    "damage",
+)
+
+_ACTION_KIT_TACTIC_LABELS = {
+    "control": {"en": "CONTROL", "zh": "控制"},
+    "interrupt": {"en": "INTERRUPT", "zh": "打断"},
+    "guard": {"en": "SURVIVE", "zh": "保命"},
+    "shield": {"en": "SHIELD", "zh": "护盾"},
+    "buff": {"en": "SETUP", "zh": "准备"},
+    "evade": {"en": "EVADE", "zh": "躲避"},
+    "execute": {"en": "EXECUTE", "zh": "处决"},
+    "bleed": {"en": "BLEED", "zh": "流血"},
+    "poison": {"en": "ATTRITION", "zh": "消耗"},
+    "fire": {"en": "BURST", "zh": "爆发"},
+    "gear": {"en": "TRAP", "zh": "机关"},
+    "echo": {"en": "RESONATE", "zh": "回响"},
+    "damage": {"en": "DAMAGE", "zh": "伤害"},
+}
+
+_ACTION_KIT_PURPOSE_LABELS = {
+    "control": {"en": "seal chant windows", "zh": "封住吟唱窗口"},
+    "interrupt": {"en": "seal chant windows", "zh": "封住吟唱窗口"},
+    "guard": {"en": "brace survivability", "zh": "保护生存"},
+    "shield": {"en": "keep survivability", "zh": "维持护盾"},
+    "buff": {"en": "raise shield before danger", "zh": "危险前抬护盾"},
+    "evade": {"en": "open dodge windows", "zh": "创造回避时机"},
+    "execute": {"en": "finish weakened targets", "zh": "处决低血敌"},
+    "bleed": {"en": "stack bleed pressure", "zh": "叠流血压力"},
+    "poison": {"en": "start attrition", "zh": "开启消耗战"},
+    "fire": {"en": "burst at pressure", "zh": "集中爆发"},
+    "gear": {"en": "set up burst trap", "zh": "布置爆发机关"},
+    "echo": {"en": "prepare echo reply", "zh": "准备回声"},
+    "damage": {"en": "convert MP to pressure", "zh": "用 MP 换压迫"},
+}
+
+
+def _action_kit_tactic(skill) -> str:
+    tags = _dedupe_preserve(getattr(skill, "tags", ()))
+    for tag in _ACTION_KIT_TACTIC_PRIORITY:
+        if tag in tags:
+            label_text = _ACTION_KIT_TACTIC_LABELS.get(tag)
+            return label_text["en"] if label_text else tag.upper()
+    return "UTILITY"
+
+
+def _action_kit_tactic_text(skill, lang: str) -> str:
+    tactic = _action_kit_tactic(skill)
+    if lang != "zh":
+        return tactic
+    lower_map = {
+        value["en"]: value["zh"]
+        for value in _ACTION_KIT_TACTIC_LABELS.values()
+    }
+    lower_map["UTILITY"] = "通用"
+    return lower_map.get(tactic, tactic)
+
+
+def _action_kit_purpose(skill, lang: str) -> str:
+    tags = _dedupe_preserve(getattr(skill, "tags", ()))
+    for tag in _ACTION_KIT_TACTIC_PRIORITY:
+        if tag in tags:
+            mapped = _ACTION_KIT_PURPOSE_LABELS.get(tag)
+            if mapped is None:
+                continue
+            return mapped[lang]
+    desc = skill.visible_description.get(lang)
+    if desc:
+        return _fit_visual(" ".join(desc.split()), 24 if lang == "en" else 20)
+    return "offense" if lang == "en" else "持续输出"
+
+
+def _action_kit_build_relation(skill, build: ResolvedBuild, hero: HeroData, lang: str) -> str:
+    hero_core_tags = set(HERO_CORE_TAGS.get(hero.id, ()))
+    build_tags = _dedupe_preserve(build.tags)
+    relation = [tag for tag in _dedupe_preserve(skill.tags) if tag in build_tags]
+    if not relation:
+        return "off-build" if lang == "en" else "非构筑"
+    if any(tag in hero_core_tags for tag in relation):
+        prefix = "core" if lang == "en" else "核心"
+    else:
+        prefix = "support" if lang == "en" else "支援"
+    return f"{prefix}/{'/'.join(relation[:2])}"
+
+
+def _render_action_kit_board(
+    hero: HeroData,
+    bundle: ContentBundle,
+    build: ResolvedBuild,
+    lang: str,
+) -> list[str]:
+    lines: list[str] = []
+    if not hero.skills:
+        lines.append(f"  {label('hero_card_none', lang)}")
+        return lines
+
+    for sid in hero.skills:
+        skill_data = bundle.get_skill(sid)
+        code = _canvas_skill_code(skill_data)
+        lines.append(
+            f"  [{code}] {skill_data.display_name.get(lang)} "
+            f"{label('hero_card_mp', lang)} {skill_data.mp_cost}, "
+            f"{label('hero_card_cd', lang)} {skill_data.cooldown} | "
+            f"{label('hero_card_positioning', lang)} {_action_kit_tactic_text(skill_data, lang)} | "
+            f"{label('hero_card_use', lang)} {_action_kit_purpose(skill_data, lang)} | "
+            f"{label('hero_card_build_relation', lang)} {_action_kit_build_relation(skill_data, build, hero, lang)}"
+        )
+    return lines
 
 
 def _render_weapon_card_art(hero_id: str, *, unicode_mode: bool, lang: str) -> list[str]:
