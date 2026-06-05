@@ -2346,9 +2346,7 @@ def _render_battle_film_lines(
     else:
         model_text = _director_text(frame.action_label, lang)
 
-    judge_text = _director_text(frame.judge_label, lang)
-    if frame.impact_line:
-        judge_text = f"{judge_text} | {_director_text(frame.impact_line, lang)}"
+    judge_text = _battle_film_judge_text(frame, lang=lang)
     latest_log = _battle_film_log_text(state.log[-2:], no_log=no_log)
 
     return [
@@ -2363,6 +2361,15 @@ def _battle_film_log_text(logs: list[str], *, no_log: str) -> str:
     if not logs:
         return no_log
     return " / ".join(_compact_battle_log_event(log) for log in logs)
+
+
+def _battle_film_judge_text(frame: BattleFrame, *, lang: str) -> str:
+    status = frame.judge_label.split("|", 1)[0].strip()
+    status = _director_text(status, lang)
+    if not frame.impact_line:
+        return status
+    impact = _canvas_impact_label(frame.impact_line)
+    return f"{status} {impact}".strip()
 
 
 def _compact_battle_log_event(log: str) -> str:

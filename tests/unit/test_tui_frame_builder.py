@@ -1207,7 +1207,10 @@ def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, languag
     assert "[02 JUDGE]" in screen or "[02 裁判]" in screen
     assert "[03 LOG]" in screen or "[03 战斗日志]" in screen
     assert "Hex Seal -> Hungry Cultist" in screen or "禁咒封印 -> 饥饿邪教徒" in screen
-    assert "VALID | -16 HP" in screen or "有效 | -16 HP" in screen
+    assert "VALID HIT-16 MP72>72 INT:Y" in screen or "有效 HIT-16 MP72>72 INT:Y" in screen
+    judge_lines = [line for line in screen.splitlines() if "[02 JUDGE]" in line or "[02 裁判]" in line]
+    assert judge_lines
+    assert all("-16 HP | -16 HP" not in line and "next interrupt" not in line for line in judge_lines)
     assert "CAST HEX HIT-16" in screen
     assert "SLN CULTIST" in screen
     log_lines = [line for line in screen.splitlines() if "[03 LOG]" in line or "[03 战斗日志]" in line]
