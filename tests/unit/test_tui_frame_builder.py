@@ -2086,7 +2086,9 @@ def test_all_hero_core_poses_have_ascii_sprites():
 
 
 def test_reusable_art_assets_cover_mvp_heroes_enemies_and_weapons(bundle):
-    """REQ-TUICANVAS-002: sprites and weapon card art live in art registries."""
+    """REQ-TUICANVAS-002/004: sprites and weapon card art live in art registries."""
+    import inspect
+
     from ouro_agent.art.battle_assets import ENEMY_SPRITES, HERO_SPRITES, enemy_sprite, hero_sprite
     from ouro_agent.art.block_sprites import (
         ENEMY_BLOCK_SPRITES,
@@ -2129,3 +2131,13 @@ def test_reusable_art_assets_cover_mvp_heroes_enemies_and_weapons(bundle):
         assert len(block_sprite) >= 4
         assert "\n".join(ascii_sprite).isascii()
         assert all(visual_width(line) <= 8 for line in block_sprite)
+
+    from ouro_agent.tui.screens import _enemy_sprite, _hero_sprite
+
+    for source in (inspect.getsource(_hero_sprite), inspect.getsource(_enemy_sprite)):
+        assert "sprites = {" not in source
+        assert "candle low" not in source
+        assert "hooked blade" not in source
+
+    assert "candle low" in "\n".join(HERO_SPRITES["hero_shadow_apprentice"]["idle"])
+    assert "hooked blade" in "\n".join(ENEMY_SPRITES["c"]["idle"])

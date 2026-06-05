@@ -2992,11 +2992,7 @@ def _effect_lane(record: TurnRecord | None) -> list[str]:
 
 
 def _hero_sprite(hero: Hero, record: TurnRecord | None) -> list[str]:
-    """Generate the hero sprite based on current pose and state.
-
-    Supports multiple poses: idle, attack, skill_shadow, skill_fire,
-    skill_physical, skill_holy, skill_poison, skill, defend, observe, hit, low.
-    """
+    """Generate the hero sprite based on current pose and state."""
     state = _actor_pose(hero.id, record)
 
     # Check for low HP state (overrides other poses except hit and death)
@@ -3004,111 +3000,9 @@ def _hero_sprite(hero: Hero, record: TurnRecord | None) -> list[str]:
         state = "low"
     return asset_hero_sprite(hero.id, state)
 
-    sprites = {
-        "hero_shadow_apprentice": {
-            "idle": ["  .^.", " /|c|\\", "  / \\", " candle low"],
-            "attack": ["  .^.", " /|c|-->", "  / \\", " candle thrust"],
-            "skill_shadow": ["  .^.", " /|c|==*", "  / \\", " shadow burst"],
-            "skill_fire": ["  .^.", " /|c|=#*", "  / \\", " flame erupt"],
-            "skill_physical": ["  .^.", " /|c|-->", "  / \\", " quick strike"],
-            "skill_holy": ["  .^.", " /|c|=+*", "  / \\", " light burst"],
-            "skill_poison": ["  .^.", " /|c|=~*", "  / \\", " venom spray"],
-            "skill": ["  .^.", " /|c|==*", "  / \\", " candle raised"],
-            "defend": ["  .^.", " /|c|\\", "  / \\", " candle guard"],
-            "observe": ["  .^.", " /|c|\\", "  / \\", " scanning..."],
-            "hit": ["  .x.", " /|c", "  /\\", " flame bends"],
-            "low": ["  .^.", " /|c|\\", "  / \\", " candle guttering"],
-        },
-        "hero_ash_guardian": {
-            "idle": ["   O", "  /#\\", "  / \\", " shield set"],
-            "attack": ["   O", "  /#\\->", "  / \\", " shield bash"],
-            "skill_shadow": ["   O", "  [\\#\\", "  / \\", " dark guard"],
-            "skill_fire": ["   O", "  [#]*", "  / \\", " ember burst"],
-            "skill_physical": ["   O", "  /#\\->", "  / \\", " heavy strike"],
-            "skill_holy": ["   O", "  [+#]", "  / \\", " light ward"],
-            "skill_poison": ["   O", "  [~#]", "  / \\", " toxic shield"],
-            "skill": ["   O", "  [#]", "  / \\", " guard raised"],
-            "defend": ["   O", "  [#]", "  / \\", " block stance"],
-            "observe": ["   O", "  /#\\", "  / \\", " assessing..."],
-            "hit": ["   o", "  /#\\!", "  / \\", " ash cracks"],
-            "low": ["   o", "  [#]", "  / \\", " shield low"],
-        },
-        "hero_broken_string_hunter": {
-            "idle": ["   o", "  /|\\", "  /->", " string drawn"],
-            "attack": ["   o", "  /|\\", "  /==>", " bolt loosed"],
-            "skill_shadow": ["   o", "  /|\\", "  /==>", " shadow bolt"],
-            "skill_fire": ["   o", "  /|\\", "  /==>*", " fire arrow"],
-            "skill_physical": ["   o", "  /|\\", "  /==>", " pierce shot"],
-            "skill_holy": ["   o", "  /|\\", "  /==>+", " light arrow"],
-            "skill_poison": ["   o", "  /|\\", "  /==>~", " poison bolt"],
-            "skill": ["   o", "  /|\\", "  /==>", " bolt loosed"],
-            "defend": ["   o", "  /|\\", "  /->", " dodge stance"],
-            "observe": ["   o", "  /|\\", "  /->", " aiming..."],
-            "hit": ["   x", "  /|", "  /\\", " string snaps"],
-            "low": ["   o", "  /|", "  /->", " breathing hard"],
-        },
-        "hero_mire_oracle": {
-            "idle": ["  .-.", " (v v)", " /|~|\\", " vial low"],
-            "attack": ["  .-.", " (v v)-->", " /| |\\", " vial strike"],
-            "skill_shadow": ["  .-.", " (v v)==", " /| |\\", " dark mist"],
-            "skill_fire": ["  .-.", " (v v)=*", " /| |\\", " flame vial"],
-            "skill_physical": ["  .-.", " (v v)-->", " /| |\\", " quick jab"],
-            "skill_holy": ["  .-.", " (v v)=+", " /| |\\", " holy mist"],
-            "skill_poison": ["  .-.", " (v v)=~", " /| |\\", " poison cloud"],
-            "skill": ["  .-.", " (v v)==", " /| |\\", " vial cracked"],
-            "defend": ["  .-.", " (v v)", " /|~|\\", " mist shield"],
-            "observe": ["  .-.", " (v v)", " /|~|\\", " scrying..."],
-            "hit": ["  .x.", " (v v)", " /|", " veil torn"],
-            "low": ["  .-.", " (v v)", " /|~", " mire rising"],
-        },
-        "hero_gravewright": {
-            "idle": ["  [o]", " /|n|\\", "  / \\", " crate set"],
-            "attack": ["  [o]", " /|n|-->", "  / \\", " crank strike"],
-            "skill_shadow": ["  [o]", " /|n|==", "  / \\", " dark gears"],
-            "skill_fire": ["  [o]", " /|n|=*", "  / \\", " engine burst"],
-            "skill_physical": ["  [o]", " /|n|-->", "  / \\", " nail strike"],
-            "skill_holy": ["  [o]", " /|n|=+", "  / \\", " sanctified"],
-            "skill_poison": ["  [o]", " /|n|=~", "  / \\", " toxic nails"],
-            "skill": ["  [o]", " /|n|==", "  / \\", " crank turns"],
-            "defend": ["  [o]", " /|n|\\", "  / \\", " crate shield"],
-            "observe": ["  [o]", " /|n|\\", "  / \\", " inspecting..."],
-            "hit": ["  [x]", " /|n|!", "  / \\", " gears skip"],
-            "low": ["  [o]", " /|n|", "  / \\", " crate smoking"],
-        },
-        "hero_echo_exile": {
-            "idle": ["  o)o", " /| |\\", "  / \\", " bell quiet"],
-            "attack": ["  o)o-->", " /| |\\", "  / \\", " bell strike"],
-            "skill_shadow": ["  o)o==", " /| |\\", "  / \\", " dark echo"],
-            "skill_fire": ["  o)o=*", " /| |\\", "  / \\", " flame chime"],
-            "skill_physical": ["  o)o-->", " /| |\\", "  / \\", " bell jab"],
-            "skill_holy": ["  o)o=+", " /| |\\", "  / \\", " holy ring"],
-            "skill_poison": ["  o)o=~", " /| |\\", "  / \\", " toxic chime"],
-            "skill": ["  o)o==", " /| |\\", "  / \\", " bell rings"],
-            "defend": ["  o)o", " /| |\\", "  / \\", " echo ward"],
-            "observe": ["  o)o", " /| |\\", "  / \\", " listening..."],
-            "hit": ["  x)o", " /| |", "  /\\", " echo cracks"],
-            "low": ["  o)o", " /| |", "  / \\", " hymn thin"],
-        },
-    }
-
-    default_sprite = ["  ???", " /|?|\\", "  / \\", " unknown"]
-
-    # Try to get the sprite for the current pose
-    hero_sprites = sprites.get(hero.id, sprites["hero_shadow_apprentice"])
-    if state in hero_sprites:
-        return hero_sprites[state]
-
-    # Fallback to cast or idle
-    if "cast" in hero_sprites:
-        return hero_sprites["cast"]
-    return hero_sprites.get("idle", default_sprite)
-
 
 def _enemy_sprite(enemy: Enemy, record: TurnRecord | None) -> list[str]:
-    """Generate the enemy sprite based on current pose and state.
-
-    Supports multiple poses: idle, attack, skill, defend, hit, low, death.
-    """
+    """Generate the enemy sprite based on current pose and state."""
     state = _actor_pose(enemy.id, record)
 
     # Check for death state
@@ -3118,39 +3012,6 @@ def _enemy_sprite(enemy: Enemy, record: TurnRecord | None) -> list[str]:
     elif enemy.hp / max(1, enemy.max_hp) < 0.3 and state not in ("hit", "death"):
         state = "low"
     return asset_enemy_sprite(enemy.short_glyph, state)
-
-    sprites = {
-        "c": {  # hungry cultist
-            "idle": ["  (c)", "  /|\\", "  / \\", " hungry"],
-            "attack": ["  (c)-->", "  /|\\", "  / \\", " knife lunge"],
-            "skill": ["  (c)==", "  /|\\", "  / \\", " chant"],
-            "defend": ["  (c)", "  /|\\", "  / \\", " cower"],
-            "hit": ["  (x)", "  /|!", "  / \\", " staggered"],
-            "low": ["  (c)", "  /|\\", "  / \\", " weak"],
-            "death": ["   .", "  /_\\", "  ash", ""],
-        },
-        "k": {  # black candle acolyte
-            "idle": ["  (k)", " /|w|\\", "  / \\", " chanting"],
-            "attack": ["  (k)-->", " /|w|\\", "  / \\", " ritual strike"],
-            "skill": ["  (k*", " /|w|\\", "  / \\", " wick bright"],
-            "defend": ["  (k)", " /|w|\\", "  / \\", " ward cast"],
-            "hit": ["  (k)", " /|w|!", "  / \\", " chant bent"],
-            "low": ["  (k)", " /|w|\\", "  / \\", " flame dim"],
-            "death": ["   .", "  /_\\", " wick ash", ""],
-        },
-    }
-
-    default_sprite = ["  (?)", "  /|\\", "  / \\", " ???"]
-
-    # Try to get the sprite for the current pose
-    enemy_sprites = sprites.get(enemy.short_glyph, sprites["c"])
-    if state in enemy_sprites:
-        return enemy_sprites[state]
-
-    # Fallback to cast or idle
-    if "cast" in enemy_sprites:
-        return enemy_sprites["cast"]
-    return enemy_sprites.get("idle", default_sprite)
 
 
 def render_config_screen(
