@@ -329,6 +329,7 @@ def _render_canvas_duel_panel(
     title = "THE ECHO ALTAR"
     event = _stage_event_title(frame, "en")
     surface.draw_text(3, 0, f" {title} / {event} ")
+    _draw_canvas_beat_badge(surface, width, frame)
 
     side_w = 24 if width <= 88 else 30
     left_w = side_w
@@ -569,6 +570,21 @@ def _canvas_enemy_intent_label(target: Enemy, frame: BattleFrame) -> str:
     if target.hp / max(1, target.max_hp) <= 0.3:
         return "INTENT FALTER"
     return "INTENT STRIKE"
+
+
+def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame) -> None:
+    label_text = _canvas_beat_badge_label(frame)
+    x = max(3, width - visual_width(label_text) - 3)
+    surface.draw_text(x, 0, label_text)
+
+
+def _canvas_beat_badge_label(frame: BattleFrame) -> str:
+    phase = {
+        "model_waiting": "WAIT",
+        "hero_action": "HERO",
+        "enemy_action": "ENEMY",
+    }.get(frame.phase, frame.phase.upper()[:5])
+    return f" BEAT T{frame.tick:03d} {phase} "
 
 
 def _draw_canvas_plan_ribbon(
