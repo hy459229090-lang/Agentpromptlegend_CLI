@@ -431,6 +431,91 @@ def test_unicode_battle_screen_draws_cast_meter_inside_canvas(bundle, width):
             assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
+    """REQ-WOUNDRAIL-001: Canvas stage should show target HP breakpoints."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    target = state.enemies[0]
+    target.max_hp = 60
+    target.hp = 44
+
+    def hit_record(damage: int) -> TurnRecord:
+        return TurnRecord(
+            tick=9,
+            actor_id=state.hero.id,
+            side="hero",
+            raw_text="analysis: press damage into the kill window",
+            validation=None,
+            action=HeroAction(
+                type="cast_skill",
+                skill_id="skill_hex_seal",
+                targets=(target.id,),
+            ),
+            judge=JudgeOutcome(
+                valid=True,
+                reason="cast_skill resolved",
+                summary=f"cast_skill skill_hex_seal -> {target.id} | {damage} dmg",
+                damage=damage,
+                target_ids=(target.id,),
+                skill_id="skill_hex_seal",
+                action_kind="cast_skill",
+            ),
+            battle_session_id="be_wound_rail",
+            static_context_hash="ctx_wound_rail",
+        )
+
+    hold = render_battle_screen(
+        state,
+        hit_record(16),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "WOUND" in hold
+    assert "-16" in hold
+    assert "44/60" in hold
+    assert "HOLD" in hold
+    assert "HIT -16 HP SLN" in hold
+
+    target.hp = 12
+    execute = render_battle_screen(
+        state,
+        hit_record(18),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "12/60" in execute
+    assert "EXE" in execute
+
+    target.hp = 0
+    down = render_battle_screen(
+        state,
+        hit_record(12),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "0/60" in down
+    assert "DOWN" in down
+
+    for screen in (hold, execute, down):
+        assert "PLAN" in screen
+        assert "ACTION" in screen
+        assert "JUDGE" in screen
+        for line in screen.splitlines():
+            assert visual_width(line) <= width
+
+
 def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle):
     from ouro_agent.tui.screens import render_battle_screen
 
@@ -498,6 +583,7 @@ def test_unicode_battle_screen_uses_directed_effect_lane_and_hit_pose(bundle):
     assert "▐▓x" in screen
     assert "HIT -9 HP" in screen
     assert "[HIT -9 HPhadow" not in screen
+    assert "HIT -9 HPNLINE" not in screen
     assert "[ONLINE] shadow" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100

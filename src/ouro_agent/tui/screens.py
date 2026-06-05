@@ -454,6 +454,8 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
     )
+    if target is not None:
+        _draw_canvas_wound_rail(surface, center_x + 1, 9, center_w - 2, target, last_record)
     _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame)
     action = fit_text(f"ACTION {frame.action_label}", center_w - 2)
     judge = fit_text(f"JUDGE  {frame.judge_label}", center_w - 2)
@@ -600,6 +602,52 @@ def _canvas_cast_bar(current: int, total: int) -> str:
     glyphs = get_glyph_set("unicode")
     width = 4
     ratio = current / max(1, total)
+    filled = round(width * max(0.0, min(1.0, ratio)))
+    return glyphs.solid * filled + glyphs.light * (width - filled)
+
+
+def _draw_canvas_wound_rail(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    target: Enemy,
+    record: TurnRecord | None,
+) -> None:
+    if width < 20:
+        return
+    surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record), width))
+
+
+def _canvas_wound_label(target: Enemy, record: TurnRecord | None) -> str:
+    damage = _canvas_wound_damage(target, record)
+    hp_text = f"{target.hp}/{target.max_hp}"
+    state = _canvas_wound_state(target)
+    if damage > 0:
+        return f"WOUND -{damage} {_canvas_wound_bar(target)} {hp_text} {state}"
+    return f"WOUND {_canvas_wound_bar(target)} {hp_text} {state}"
+
+
+def _canvas_wound_damage(target: Enemy, record: TurnRecord | None) -> int:
+    if record is None or record.side != "hero" or record.judge is None:
+        return 0
+    if target.id not in record.judge.target_ids:
+        return 0
+    return max(0, int(record.judge.damage))
+
+
+def _canvas_wound_state(target: Enemy) -> str:
+    if not target.is_alive:
+        return "DOWN"
+    if target.hp / max(1, target.max_hp) <= 0.3:
+        return "EXE"
+    return "HOLD"
+
+
+def _canvas_wound_bar(target: Enemy) -> str:
+    glyphs = get_glyph_set("unicode")
+    width = 4
+    ratio = target.hp / max(1, target.max_hp)
     filled = round(width * max(0.0, min(1.0, ratio)))
     return glyphs.solid * filled + glyphs.light * (width - filled)
 
@@ -847,7 +895,7 @@ def _draw_canvas_floating_numbers(
     label_text = " ".join(frame.floating_numbers[:3])
     if record.side == "enemy":
         x = 3
-        y += 1
+        y = 5
         label_text = "HIT " + label_text
     else:
         label_text = "HIT " + label_text
