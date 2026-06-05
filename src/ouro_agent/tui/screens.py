@@ -2102,8 +2102,22 @@ def _render_build_climax_panel(
         f"BUILD   {build.archetype(lang)} {progress.stage.badge}",
     ]
     if progress.active_resonances:
-        body.append(f"RESONANCE {', '.join(progress.active_resonances[:2])}")
+        names = _resonance_display_names(bundle, progress.active_resonances[:2], lang)
+        body.append(f"RESONANCE {', '.join(names)}")
     return list(pixel_panel(title, [fit_text(line, width - 4) for line in body], width, tone="climax").lines)
+
+
+def _resonance_display_name(bundle: ContentBundle | None, resonance_id: str, lang: str) -> str:
+    if bundle is None:
+        return resonance_id
+    resonance = bundle.resonances.get(resonance_id)
+    if resonance is None:
+        return resonance_id
+    return resonance.display_name.get(lang) or resonance.display_name.get("en", resonance_id)
+
+
+def _resonance_display_names(bundle: ContentBundle | None, resonance_ids: list[str], lang: str) -> list[str]:
+    return [_resonance_display_name(bundle, resonance_id, lang) for resonance_id in resonance_ids]
 
 
 def _frame_tone(frame: BattleFrame) -> str:
@@ -3573,6 +3587,7 @@ def render_run_setup_screen(
     style = prompt_style or "default"
     style_text = prompt_style_text(prompt_style, lang) if prompt_style else hero.default_prompt.get(lang)
     progress = build.calculate_progress(bundle)
+    active_resonance_names = _resonance_display_names(bundle, progress.active_resonances, lang)
 
     lines = [
         label("setup_title", lang),
@@ -3601,7 +3616,7 @@ def render_run_setup_screen(
     lines.append(
         f"{label('hud_build', lang)}: {progress.stage.badge} {progress.stage_name}  "
         f"{label('hero_card_active_resonances', lang)}: "
-        f"{', '.join(progress.active_resonances) if progress.active_resonances else label('hero_card_none', lang)}"
+        f"{', '.join(active_resonance_names) if active_resonance_names else label('hero_card_none', lang)}"
     )
     if progress.best_next_picks:
         picks = ", ".join(pick["tag"] for pick in progress.best_next_picks[:3])
@@ -4810,7 +4825,7 @@ def render_hero_card(
     )
     lines.append("")
 
-    lines.extend(_render_build_progress_panel(progress, hero.id, lang))
+    lines.extend(_render_build_progress_panel(progress, hero.id, bundle, lang))
     lines.append("")
 
     lines.append(label("hero_card_skills", lang))
@@ -4919,7 +4934,7 @@ def _hero_loadout_opener(hero_id: str, *, prompt_style: str | None, lang: str) -
 
 
 def _render_build_progress_panel(
-    progress: BuildProgress, hero_id: str, lang: str
+    progress: BuildProgress, hero_id: str, bundle: ContentBundle, lang: str
 ) -> list[str]:
     lines: list[str] = []
 
@@ -4952,7 +4967,7 @@ def _render_build_progress_panel(
         lines.append("")
         lines.append(label("hero_card_active_resonances", lang) + ":")
         for res_id in progress.active_resonances:
-            lines.append(f"  [R] {res_id}")
+            lines.append(f"  [R] {_resonance_display_name(bundle, res_id, lang)}")
 
     if progress.near_resonances:
         lines.append("")

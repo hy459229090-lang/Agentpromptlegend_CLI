@@ -1888,6 +1888,8 @@ def test_climax_banners_cover_kill_and_build_online(bundle):
         build=build,
     )
     assert "EVENT   BUILD ONLINE" in opening or "EVENT   HIGH ROLL" in opening
+    assert "RESONANCE Corruption School" in opening
+    assert "resonance_corruption_school" not in opening
 
     state.log.append("Tick 9 Astia casts Hex Seal.")
     later_wait = render_battle_screen(

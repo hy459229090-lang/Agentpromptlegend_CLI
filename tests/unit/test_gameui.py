@@ -1007,6 +1007,8 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "[CORE] shadow / control" in setup
     assert "[NEXT PICK]" in setup
     assert "[FIRST RULE] model chooses action, local judge resolves" in setup
+    assert "Active Resonances: Corruption School" in setup
+    assert "resonance_corruption_school" not in setup
     assert "[W:*]" in setup
 
 

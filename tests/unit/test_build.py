@@ -227,6 +227,13 @@ def test_render_hero_card_zh(bundle):
     assert "灰烬守卫" in text
     assert "守望塔盾" in text
     assert "铁色军团" in text
+    assert "resonance_iron_legion" not in text
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    astia_build = resolve_build(astia, bundle)
+    astia_text = render_hero_card(astia, bundle, astia_build, language="zh")
+    assert "腐化学派" in astia_text
+    assert "resonance_corruption_school" not in astia_text
 
 
 def test_render_hero_list_en_is_ascii_safe(bundle):
@@ -284,6 +291,8 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "[CORE] shadow / control" in text
     assert "[OPENER] open by denying chant windows" in text
     assert "[RUN] ouro run --mock --hero hero_shadow_apprentice --prompt-style control" in text
+    assert "Corruption School" in text
+    assert "resonance_corruption_school" not in text
     assert "AI Bias:" in text
     assert "Prompt Template: control" in text
     assert "interrupt high-ATB" in text
@@ -394,3 +403,5 @@ def test_hero_card_shows_build_stage_badge(bundle):
     assert "BUILD STAGE:" in text or "构筑阶段:" in text
     assert "Core Tags:" in text
     assert "Active Resonances:" in text
+    assert "Corruption School" in text
+    assert "resonance_corruption_school" not in text
