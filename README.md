@@ -1,8 +1,13 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
+<a id="storefront-hero"></a>
+
+## Storefront Hero / 商店页封面
+
 <p align="center">
-  <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
-  <sub>A dark terminal roguelike where you build the Agent before battle, then the model chooses actions and the deterministic local judge resolves every hit.</sub>
+  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
+  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
+  <sub>Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
 </p>
 
 <table>
@@ -12,18 +17,24 @@
   <tr>
     <td align="center"><a href="README.zh.md"><strong>中文</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>游戏画面</strong><br><sub>Real TUI Captures</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery / 先看游戏画面</strong><br><sub>Real TUI Captures</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
 </table>
 
 <p align="center">
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
+  <br><strong>Hero Capsule / 首屏胶囊图</strong><br>
+  <sub>One trained Agent, one local judge, and a dungeon that answers the Prompt.</sub>
 </p>
 
-<p align="center">
-  <strong>Playable offline now.</strong> Install, run the mock demo, and watch a full AI battle without network access or API keys.
-</p>
+| Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
+|--------------------|----------------|-------------------------|
+| `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+
+**Playable offline now.** The mock provider runs a full guided demo with no
+network, no API key, and deterministic seeds. The best first impression is:
+build once, release the Agent, then read how the local judge explains every hit.
 
 <a id="english-store-page"></a>
 
@@ -48,7 +59,7 @@ boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
 | **Language / 语言** | README has Chinese and English pages; CLI 语言切换 uses `ouro --lang zh` or `ouro --lang en` |
 | **Playable State** | Mock provider is deterministic, offline, and ready without network or API keys |
 | **Combat Rule** | Model chooses action; local judge resolves legality, damage, rewards, defeat, and victory |
-| **Visual Target** | Graphical TUI with low-resolution stage, actor sprites, weapon cards, projectile lane, floating damage, VOX/ENM barks, and cinematic beat |
+| **Visual Target** | Graphical TUI with left hero vs right enemy, HP/MP/ATB, threat rails, projectile lane, floating FX, `Echo Cost / Read Echo / Spoken Echo / Ritual Time`, VOX/ENM barks, and Cinematic Beat |
 
 | Player Promise | What You Actually Do | Why It Feels Different |
 |----------------|----------------------|------------------------|
@@ -60,28 +71,23 @@ boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
 
 ## Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘
 
-Screenshots below are captured from reproducible CLI output, not concept art.
-Run `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
+Media Gallery / 先看游戏画面. Screenshots below are captured from reproducible CLI output, not concept art. Run
+`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
 to reproduce the battle style. The SVG media lives in `examples/`.
 
 <table>
   <tr>
-    <td colspan="2">
-      <img alt="Ouro Agent storefront capsule with hero, judge, and battle stage" src="examples/ouro-readme-storefront.svg">
-      <br><strong>Hero Capsule / 首屏胶囊图</strong><br>
-      The whole pitch in one frame: one trained Agent, one local judge, and a dungeon that answers the Prompt.
-    </td>
-  </tr>
-  <tr>
     <td width="50%">
       <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
-      <br><strong>Graphical Battle Stage / 图形化战斗舞台</strong><br>
-      Left hero, right monster, projectile lane, HP/MP/ATB, intent, risk, floating numbers, Prompt hit, and Build state in one terminal frame.
+      <br><strong>Fight / Graphical Battle Stage / 图形化战斗舞台</strong><br>
+      Left hero vs right enemy, projectile lane, HP / MP / ATB / risk rail, floating FX, Prompt hit, Build state, and local judge in one terminal frame.<br>
+      <sub>Reproduce: <code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
     </td>
     <td width="50%">
       <img alt="After action report and Codex preview" src="examples/ouro-after-action.svg">
-      <br><strong>After-Action Report / 战后复盘屏</strong><br>
-      Victory is not one final line. The run remembers turn flow, counter windows, Codex research, death history, and the next thing to try.
+      <br><strong>Learn / After-Action Report / 战后复盘屏</strong><br>
+      Victory is not one final line. The run remembers turn flow, counter windows, Codex research, death history, and the next build to try.<br>
+      <sub>Reproduce: <code>ouro run-report --lang en</code> and <code>ouro codex --lang en</code></sub>
     </td>
   </tr>
 </table>

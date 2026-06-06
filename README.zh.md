@@ -1,8 +1,13 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
+<a id="storefront-hero"></a>
+
+## 商店页封面 / Storefront Hero
+
 <p align="center">
-  <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
-  <sub>黑暗终端 AI 肉鸽：战前构筑、战中自动战斗、战后复盘；模型出招，本地裁判结算每一次命中。</sub>
+  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
+  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
+  <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
 </p>
 
 <table>
@@ -13,17 +18,23 @@
     <td align="center"><strong>中文</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
     <td align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong><br><sub>中英入口</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>立即试玩</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
 </table>
 
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
+  <br><strong>首屏胶囊图 / Hero Capsule</strong><br>
+  <sub>一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。</sub>
 </p>
 
-<p align="center">
-  <strong>现在就能离线试玩。</strong> 安装后用 mock demo 开局，不需要网络，不需要 API key，也不需要真实模型。
-</p>
+| 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |
+|----------------|-------------------------|----------------|
+| `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+
+**现在就能离线试玩。** 默认 mock provider 不需要网络、不需要 API key，
+也不需要真实模型。最好的第一印象是：先构筑一次，把 Agent 放进战斗，
+然后看本地裁判解释每一次命中、打断和失败。
 
 ## 商店页速览
 
@@ -41,7 +52,7 @@
 | **语言切换 / Language** | README 有中英页面；CLI 语言切换使用 `ouro --lang zh` 或 `ouro --lang en` |
 | **试玩状态** | 默认 mock provider 可离线、可复现、无需网络和 API key |
 | **战斗规则** | 模型只选择行动；本地裁判负责合法性、伤害、奖励、失败和胜利 |
-| **画面目标** | 图形化 TUI、低分辨率舞台、角色像素形象、武器小卡、弹道、浮字、VOX/ENM 台词和分镜节奏 |
+| **画面目标** | 图形化 TUI：左英雄 vs 右敌人、HP/MP/ATB、风险条、弹道中轴、`Echo Cost / Read Echo / Spoken Echo / Ritual Time`、浮字、VOX/ENM 台词和分镜节奏 |
 
 | 玩家期待 | 你实际在做什么 | 它为什么不一样 |
 |----------|----------------|----------------|
@@ -49,30 +60,28 @@
 | 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：HP/MP/ATB、意图、风险、模型行动、本地裁判、浮字和台词同屏出现。 | CLI 被当作低分辨率游戏画面使用，不只是调试控制台。 |
 | 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史、状态页、回放和批量试跑结果，调整下一局构筑。 | 每个错误都会留下可复盘、可执行的下一步。 |
 
-## 画面：构筑、战斗、复盘
+<a id="screenshots-build-fight-learn"></a>
 
-下面的画面来自可复现的 CLI 输出，不是概念图。对应命令可用
+## 先看游戏画面：构筑、战斗、复盘 / Screenshots: Build, Fight, Learn
+
+Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输出，不是概念图。
+对应命令可用
 `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
 复现。SVG 资产保存在 `examples/`。
 
 <table>
   <tr>
-    <td colspan="2">
-      <img alt="暗影代理祷文传说首屏胶囊图" src="examples/ouro-readme-storefront.svg">
-      <br><strong>首屏胶囊图 / Hero Capsule</strong><br>
-      一张图说明游戏：一个被训练的 Agent、一个本地裁判，以及会反击 Prompt 的地牢。
-    </td>
-  </tr>
-  <tr>
     <td width="50%">
       <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
-      <br><strong>图形化战斗舞台 / Graphical Battle Stage</strong><br>
-      左英雄、右怪物、中间弹道和本地裁判同屏；HP、MP、ATB、意图、风险、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。
+      <br><strong>Fight / 图形化战斗舞台 / Graphical Battle Stage</strong><br>
+      左英雄 vs 右敌人，中间弹道和本地裁判同屏；HP / MP / ATB / 风险条、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。<br>
+      <sub>复现：<code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
     </td>
     <td width="50%">
       <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
-      <br><strong>战后复盘屏 / After-Action Report</strong><br>
-      胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。
+      <br><strong>Learn / 战后复盘屏 / After-Action Report</strong><br>
+      胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。<br>
+      <sub>复现：<code>ouro run-report --lang zh</code> 和 <code>ouro codex --lang zh</code></sub>
     </td>
   </tr>
 </table>

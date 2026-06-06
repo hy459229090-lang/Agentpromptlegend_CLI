@@ -26,6 +26,34 @@ def test_readme_covers_install_mock_provider_and_privacy():
     english_intro = text.split("## Quickstart", 1)[0]
     zh_intro = zh_text.split("## 快速开始", 1)[0]
 
+    assert "Storefront Hero / 商店页封面" in text
+    assert "商店页封面 / Storefront Hero" in zh_text
+    assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
+    assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
+    assert "Model chooses. Local Judge decides." in text
+    assert "Model chooses. Local Judge decides." in zh_text
+    assert "Play in 30 seconds" in text
+    assert "中文 30 秒开局" in text
+    assert "中文 30 秒开局" in zh_text
+    assert "English 30-second start" in zh_text
+    assert "Media Gallery / 先看游戏画面" in text
+    assert "Media Gallery / 先看游戏画面" in zh_text
+    assert "HP / MP / ATB / risk rail" in text
+    assert "HP / MP / ATB / 风险条" in zh_text
+    assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in text
+    assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in zh_text
+    assert text.count('src="examples/ouro-readme-storefront.svg"') == 1
+    assert zh_text.count('src="examples/ouro-readme-storefront.svg"') == 1
+    assert text.index("Storefront Hero / 商店页封面") < text.index("Screenshots: Build, Fight, Learn")
+    assert text.index("Screenshots: Build, Fight, Learn") < text.index("## Core Loop")
+    assert text.index("## Core Loop") < text.index("## Play Now")
+    assert text.index("## Play Now") < text.index("## Current Playable Content")
+    assert text.index("## Current Playable Content") < text.index("## Languages")
+    assert zh_text.index("商店页封面 / Storefront Hero") < zh_text.index("先看游戏画面")
+    assert zh_text.index("先看游戏画面") < zh_text.index("## 每局你会做什么")
+    assert zh_text.index("## 每局你会做什么") < zh_text.index("## 立即试玩")
+    assert zh_text.index("## 立即试玩") < zh_text.index("## 当前可玩内容")
+    assert zh_text.index("## 当前可玩内容") < zh_text.index("## 双语机制")
     assert "完整中文文档 / Full Chinese README" in text
     assert "English Store Page" in text
     assert "game first, docs later" in text
@@ -88,6 +116,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
         assert "<svg" in (ROOT / media_file).read_text(encoding="utf-8")
     assert "CINEMATIC BEAT" in battle_media
     assert "FLOAT -16 HP | SLN" in battle_media
+    assert "░▒▓▓██==&gt;" in battle_media
+    assert "░░▓▓XX▓▓░" in battle_media
+    assert "▓▓ SLN ▓▓" not in battle_media
     assert "STRIP [WIND]" in text
     assert "STRIP [WIND]" in zh_text
     assert "STRIP [WIND]" in battle_media

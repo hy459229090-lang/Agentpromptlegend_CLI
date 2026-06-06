@@ -227,7 +227,7 @@ def test_unicode_battle_screen_uses_canvas_block_stage(bundle):
     assert "JUDGE" in screen
     assert "[W:STF]" in screen
     assert "[ONLINE]" in screen
-    assert "░░▓▓██>" in screen or "▓▓ SLN ▓▓" in screen
+    assert "░▒▓▓██==>" in screen or "░░▓▓XX▓▓░" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100
 
@@ -2558,6 +2558,23 @@ def test_reusable_art_assets_cover_mvp_heroes_enemies_and_weapons(bundle):
             assert len(block_sprite) >= 4
             assert "\n".join(ascii_sprite).isascii()
             assert all(visual_width(line) <= 8 for line in block_sprite)
+        generic_skill = tuple(hero_block_sprite(hero_id, "skill"))
+        generic_idle = tuple(hero_block_sprite(hero_id, "idle"))
+        for pose in (
+            "skill_shadow",
+            "skill_fire",
+            "skill_physical",
+            "skill_holy",
+            "skill_poison",
+            "observe",
+            "cast",
+        ):
+            block_sprite = hero_block_sprite(hero_id, pose)
+            assert len(block_sprite) >= 4
+            assert all(visual_width(line) <= 8 for line in block_sprite)
+            assert tuple(block_sprite) != generic_skill
+            if pose == "observe":
+                assert tuple(block_sprite) != generic_idle
 
     for enemy in bundle.enemies.values():
         assert enemy.short_glyph in ENEMY_SPRITES

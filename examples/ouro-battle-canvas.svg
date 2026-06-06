@@ -42,9 +42,9 @@
   <text x="106" y="536" class="mono small">SKILL STG* HEX4 FOC*</text>
   <text x="480" y="198" class="mono cyan">DIRECTOR T:WIN P:RDY F:INT</text>
   <text x="480" y="236" class="mono text">TEMPO RAIL H100 ████ E081 ███░ WIN</text>
-  <text x="480" y="286" class="mono gold">          ░▒▓▓██&gt;</text>
+  <text x="480" y="286" class="mono gold">        ░▒▓▓██==&gt;</text>
   <text x="480" y="326" class="mono gold">        SEAL -16 HP</text>
-  <text x="480" y="366" class="mono text">        ▓▓ SLN ▓▓░░░░░░░░</text>
+  <text x="480" y="366" class="mono text">        ░░▓▓XX▓▓░░░░░░░</text>
   <text x="480" y="420" class="mono text">PLAN CONTROL | PROMPT HIT</text>
   <text x="480" y="454" class="mono text">ACTION HEX -&gt; k</text>
   <text x="480" y="488" class="mono text">JUDGE  VALID | -16 HP</text>

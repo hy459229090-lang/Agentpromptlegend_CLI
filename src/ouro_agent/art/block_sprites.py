@@ -152,20 +152,30 @@ ENEMY_BLOCK_SPRITES: dict[str, dict[str, list[str]]] = {
 
 
 EFFECT_BLOCK_PATTERNS: dict[str, tuple[str, str, str]] = {
-    "wait": ("░░░", "waiting for first echo", "░░░"),
-    "strike": ("░░▓▓██>", "STRIKE", "░░▓▓██>"),
-    "seal": ("░▒▓▓██>", "SEAL", "▓▓ SLN ▓▓"),
-    "shadow": ("░░▓███>", "SHADOW", "▒▒ CRP ▒▒"),
-    "fire": ("░▓████>", "FIRE", "██ BURN ██"),
-    "poison": ("::::▒▒>", "VENOM", "▒▒ POISON ▒▒"),
-    "guard": ("<████>", "GUARD ONLINE", "<████>"),
-    "observe": ("░░▒▒░░", "SCAN FIELD", "░░▒▒░░"),
-    "counter": ("▓▓ WINDOW ▓▓", "COUNTER CLOCK", "▓▓ ANSWER ▓▓"),
-    "break": ("░░▓▓░░", "CHANT BROKEN", "▓▓ BRK ▓▓"),
-    "chant": ("<████▓▓░", "CHANT RELEASE", "<████▓▓░"),
-    "enemy_strike": ("<██▓▓░", "STRIKE", "<██▓▓░"),
-    "climax": ("████ CLIMAX ████", "IMPACT", "████ RUPTURE ████"),
-    "skill": ("░░▓▓██>", "SKILL", "░░▓▓██>"),
+    "wait": ("░░░▒▒░░░", "waiting for first echo", "░░░▒▒░░░"),
+    "strike": ("░░▓▓████>", "STRIKE", "░░░▓▓██>"),
+    "seal": ("░▒▓▓██==>", "SEAL", "░░▓▓XX▓▓░"),
+    "shadow": ("░░▒▓███▒>", "SHADOW", "▒▒▓▓░░▓▓▒"),
+    "fire": ("░▓██████>", "FIRE", "▓▓██░██▓▓"),
+    "poison": ("::::▒▒▓▓>", "VENOM", "▒░▒░▒░▒░"),
+    "guard": ("<██████>", "GUARD ONLINE", "<██SHD██>"),
+    "observe": ("░▒░▒░▒░▒", "SCAN FIELD", "▒░▒░▒░▒░"),
+    "counter": ("▓▓>====<▓▓", "COUNTER CLOCK", "▓▓<====>▓▓"),
+    "break": ("░░▓▓XX▓▓░", "CHANT BROKEN", "░░░BRK░░░"),
+    "chant": ("<▓▓████░░", "CHANT RELEASE", "<░░████▓▓"),
+    "enemy_strike": ("<████▓▓░░", "STRIKE", "<██▓▓░░░"),
+    "climax": ("████▓▓████", "IMPACT", "▓▓██RUP██▓"),
+    "skill": ("░░▓▓██▓▓>", "SKILL", "░░░▓▓██>"),
+}
+
+SPECIAL_HERO_POSES = {
+    "skill_shadow",
+    "skill_fire",
+    "skill_physical",
+    "skill_holy",
+    "skill_poison",
+    "observe",
+    "cast",
 }
 
 
@@ -193,9 +203,43 @@ def _center_block(text: str, width: int) -> str:
 
 def hero_block_sprite(hero_id: str, pose: str) -> list[str]:
     sprites = HERO_BLOCK_SPRITES.get(hero_id, HERO_BLOCK_SPRITES["hero_shadow_apprentice"])
-    return sprites.get(pose) or sprites.get("skill") or sprites["idle"]
+    if pose in sprites:
+        return sprites[pose]
+    if pose in SPECIAL_HERO_POSES:
+        return _special_hero_pose(sprites, pose)
+    return sprites.get("skill") or sprites["idle"]
 
 
 def enemy_block_sprite(glyph: str, pose: str) -> list[str]:
     sprites = ENEMY_BLOCK_SPRITES.get(glyph, ENEMY_BLOCK_SPRITES["c"])
     return sprites.get(pose) or sprites.get("skill") or sprites["idle"]
+
+
+def _special_hero_pose(sprites: dict[str, list[str]], pose: str) -> list[str]:
+    base_key = "idle" if pose == "observe" else "skill"
+    base = sprites.get(base_key) or sprites.get("skill") or sprites["idle"]
+    rows = [_eight(row) for row in base[:4]]
+    while len(rows) < 4:
+        rows.append("        ")
+    if pose == "skill_shadow":
+        return [_edge(rows[0], "░", "░"), _edge(rows[1], "▒", "▒"), _edge(rows[2], "▓", "▒"), " ░▒▓▒░ "]
+    if pose == "skill_fire":
+        return [_edge(rows[0], "▓", "▓"), _edge(rows[1], "█", "▓"), _edge(rows[2], "▓", "█"), " ▓██▓  "]
+    if pose == "skill_physical":
+        return [_edge(rows[0], "▓", ">"), _edge(rows[1], "█", ">"), _edge(rows[2], "▓", ">"), " ░██>> "]
+    if pose == "skill_holy":
+        return [_edge(rows[0], "▓", "░"), _edge(rows[1], "▓", "▓"), _edge(rows[2], "░", "▓"), " ▓░▓░▓ "]
+    if pose == "skill_poison":
+        return [_edge(rows[0], "▒", "▒"), _edge(rows[1], "░", "▒"), _edge(rows[2], "▒", "░"), " ▒░▒░▒ "]
+    if pose == "observe":
+        return [_edge(rows[0], "░", "░"), _edge(rows[1], "▒", "▒"), _edge(rows[2], "░", "▒"), " ░▒░▒░ "]
+    return [_edge(rows[0], "░", "▓"), _edge(rows[1], "▓", "░"), _edge(rows[2], "░", "▓"), " ░▓░▓░ "]
+
+
+def _eight(row: str) -> str:
+    return (row + "        ")[:8]
+
+
+def _edge(row: str, left: str, right: str) -> str:
+    fixed = _eight(row)
+    return f"{left}{fixed[1:7]}{right}"
