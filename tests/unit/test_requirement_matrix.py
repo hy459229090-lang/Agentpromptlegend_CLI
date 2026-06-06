@@ -62,6 +62,8 @@ def test_qa_note_records_fixed_seed_evidence_and_manual_template():
     assert "venv312/bin/ouro validate-content" in text
     assert "git diff --check" in text
     assert "venv312/bin/ouro menu --lang en" in text
+    assert "MAIN MENU CONSOLE" in text
+    assert "Mock Path : mock-ready" in text
     assert "New Run        ouro run --mock" in text
     assert "/private/tmp/ouro_install_smoke_20260601/bin/ouro --version" in text
     assert "share/ouro-agent/content" in text

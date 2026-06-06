@@ -3761,6 +3761,7 @@ def render_main_menu(
     config_path: str,
     recent_trace: str | None = None,
     language: str = DEFAULT_LANGUAGE,
+    width: int = 100,
 ) -> str:
     lang = language
     view = redacted_view(config, language=lang)
@@ -3773,50 +3774,124 @@ def render_main_menu(
         )
     visual = "unicode" if config.unicode_mode else "ascii"
     trace = recent_trace or "-"
-    lines = [
-        label("menu_title", lang),
-        "",
-        label("menu_status", lang),
-        f"{label('menu_provider', lang)} : {view['provider']}    {label('menu_model', lang)}: {view['model']}    {label('menu_key', lang)}: {key_state}",
-        f"{label('menu_language', lang)} : {lang}      {label('menu_visual', lang)}: {visual}      {label('menu_trace', lang)}: {trace}",
-        f"{label('menu_config', lang)}   : {config_path}",
-        "",
-        *(_render_main_menu_journey(lang)),
-        "",
-        label("menu_entries", lang),
-        label("menu_entry_play", lang),
-        label("menu_entry_demo", lang),
-        label("menu_entry_quick_battle", lang),
-        label("menu_entry_heroes", lang),
-        label("menu_entry_prompt", lang),
-        label("menu_entry_status", lang),
-        label("menu_entry_codex", lang),
-        label("menu_entry_runs", lang),
-        label("menu_entry_report", lang),
-        label("menu_entry_history", lang),
-        label("menu_entry_replay", lang),
-        label("menu_entry_doctor", lang),
-        label("menu_entry_config", lang),
-        label("menu_entry_quit", lang),
-    ]
+    width = max(72, width)
+    title = "MAIN MENU CONSOLE" if lang == "en" else "主菜单控制台"
+    lines: list[str] = []
+    lines.extend(
+        pixel_panel(
+            title,
+            _render_main_menu_header(config.provider, lang=lang),
+            width,
+            tone="hero",
+        ).lines
+    )
+    lines.append("")
+    lines.extend(
+        pixel_panel(
+            "STATUS HUD" if lang == "en" else "状态 HUD",
+            [
+                f"{label('menu_provider', lang)} : {view['provider']}    {label('menu_model', lang)}: {view['model']}    {label('menu_key', lang)}: {key_state}",
+                f"{label('menu_language', lang)} : {lang}      {label('menu_visual', lang)}: {visual}",
+                f"{label('menu_config', lang)}   : {config_path}",
+                f"{label('menu_trace', lang)}: {trace}",
+            ],
+            width,
+            tone="normal",
+        ).lines
+    )
+    lines.append("")
+    lines.extend(_render_main_menu_journey(lang, width=width))
+    lines.append("")
+    lines.extend(
+        pixel_panel(
+            "ENTRY COMMANDS" if lang == "en" else "入口命令",
+            _render_main_menu_entries(lang),
+            width,
+            tone="counter",
+        ).lines
+    )
     return "\n".join(lines)
 
 
-def _render_main_menu_journey(lang: str) -> list[str]:
+def _render_main_menu_header(provider: str, *, lang: str) -> list[str]:
+    if lang == "zh":
+        provider_hint = (
+            "Mock Path : mock-ready / 离线试玩始终可用"
+            if provider != "mock"
+            else "Mock Path : mock-ready / 当前就是离线试玩模式"
+        )
+        return [
+            label("menu_title", lang),
+            "[NEXT] 建议先跑: ouro demo --seed 1",
+            provider_hint,
+            "[FULL] 完整一局: ouro run --mock",
+        ]
+    provider_hint = (
+        "Mock Path : mock-ready / offline play is always available"
+        if provider != "mock"
+        else "Mock Path : mock-ready / current profile is offline playable"
+    )
+    return [
+        label("menu_title", lang),
+        "[NEXT] Recommended: ouro demo --seed 1",
+        provider_hint,
+        "[FULL] Full run: ouro run --mock",
+    ]
+
+
+def _render_main_menu_journey(lang: str, *, width: int = 100) -> list[str]:
+    if lang == "zh":
+        title = "PLAYER JOURNEY BOARD :: 玩家旅程"
+        body = [
+            "[START] 引导试玩 -> ouro demo --seed 1",
+            "[BUILD] 选英雄/武器 -> ouro list-heroes / ouro weapons",
+            "[RUN] 完整运行 -> ouro run --mock",
+            "[LEARN] 复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report",
+        ]
+    else:
+        title = "PLAYER JOURNEY BOARD"
+        body = [
+            "[START] Guided demo -> ouro demo --seed 1",
+            "[BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons",
+            "[RUN] Full run -> ouro run --mock",
+            "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report",
+        ]
+    return list(pixel_panel(title, body, width, tone="hero").lines)
+
+
+def _render_main_menu_entries(lang: str) -> list[str]:
     if lang == "zh":
         return [
-            "PLAYER JOURNEY BOARD :: 玩家旅程",
-            "  [START]  引导试玩 -> ouro demo --seed 1",
-            "  [BUILD]  选英雄/武器 -> ouro list-heroes / ouro weapons",
-            "  [RUN]    完整运行 -> ouro run --mock",
-            "  [LEARN]  复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report",
+            "[PLAY] 新运行          ouro run --mock",
+            "[PLAY] 引导试玩        ouro demo --seed 1",
+            "[FIGHT] 快速战斗       ouro play --mock --no-animation",
+            "[BUILD] 英雄/武器      ouro list-heroes / ouro weapons / ouro hero-card <英雄>",
+            "[BUILD] 咒语风格       ouro prompt-templates",
+            "[LEARN] 状态总览       ouro status",
+            "[LEARN] 图鉴           ouro codex",
+            "[LEARN] 运行归档       ouro runs --limit 5",
+            "[LEARN] 运行报告       ouro run-report",
+            "[LEARN] 陨落历史       ouro history --limit 5",
+            "[TOOLS] 回放           ouro replay <追踪>",
+            "[TOOLS] 诊断           ouro doctor",
+            "[TOOLS] 配置           ouro config setup",
+            "[QUIT] 退出            q",
         ]
     return [
-        "PLAYER JOURNEY BOARD",
-        "  [START] Guided demo -> ouro demo --seed 1",
-        "  [BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons",
-        "  [RUN]   Full run -> ouro run --mock",
-        "  [LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report",
+        "[PLAY] New Run        ouro run --mock",
+        "[PLAY] Guided Demo    ouro demo --seed 1",
+        "[FIGHT] Quick Battle  ouro play --mock --no-animation",
+        "[BUILD] Hero/Weapon   ouro list-heroes / ouro weapons / ouro hero-card <hero>",
+        "[BUILD] Prompt Style  ouro prompt-templates",
+        "[LEARN] Status        ouro status",
+        "[LEARN] Codex         ouro codex",
+        "[LEARN] Runs          ouro runs --limit 5",
+        "[LEARN] Run Report    ouro run-report",
+        "[LEARN] Death History ouro history --limit 5",
+        "[TOOLS] Replay        ouro replay <trace>",
+        "[TOOLS] Doctor        ouro doctor",
+        "[TOOLS] Configure     ouro config setup",
+        "[QUIT] Quit           q",
     ]
 
 

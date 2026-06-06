@@ -182,6 +182,12 @@ ouro play --mock
 ouro run --mock
 ```
 
+想看玩家旅程控制台：
+
+```bash
+ouro menu --lang zh
+```
+
 想看更强画面感：
 
 ```bash
@@ -204,6 +210,7 @@ ouro history --lang zh --limit 5
 | 你能玩到什么 | 现在是否可用 | 推荐命令 |
 |--------------|--------------|----------|
 | 引导式首局试玩 | 可用 | `ouro demo --lang zh --seed 1` |
+| 玩家旅程控制台与命令地图 | 可用 | `ouro menu --lang zh` |
 | 单场 AI 战斗 | 可用 | `ouro play --mock` |
 | 完整副本：路线、商店、休息、奖励和 Boss | 可用 | `ouro run --mock` |
 | 英雄卡、武器图鉴和 Build 配置 | 可用 | `ouro list-heroes` / `ouro weapons --unicode` / `ouro hero-card hero_ash_guardian` |

@@ -210,12 +210,19 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "OURO AGENT :: PROMPT LEGEND" in out
+    assert "MAIN MENU CONSOLE" in out
+    assert "[NEXT] Recommended: ouro demo --seed 1" in out
+    assert "Mock Path : mock-ready" in out
     assert "Provider : mock" in out
     assert "PLAYER JOURNEY BOARD" in out
     assert "[START] Guided demo -> ouro demo --seed 1" in out
     assert "[BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons" in out
-    assert "[RUN]   Full run -> ouro run --mock" in out
+    assert "[RUN] Full run -> ouro run --mock" in out
     assert "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report" in out
+    assert "ENTRY COMMANDS" in out
+    assert "[PLAY] New Run        ouro run --mock" in out
+    assert "[BUILD] Hero/Weapon" in out
+    assert "[LEARN] Run Report" in out
     assert "New Run" in out
     assert "ouro run --mock" in out
     assert "Guided Demo" in out

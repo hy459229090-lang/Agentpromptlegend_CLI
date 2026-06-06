@@ -97,6 +97,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "Current Playable Content / 当前可玩内容" in text
     assert "当前可玩内容" in zh_text
     assert "Guided first run" in text
+    assert "Journey console and command map" in text
+    assert "玩家旅程控制台与命令地图" in zh_text
+    assert "ouro menu --lang en" in text
+    assert "ouro menu --lang zh" in zh_text
     assert "Hero cards, weapon gallery, and Build planning" in text
     assert "英雄卡、武器图鉴和 Build 配置" in zh_text
     assert "ouro weapons --unicode" in text

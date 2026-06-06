@@ -105,7 +105,7 @@ Expected results:
 
 ## Manual Smoke Checklist
 
-- `ouro menu --lang en` shows New Run, Quick Battle, Codex, Runs, Death History, Replay, Doctor, and Configure.
+- `ouro menu --lang en` shows `MAIN MENU CONSOLE`, a recommended `ouro demo --seed 1` next command, `Mock Path : mock-ready`, `PLAYER JOURNEY BOARD`, grouped entry commands, New Run, Quick Battle, Codex, Runs, Death History, Replay, Doctor, and Configure.
 - `ouro demo --lang en --seed 1` shows menu status, hero card, deterministic mock battle, and Codex readback without trace or network.
 - `ouro status --lang en` shows the profile, Codex progress, run/death totals, latest run, next-run plan, and next commands.
 - `ouro list-heroes --lang en` shows 6 heroes with Build badges and risk labels.

@@ -195,6 +195,12 @@ ouro play --mock
 ouro run --mock
 ```
 
+Want the journey console:
+
+```bash
+ouro menu --lang en
+```
+
 Want the current battle canvas directly:
 
 ```bash
@@ -226,6 +232,7 @@ Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后�
 | What You Can Play | Available Now | Recommended Command |
 |-------------------|---------------|---------------------|
 | Guided first run | yes | `ouro demo --lang en --seed 1` |
+| Journey console and command map | yes | `ouro menu --lang en` |
 | Single AI battle | yes | `ouro play --mock` |
 | Full dungeon run with route, shop, rest, rewards, and boss | yes | `ouro run --mock` |
 | Hero cards, weapon gallery, and Build planning | yes | `ouro list-heroes` / `ouro weapons --unicode` / `ouro hero-card hero_ash_guardian` |

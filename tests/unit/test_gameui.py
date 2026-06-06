@@ -657,7 +657,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
 
     required = {
         "en": {
-            "menu": (("mock-smart",), ("ouro.toml",), ("PLAYER JOURNEY BOARD",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("ouro run --mock",), ("Guided Demo",), ("ouro demo --seed 1",), ("Quick Battle",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
+            "menu": (("MAIN MENU CONSOLE",), ("mock-smart",), ("ouro.toml",), ("Mock Path : mock-ready",), ("[NEXT] Recommended: ouro demo --seed 1",), ("PLAYER JOURNEY BOARD",), ("ENTRY COMMANDS",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("[PLAY] New Run",), ("[BUILD] Hero/Weapon",), ("[LEARN] Run Report",), ("ouro run --mock",), ("Guided Demo",), ("ouro demo --seed 1",), ("Quick Battle",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("BUILD STAGE:",), ("Core Tags:",)),
             "weapon": (("WEAPON GALLERY :: BUILD ARSENAL",), ("[W:STF] c==* Astia",), ("NEXT WEAPON ROUTE",)),
             "route": (("Cost:",), ("Reward:",), ("Build fit:",), ("Scout:",)),
@@ -686,7 +686,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
             ),
         },
         "zh": {
-            "menu": (("mock-smart",), ("ouro.toml",), ("玩家旅程",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("ouro run --mock",), ("引导试玩",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
+            "menu": (("主菜单控制台",), ("mock-smart",), ("ouro.toml",), ("Mock Path : mock-ready",), ("[NEXT] 建议先跑: ouro demo --seed 1",), ("玩家旅程",), ("入口命令",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("[PLAY] 新运行",), ("[BUILD] 英雄/武器",), ("[LEARN] 运行报告",), ("ouro run --mock",), ("引导试玩",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("构筑阶段:",), ("核心标签:",)),
             "weapon": (("武器图鉴 :: 构筑兵装",), ("[W:STF] c==* 阿斯缇娅",), ("下一步武器路线",)),
             "route": (("消耗:",), ("收益:",), ("Build 适配:",), ("侦察:",)),
@@ -786,7 +786,12 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
             }
 
             screens = {
-                "menu": render_main_menu(config, config_path="ouro.toml", language=language),
+                "menu": render_main_menu(
+                    config,
+                    config_path="ouro.toml",
+                    language=language,
+                    width=width,
+                ),
                 "hero": render_hero_card(
                     hero,
                     bundle,
