@@ -213,7 +213,7 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert "Provider : mock" in out
     assert "PLAYER JOURNEY BOARD" in out
     assert "[START] Guided demo -> ouro demo --seed 1" in out
-    assert "[BUILD] Pick hero/prompt -> ouro list-heroes / ouro prompt-templates" in out
+    assert "[BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons" in out
     assert "[RUN]   Full run -> ouro run --mock" in out
     assert "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report" in out
     assert "New Run" in out
@@ -221,7 +221,7 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert "Guided Demo" in out
     assert "ouro demo --seed 1" in out
     assert "Quick Battle" in out
-    assert "Hero Card" in out
+    assert "Hero/Weapon" in out
     assert "Prompt Style" in out
     assert "Status" in out
     assert "ouro status" in out
@@ -231,6 +231,18 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert "ouro run-report" in out
     assert "History" in out
     assert "Doctor" in out
+
+
+def test_cli_weapons_shows_gallery(content_root, isolated_home, capsys):
+    rc = main(["--lang", "en", "weapons", "--content-dir", str(content_root)])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "WEAPON GALLERY :: BUILD ARSENAL" in out
+    assert "[1] [W:STF] c==* Astia" in out
+    assert "[OPEN] ouro hero-card astia" in out
+    assert "NEXT WEAPON ROUTE" in out
+    assert "hero_shadow_apprentice" not in out
 
 
 def test_cli_prompt_templates_show_pilot_board(isolated_home, capsys):
@@ -372,6 +384,7 @@ def test_cli_hero_entry_accepts_player_refs_and_reports_errors(
         "demo",
         "play",
         "list-heroes",
+        "weapons",
         "hero-card",
         "status",
         "codex",

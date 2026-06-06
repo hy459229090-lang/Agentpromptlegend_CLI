@@ -3807,14 +3807,14 @@ def _render_main_menu_journey(lang: str) -> list[str]:
         return [
             "PLAYER JOURNEY BOARD :: 玩家旅程",
             "  [START]  引导试玩 -> ouro demo --seed 1",
-            "  [BUILD]  选英雄/Prompt -> ouro list-heroes / ouro prompt-templates",
+            "  [BUILD]  选英雄/武器 -> ouro list-heroes / ouro weapons",
             "  [RUN]    完整运行 -> ouro run --mock",
             "  [LEARN]  复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report",
         ]
     return [
         "PLAYER JOURNEY BOARD",
         "  [START] Guided demo -> ouro demo --seed 1",
-        "  [BUILD] Pick hero/prompt -> ouro list-heroes / ouro prompt-templates",
+        "  [BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons",
         "  [RUN]   Full run -> ouro run --mock",
         "  [LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report",
     ]
@@ -5495,12 +5495,129 @@ def _render_weapon_gallery_board(
         lines.append(fit_text(build_line, 96))
         lines.append(fit_text(ai_line, 96))
     next_line = (
-        "Next: compare weapon silhouettes, then open hero-card for full Build plan"
+        "Next: ouro weapons --unicode, then open hero-card for full Build plan"
         if lang == "en"
-        else "下一步: 先比较武器轮廓，再打开 hero-card 查看完整 Build 计划"
+        else "下一步: ouro weapons --unicode，然后打开 hero-card 查看完整 Build 计划"
     )
     lines.append(fit_text(next_line, 96))
     return lines
+
+
+def render_weapon_gallery(
+    bundle: ContentBundle,
+    *,
+    language: str = DEFAULT_LANGUAGE,
+    unicode_mode: bool = False,
+    width: int = 100,
+) -> str:
+    lang = language
+    title = "WEAPON GALLERY :: BUILD ARSENAL" if lang == "en" else "武器图鉴 :: 构筑兵装"
+    subtitle = (
+        "Compare silhouettes, Build tags, and AI behavior before choosing a hero."
+        if lang == "en"
+        else "先比较武器轮廓、Build 标签和 AI 行为，再选择英雄。"
+    )
+    cards = [
+        _weapon_gallery_card(idx, hero, bundle, lang=lang, unicode_mode=unicode_mode, width=48)
+        for idx, hero in enumerate(bundle.heroes.values(), start=1)
+    ]
+    lines = [title, subtitle, ""]
+    if width >= 92:
+        for left_idx in range(0, len(cards), 2):
+            left = cards[left_idx]
+            right = cards[left_idx + 1] if left_idx + 1 < len(cards) else [""] * len(left)
+            row_height = max(len(left), len(right))
+            left.extend([""] * (row_height - len(left)))
+            right.extend([""] * (row_height - len(right)))
+            for left_line, right_line in zip(left, right):
+                lines.append(f"{pad_right(left_line, 48)}  {right_line}".rstrip())
+    else:
+        for card in cards:
+            lines.extend(card)
+    lines.append("")
+    lines.extend(_weapon_gallery_next_board(lang=lang, width=width))
+    return "\n".join(fit_text(line, width) for line in lines).rstrip() + "\n"
+
+
+def _weapon_gallery_card(
+    idx: int,
+    hero: HeroData,
+    bundle: ContentBundle,
+    *,
+    lang: str,
+    unicode_mode: bool,
+    width: int,
+) -> list[str]:
+    build = _safe_resolve_build(hero, bundle)
+    progress = build.calculate_progress(bundle) if build else None
+    stage = progress.stage.badge if progress else hero_weapon_card(hero.id)[1]
+    card = hero_weapon_card_art(hero.id)
+    art = card.unicode_art if unicode_mode else card.ascii_art
+    name = hero.display_name.get(lang) or hero.display_name.get("en", hero.id)
+    cls = hero.class_name.get(lang) or hero.class_name.get("en", "")
+    tags = _weapon_gallery_tags(card.build_shift, lang=lang)
+    title = fit_text(f"[{idx}] {card.icon} {name}", max(20, width - 4))
+    if lang == "zh":
+        body = [
+            *[f"ART {row.strip()}" for row in art[:3]],
+            f"[拥有] {name} / {cls}",
+            f"[阶段] {stage} {tags}",
+            f"[AI] {_weapon_gallery_ai_effect(hero.id, lang)}",
+            f"[打开] ouro hero-card {_hero_command_alias(hero)}",
+        ]
+    else:
+        body = [
+            *[f"ART {row.strip()}" for row in art[:3]],
+            f"[OWNER] {name} / {cls}",
+            f"[STAGE] {stage} {tags}",
+            f"[AI] {_weapon_gallery_ai_effect(hero.id, lang)}",
+            f"[OPEN] ouro hero-card {_hero_command_alias(hero)}",
+        ]
+    return _choice_card(title, body, width=width, tone="hero", art_lines=[])
+
+
+def _weapon_gallery_tags(build_shift: str, *, lang: str) -> str:
+    tags = _canvas_build_tags(build_shift)
+    if lang == "zh":
+        return "/".join(_display_build_tag(part, lang) for part in tags.replace("/", " ").split())
+    return tags
+
+
+def _weapon_gallery_ai_effect(hero_id: str, lang: str) -> str:
+    zh = {
+        "hero_shadow_apprentice": "优先打断与节奏技能",
+        "hero_ash_guardian": "先立盾，再接敌方预兆",
+        "hero_broken_string_hunter": "叠流血后处决低血量目标",
+        "hero_mire_oracle": "用毒与沉默打消耗",
+        "hero_gravewright": "先标记，再打机关爆发",
+        "hero_echo_exile": "保留回声护符应对重击",
+    }
+    en = {
+        "hero_shadow_apprentice": "interrupts + tempo skills",
+        "hero_ash_guardian": "braces before telegraphs",
+        "hero_broken_string_hunter": "bleed stack -> execute",
+        "hero_mire_oracle": "poison + silence attrition",
+        "hero_gravewright": "mark -> engine burst",
+        "hero_echo_exile": "echo wards for heavy turns",
+    }
+    table = zh if lang == "zh" else en
+    return table.get(hero_id, hero_weapon_card_art(hero_id).ai_effect)
+
+
+def _weapon_gallery_next_board(*, lang: str, width: int) -> list[str]:
+    if lang == "zh":
+        body = [
+            "[BUILD] ouro list-heroes --unicode",
+            "[DETAIL] ouro hero-card astia --unicode",
+            "[RUN] ouro run --mock --hero astia",
+        ]
+        return list(pixel_panel("下一步武器路线", body, width, tone="counter").lines)
+    body = [
+        "[BUILD] ouro list-heroes --unicode",
+        "[DETAIL] ouro hero-card astia --unicode",
+        "[RUN] ouro run --mock --hero astia",
+    ]
+    return list(pixel_panel("NEXT WEAPON ROUTE", body, width, tone="counter").lines)
 
 
 def _hero_default_prompt_style(hero_id: str) -> str:

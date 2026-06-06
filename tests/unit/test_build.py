@@ -268,7 +268,7 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "      ||" in text
     assert "      Build: [ONLINE] shadow/control" in text
     assert "      AI: AI favors interrupts and tempo skills." in text
-    assert "Next: compare weapon silhouettes, then open hero-card for full Build plan" in text
+    assert "Next: ouro weapons --unicode, then open hero-card for full Build plan" in text
     assert "[1] Astia [ONLINE] | Prompt control | Risk normal | shadow / control" in text
     assert "[2] Norn" in text
     assert "Prompt guarded" in text
@@ -288,6 +288,49 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "[HERO] [CNDL] ▄██▄" in unicode_text
     assert "[HERO]  ##@##" not in unicode_text
     for line in unicode_text.splitlines():
+        assert visual_width(line) <= 100
+
+
+def test_render_weapon_gallery_command_surface(bundle):
+    from ouro_agent.tui import render_weapon_gallery
+
+    text = render_weapon_gallery(bundle, language="en")
+    assert text.isascii()
+    assert "WEAPON GALLERY :: BUILD ARSENAL" in text
+    assert "Compare silhouettes, Build tags, and AI behavior" in text
+    assert "[1] [W:STF] c==* Astia" in text
+    assert "[2] [W:SHD] [#] Norn" in text
+    assert "[3] [W:XBW] ==> Vela" in text
+    assert "[OWNER] Astia / Shadow Apprentice" in text
+    assert "[STAGE] [ONLINE] shadow/control" in text
+    assert "[AI] interrupts + tempo skills" in text
+    assert "[OPEN] ouro hero-card astia" in text
+    assert "NEXT WEAPON ROUTE" in text
+    assert "[DETAIL] ouro hero-card astia --unicode" in text
+    assert "hero_shadow_apprentice" not in text
+    assert "item_" not in text
+    assert "skill_" not in text
+    for width in (80, 100, 120):
+        matrix = render_weapon_gallery(bundle, language="en", width=width)
+        assert "WEAPON GALLERY :: BUILD ARSENAL" in matrix
+        assert "[RUN] ouro run --mock --hero astia" in matrix
+        for line in matrix.splitlines():
+            assert visual_width(line) <= width
+
+    unicode_text = render_weapon_gallery(bundle, language="en", unicode_mode=True)
+    assert "░▓███░" in unicode_text
+    assert "████▸" in unicode_text
+
+    zh_text = render_weapon_gallery(bundle, language="zh", unicode_mode=True, width=100)
+    assert "武器图鉴 :: 构筑兵装" in zh_text
+    assert "先比较武器轮廓、Build 标签和 AI 行为" in zh_text
+    assert "[拥有] 阿斯缇娅 / 暗影学徒" in zh_text
+    assert "[阶段] [ONLINE] 暗影/控制" in zh_text
+    assert "[AI] 优先打断与节奏技能" in zh_text
+    assert "[打开] ouro hero-card astia" in zh_text
+    assert "下一步武器路线" in zh_text
+    assert "hero_shadow_apprentice" not in zh_text
+    for line in zh_text.splitlines():
         assert visual_width(line) <= 100
 
 

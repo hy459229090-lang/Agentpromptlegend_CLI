@@ -1,10 +1,18 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
+<p align="right">
+  <strong>Language Switch / 语言切换:</strong>
+  <a href="README.md#english-store-page">English</a> |
+  <a href="README.zh.md">中文</a> |
+  CLI: <code>ouro --lang en</code> / <code>ouro --lang zh</code>
+</p>
+
 <a id="storefront-hero"></a>
 
 ## Storefront Hero / 商店页封面
 
 <p align="center">
+  <strong>Build the Agent. Release the run. Watch the dungeon answer your Prompt.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <sub>Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
@@ -33,39 +41,8 @@
 | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
 
 **Playable offline now.** The mock provider runs a full guided demo with no
-network, no API key, and deterministic seeds. The best first impression is:
-build once, release the Agent, then read how the local judge explains every hit.
-
-<a id="english-store-page"></a>
-
-## English Store Page
-
-### You are the builder behind the Agent.
-
-**Ouro Agent: Prompt Legend** is a playable CLI AI roguelike about preparation,
-pressure, and readable failure. You do not click skills during combat. You build
-one hero Agent before the dungeon starts: hero, weapon, affixes, Build direction,
-Prompt style, and tactical bias. Then the run begins, and you watch whether that
-plan can survive the dungeon.
-
-The model chooses structured actions. The local engine validates targets,
-cooldowns, resources, damage, statuses, rewards, defeat, and victory. That
-boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
-
-| Storefront Snapshot / 游戏速览 | Current Promise |
-|--------------------------------|-----------------|
-| **Genre** | CLI roguelike / auto-battler / prompt-building game |
-| **Player Fantasy** | Build one Agent, release it, then watch it read pressure, miss windows, interrupt rituals, and grow through failure |
-| **Language / 语言** | README has Chinese and English pages; CLI 语言切换 uses `ouro --lang zh` or `ouro --lang en` |
-| **Playable State** | Mock provider is deterministic, offline, and ready without network or API keys |
-| **Combat Rule** | Model chooses action; local judge resolves legality, damage, rewards, defeat, and victory |
-| **Visual Target** | Graphical TUI with left hero vs right enemy, HP/MP/ATB, threat rails, projectile lane, floating FX, `Echo Cost / Read Echo / Spoken Echo / Ritual Time`, VOX/ENM barks, and Cinematic Beat |
-
-| Player Promise | What You Actually Do | Why It Feels Different |
-|----------------|----------------------|------------------------|
-| Build before the fight. Watch the Agent answer under pressure. | Pick one hero, weapon, affixes, Build tags, Prompt style, and tactical bias before combat. | The run tests your preparation instead of your reaction speed. |
-| See the fight, not a scroll of logs. | Watch a left-hero vs right-enemy battle canvas with HP/MP/ATB, intent, risk, model action, judge result, floating numbers, and battle barks. | CLI is treated as a low-resolution game screen, not a debug console. |
-| Let failure teach the next build. | Read battle reports, Codex progress, death history, status boards, replays, and batch balance reports. | Every mistake leaves a trace you can actually use in the next run. |
+network, no API key, and deterministic seeds. Build once, release the Agent,
+then read how the local judge explains every hit.
 
 <a id="screenshots-build-fight-learn"></a>
 
@@ -77,13 +54,19 @@ to reproduce the battle style. The SVG media lives in `examples/`.
 
 <table>
   <tr>
-    <td width="50%">
+    <td width="33%">
+      <img alt="Weapon gallery and Build arsenal" src="examples/ouro-weapon-gallery.svg">
+      <br><strong>Build / Weapon Gallery / 武器图鉴</strong><br>
+      Six weapons show silhouettes, Build tags, owner roles, AI behavior, and the next hero-card or run command before you commit to a run.<br>
+      <sub>Reproduce: <code>ouro weapons --unicode</code></sub>
+    </td>
+    <td width="33%">
       <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
       <br><strong>Fight / Graphical Battle Stage / 图形化战斗舞台</strong><br>
       Left hero vs right enemy, projectile lane, HP / MP / ATB / risk rail, floating FX, Prompt hit, Build state, and local judge in one terminal frame.<br>
       <sub>Reproduce: <code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
     </td>
-    <td width="50%">
+    <td width="33%">
       <img alt="After action report and Codex preview" src="examples/ouro-after-action.svg">
       <br><strong>Learn / After-Action Report / 战后复盘屏</strong><br>
       Victory is not one final line. The run remembers turn flow, counter windows, Codex research, death history, and the next build to try.<br>
@@ -129,6 +112,49 @@ BATTLE TURN MAP
   [READ] one hero hit created the swing
 ```
 </details>
+
+<a id="english-store-page"></a>
+
+## English Store Page
+
+### You are the builder behind the Agent.
+
+**Ouro Agent: Prompt Legend** is a playable CLI AI roguelike about preparation,
+pressure, and readable failure. You do not click skills during combat. You build
+one hero Agent before the dungeon starts: hero, weapon, affixes, Build direction,
+Prompt style, and tactical bias. Then the run begins, and you watch whether that
+plan can survive the dungeon.
+
+The model chooses structured actions. The local engine validates targets,
+cooldowns, resources, damage, statuses, rewards, defeat, and victory. That
+boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
+
+| Storefront Snapshot / 游戏速览 | Current Promise |
+|--------------------------------|-----------------|
+| **Genre** | CLI roguelike / auto-battler / prompt-building game |
+| **Player Fantasy** | Build one Agent, release it, then watch it read pressure, miss windows, interrupt rituals, and grow through failure |
+| **Language / 语言** | README has Chinese and English pages; CLI 语言切换 uses `ouro --lang zh` or `ouro --lang en` |
+| **Playable State** | Mock provider is deterministic, offline, and ready without network or API keys |
+| **Combat Rule** | Model chooses action; local judge resolves legality, damage, rewards, defeat, and victory |
+| **Visual Target** | Graphical TUI with left hero vs right enemy, HP/MP/ATB, threat rails, projectile lane, floating FX, `Echo Cost / Read Echo / Spoken Echo / Ritual Time`, VOX/ENM barks, and Cinematic Beat |
+
+| Player Promise | What You Actually Do | Why It Feels Different |
+|----------------|----------------------|------------------------|
+| Build before the fight. Watch the Agent answer under pressure. | Pick one hero, weapon, affixes, Build tags, Prompt style, and tactical bias before combat. | The run tests your preparation instead of your reaction speed. |
+| See the fight, not a scroll of logs. | Watch a left-hero vs right-enemy battle canvas with HP/MP/ATB, intent, risk, model action, judge result, floating numbers, and battle barks. | CLI is treated as a low-resolution game screen, not a debug console. |
+| Let failure teach the next build. | Read battle reports, Codex progress, death history, status boards, replays, and batch balance reports. | Every mistake leaves a trace you can actually use in the next run. |
+
+## About This Game
+
+This is not a chat wrapper with damage numbers. It is a local game loop where
+Prompt design becomes a build choice, model output becomes intent, and a
+deterministic judge keeps the dungeon honest.
+
+| Why click into it? | What proves it now? |
+|--------------------|---------------------|
+| **The AI can be wrong in interesting ways.** | Every battle prints model action, judge result, resources, risk, and recent log. |
+| **The TUI is treated as a game screen.** | Weapon gallery, battle canvas, Codex, status, run report, and death history render as card-like terminal boards. |
+| **The first run is frictionless.** | Mock mode is offline, deterministic, and works without API keys. |
 
 ## Core Loop / 每局你会做什么
 
@@ -202,18 +228,18 @@ Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后�
 | Guided first run | yes | `ouro demo --lang en --seed 1` |
 | Single AI battle | yes | `ouro play --mock` |
 | Full dungeon run with route, shop, rest, rewards, and boss | yes | `ouro run --mock` |
-| Hero cards and Build planning | yes | `ouro list-heroes` / `ouro hero-card hero_ash_guardian` |
+| Hero cards, weapon gallery, and Build planning | yes | `ouro list-heroes` / `ouro weapons --unicode` / `ouro hero-card hero_ash_guardian` |
 | Codex, status, death history, and run archives | yes | `ouro status --lang en` / `ouro codex --lang en` |
 | Local battle replay | yes | `ouro replay examples/traces/mvp_a_seed7_mock.trace.jsonl` |
 | Balance and batch reports | yes | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-370%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-373%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`370 tests passing`. No real network calls in any test.
+`373 tests passing`. No real network calls in any test.
 
 ---
 
@@ -229,6 +255,7 @@ ouro doctor --lang en --content-dir content
 ouro demo --lang en --seed 1                              # Guided first-player smoke
 ouro run --mock                                           # Continue from demo into a full run
 ouro list-heroes
+ouro weapons --unicode
 ouro hero-card hero_ash_guardian
 ouro play --mock --seed 1                                  # Single battle (Astia, Chinese default)
 ouro play --mock --seed 1 --hero hero_broken_string_hunter # Single battle (Vela)

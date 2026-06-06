@@ -110,7 +110,7 @@ def _ensure_utf8_stdout() -> None:
                 pass
 
 from ouro_agent.engine import resolve_build, run_batch
-from ouro_agent.tui.screens import render_hero_card, render_hero_list
+from ouro_agent.tui.screens import render_hero_card, render_hero_list, render_weapon_gallery
 
 DEFAULT_CONTENT_DIR = "content"
 DEFAULT_HERO_ID = "hero_shadow_apprentice"
@@ -482,6 +482,12 @@ def _build_parser() -> argparse.ArgumentParser:
     listh.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help=CONTENT_DIR_HELP)
     listh.add_argument("--unicode", action="store_true")
     listh.set_defaults(handler=_cmd_list_heroes)
+
+    # weapons
+    weapons = sub.add_parser("weapons", help="Show weapon gallery")
+    weapons.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help=CONTENT_DIR_HELP)
+    weapons.add_argument("--unicode", action="store_true")
+    weapons.set_defaults(handler=_cmd_weapons)
 
     # hero-card
     card = sub.add_parser("hero-card", help="Show a single hero detail card")
@@ -1172,6 +1178,15 @@ def _cmd_list_heroes(args: argparse.Namespace) -> int:
     unicode_mode = bool(args.unicode) or config.unicode_mode
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
     sys.stdout.write(render_hero_list(bundle, language=lang, unicode_mode=unicode_mode) + "\n")
+    return 0
+
+
+def _cmd_weapons(args: argparse.Namespace) -> int:
+    config = load_config()
+    lang = _resolve_lang(args, config)
+    unicode_mode = bool(args.unicode) or config.unicode_mode
+    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    sys.stdout.write(render_weapon_gallery(bundle, language=lang, unicode_mode=unicode_mode) + "\n")
     return 0
 
 

@@ -86,11 +86,11 @@ explicitly handled.
 
 Expected results:
 
-- `370 passed` or higher, matching README and QA note badges.
+- `373 passed` or higher, matching README and QA note badges.
 - Content validation shows heroes 6, skills 18, enemies 9, items 15, affixes 12, resonances 5.
 - The isolated doctor gate reports `provider chk : READY`, content OK, and mock play ready from a temporary `OURO_AGENT_HOME`.
 - Version consistency reports `Version consistency OK: 0.1.0 / v0.1.0`.
-- Evidence count consistency reports `Evidence counts OK: 370 tests collected; 247 release-bound text files.`
+- Evidence count consistency reports `Evidence counts OK: 373 tests collected; 247 release-bound text files.`
 - Scope boundary reports `Scope OK` from `venv312/bin/python scripts/release_scope.py` and is included in the default release check.
 - Staging review can use `venv312/bin/python scripts/release_scope.py --stage-plan`, which prints `RELEASE STAGE PLAN`, grouped `git add -- ...` commands, and `This script did not stage files.`
 - User acceptance review can use `venv312/bin/python scripts/acceptance_check.py` or the release-gate wrapper `venv312/bin/python scripts/release_check.py --acceptance-only`, which reports guided demo, isolated fixed-seed full run, and completion audit status without writing `SIGN-OFF: accepted`.

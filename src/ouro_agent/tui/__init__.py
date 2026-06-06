@@ -22,6 +22,7 @@ from ouro_agent.tui.screens import (
     render_run_archives,
     render_run_report,
     render_run_summary,
+    render_weapon_gallery,
 )
 from ouro_agent.tui.terminal import Terminal, get_terminal
 from ouro_agent.tui.frame_builder import BattleFrame, build_battle_frame
@@ -59,6 +60,7 @@ __all__ = [
     "render_run_archives",
     "render_run_report",
     "render_run_summary",
+    "render_weapon_gallery",
     "Terminal",
     "get_terminal",
 ]

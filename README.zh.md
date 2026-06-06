@@ -1,10 +1,18 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
+<p align="right">
+  <strong>语言切换 / Language:</strong>
+  <a href="README.zh.md">中文</a> |
+  <a href="README.md#english-store-page">English</a> |
+  CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+</p>
+
 <a id="storefront-hero"></a>
 
 ## 商店页封面 / Storefront Hero
 
 <p align="center">
+  <strong>先构筑 Agent，再放进地牢，看你的 Prompt 是否扛得住压力。</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
@@ -36,30 +44,6 @@
 也不需要真实模型。最好的第一印象是：先构筑一次，把 Agent 放进战斗，
 然后看本地裁判解释每一次命中、打断和失败。
 
-## 商店页速览
-
-**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是地下城里的剑士，
-而是战前调校 Agent 的构筑师：选择英雄、武器、词条、Build、Prompt 风格和战术偏好。
-开战后你不能救场，只能看它执行你的计划、暴露你的构筑缺陷，然后带着复盘回到下一局。
-
-模型只负责选择结构化行动；本地引擎负责校验目标、冷却、资源、伤害、状态、奖励、失败与胜利。
-这个边界就是玩法：Prompt 可以聪明，但地牢仍然有规则。
-
-| 游戏速览 / Storefront Snapshot | 当前承诺 |
-|--------------------------------|----------|
-| **类型** | CLI roguelike / auto-battler / prompt-building game |
-| **玩家幻想** | 构筑一个 Agent，把它放进压力局，看它读局、犯错、打断仪式，并从失败中成长 |
-| **语言切换 / Language** | README 有中英页面；CLI 语言切换使用 `ouro --lang zh` 或 `ouro --lang en` |
-| **试玩状态** | 默认 mock provider 可离线、可复现、无需网络和 API key |
-| **战斗规则** | 模型只选择行动；本地裁判负责合法性、伤害、奖励、失败和胜利 |
-| **画面目标** | 图形化 TUI：左英雄 vs 右敌人、HP/MP/ATB、风险条、弹道中轴、`Echo Cost / Read Echo / Spoken Echo / Ritual Time`、浮字、VOX/ENM 台词和分镜节奏 |
-
-| 玩家期待 | 你实际在做什么 | 它为什么不一样 |
-|----------|----------------|----------------|
-| 战前构筑，然后看 Agent 在压力下回答。 | 战前选择一个英雄、武器、词条、Build 标签、Prompt 风格和战术偏好。 | 游戏考验的是你的准备和 Prompt，而不是临场点技能速度。 |
-| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：HP/MP/ATB、意图、风险、模型行动、本地裁判、浮字和台词同屏出现。 | CLI 被当作低分辨率游戏画面使用，不只是调试控制台。 |
-| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史、状态页、回放和批量试跑结果，调整下一局构筑。 | 每个错误都会留下可复盘、可执行的下一步。 |
-
 <a id="screenshots-build-fight-learn"></a>
 
 ## 先看游戏画面：构筑、战斗、复盘 / Screenshots: Build, Fight, Learn
@@ -71,13 +55,19 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
 
 <table>
   <tr>
-    <td width="50%">
+    <td width="33%">
+      <img alt="武器图鉴和构筑兵装" src="examples/ouro-weapon-gallery.svg">
+      <br><strong>Build / 武器图鉴 / Weapon Gallery</strong><br>
+      六件武器同时展示轮廓、Build 标签、所属英雄、AI 行为和下一步 hero-card / run 命令，玩家能先比较再开局。<br>
+      <sub>复现：<code>ouro weapons --unicode</code></sub>
+    </td>
+    <td width="33%">
       <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
       <br><strong>Fight / 图形化战斗舞台 / Graphical Battle Stage</strong><br>
       左英雄 vs 右敌人，中间弹道和本地裁判同屏；HP / MP / ATB / 风险条、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。<br>
       <sub>复现：<code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
     </td>
-    <td width="50%">
+    <td width="33%">
       <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
       <br><strong>Learn / 战后复盘屏 / After-Action Report</strong><br>
       胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。<br>
@@ -123,6 +113,41 @@ BATTLE TURN MAP
   [READ] one hero hit created the swing
 ```
 </details>
+
+## 商店页速览
+
+**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是地下城里的剑士，
+而是战前调校 Agent 的构筑师：选择英雄、武器、词条、Build、Prompt 风格和战术偏好。
+开战后你不能救场，只能看它执行你的计划、暴露你的构筑缺陷，然后带着复盘回到下一局。
+
+模型只负责选择结构化行动；本地引擎负责校验目标、冷却、资源、伤害、状态、奖励、失败与胜利。
+这个边界就是玩法：Prompt 可以聪明，但地牢仍然有规则。
+
+| 游戏速览 / Storefront Snapshot | 当前承诺 |
+|--------------------------------|----------|
+| **类型** | CLI roguelike / auto-battler / prompt-building game |
+| **玩家幻想** | 构筑一个 Agent，把它放进压力局，看它读局、犯错、打断仪式，并从失败中成长 |
+| **语言切换 / Language** | README 有中英页面；CLI 语言切换使用 `ouro --lang zh` 或 `ouro --lang en` |
+| **试玩状态** | 默认 mock provider 可离线、可复现、无需网络和 API key |
+| **战斗规则** | 模型只选择行动；本地裁判负责合法性、伤害、奖励、失败和胜利 |
+| **画面目标** | 图形化 TUI：左英雄 vs 右敌人、HP/MP/ATB、风险条、弹道中轴、`Echo Cost / Read Echo / Spoken Echo / Ritual Time`、浮字、VOX/ENM 台词和分镜节奏 |
+
+| 玩家期待 | 你实际在做什么 | 它为什么不一样 |
+|----------|----------------|----------------|
+| 战前构筑，然后看 Agent 在压力下回答。 | 战前选择一个英雄、武器、词条、Build 标签、Prompt 风格和战术偏好。 | 游戏考验的是你的准备和 Prompt，而不是临场点技能速度。 |
+| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：HP/MP/ATB、意图、风险、模型行动、本地裁判、浮字和台词同屏出现。 | CLI 被当作低分辨率游戏画面使用，不只是调试控制台。 |
+| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史、状态页、回放和批量试跑结果，调整下一局构筑。 | 每个错误都会留下可复盘、可执行的下一步。 |
+
+## 关于这个游戏
+
+它不是“聊天接口加伤害数字”。Prompt 是构筑的一部分，模型输出是战术意图，
+本地裁判保证地牢规则不会被模型绕过。
+
+| 为什么值得点进来 | 现在有什么证据 |
+|------------------|----------------|
+| **AI 会以有趣的方式犯错。** | 每场战斗都显示模型行动、本地裁判、资源、风险和最近日志。 |
+| **TUI 被当作游戏画面。** | 武器图鉴、战斗 Canvas、图鉴、状态页、战报和死亡历史都用卡片化终端界面呈现。 |
+| **第一次试玩没有门槛。** | Mock 模式离线、可复现、无需 API key。 |
 
 ## 每局你会做什么
 
@@ -181,18 +206,18 @@ ouro history --lang zh --limit 5
 | 引导式首局试玩 | 可用 | `ouro demo --lang zh --seed 1` |
 | 单场 AI 战斗 | 可用 | `ouro play --mock` |
 | 完整副本：路线、商店、休息、奖励和 Boss | 可用 | `ouro run --mock` |
-| 英雄卡和 Build 配置 | 可用 | `ouro list-heroes` / `ouro hero-card hero_ash_guardian` |
+| 英雄卡、武器图鉴和 Build 配置 | 可用 | `ouro list-heroes` / `ouro weapons --unicode` / `ouro hero-card hero_ash_guardian` |
 | 图鉴、状态、死亡历史和运行归档 | 可用 | `ouro status --lang zh` / `ouro codex --lang zh` |
 | 本地战斗回放 | 可用 | `ouro replay examples/traces/mvp_a_seed7_mock.trace.jsonl` |
 | 批量试跑与数值报告 | 可用 | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-370%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-373%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`370 测试通过`。任何测试都不联网。
+`373 测试通过`。任何测试都不联网。
 
 ---
 
@@ -208,6 +233,7 @@ ouro doctor --lang zh --content-dir content
 ouro demo --lang zh --seed 1                              # 引导式首局试玩
 ouro run --mock                                           # 从 demo 继续进入完整运行
 ouro list-heroes
+ouro weapons --unicode
 ouro hero-card hero_ash_guardian
 ouro play --mock --seed 1                                  # 单场战斗（默认中文 / 阿斯缇娅）
 ouro play --mock --seed 1 --hero hero_broken_string_hunter # 单场战斗（薇拉）

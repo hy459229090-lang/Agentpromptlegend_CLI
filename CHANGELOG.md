@@ -31,15 +31,16 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - `scripts/completion_audit.py` summarizes release gates, scope, and external sign-offs so the broader goal is not marked complete while sign-offs remain pending.
 - `docs/engineering/LICENSE_DECISION_20260601.md` gives the project owner a pending License/private-policy decision template without selecting a License automatically.
 - `ouro list-heroes` now uses each hero's own ASCII/Unicode low-pixel silhouette and expands the weapon gallery into 3-line weapon card art; `ouro list-heroes --unicode` previews the block-art roster before opening a hero card.
-- README and README.zh now open like a game storefront: bilingual switch, strong playable hook, hero capsule art, 30-second mock CTA, media gallery, visual combat language, and engineering/provider details moved behind the player-facing pitch.
+- README and README.zh now open like a game storefront: bilingual switch, strong playable hook, hero capsule art, 30-second mock CTA, Build/Fight/Learn media gallery with weapon gallery art, visual combat language, and engineering/provider details moved behind the player-facing pitch.
 - Canvas battle sprites now render distinct block-art variants for shadow, fire, poison, holy, physical, observe, and cast poses; center effect lanes use stronger low-pixel tracks, and README battle media reflects the new visual grammar.
+- `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
 
 ### Validation
 
-- `venv312/bin/python -m pytest` -> `370 passed`
+- `venv312/bin/python -m pytest` -> `373 passed`
 - `venv312/bin/ouro validate-content` -> content OK
 - `git diff --check` -> no whitespace errors
-- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 370 tests collected; 247 release-bound text files.`
+- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 373 tests collected; 247 release-bound text files.`
 - `venv312/bin/python scripts/release_check.py --privacy-scan-only` -> no likely plaintext secrets
 - Clean venv install smoke: `/private/tmp/ouro_install_smoke_20260601/bin/python -m pip install .`
 - Installed CLI smoke from `/private/tmp`: `ouro --version`, `ouro doctor`, `ouro demo --seed 1`, `ouro play --mock --seed 1 --no-animation --no-trace`, `ouro codex`, `ouro runs --limit 1`, `ouro run-report`, `ouro history --limit 1`, and `ouro status`

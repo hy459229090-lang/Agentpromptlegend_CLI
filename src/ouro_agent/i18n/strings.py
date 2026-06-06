@@ -255,7 +255,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "menu_entry_play": {"en": "[1] New Run        ouro run --mock", "zh": "[1] 新运行          ouro run --mock"},
     "menu_entry_demo": {"en": "[2] Guided Demo    ouro demo --seed 1", "zh": "[2] 引导试玩        ouro demo --seed 1"},
     "menu_entry_quick_battle": {"en": "[3] Quick Battle   ouro play --mock --no-animation", "zh": "[3] 快速战斗        ouro play --mock --no-animation"},
-    "menu_entry_heroes": {"en": "[4] Hero Card      ouro list-heroes / ouro hero-card <hero_id>", "zh": "[4] 英雄卡片        ouro list-heroes / ouro hero-card <英雄ID>"},
+    "menu_entry_heroes": {"en": "[4] Hero/Weapon    ouro list-heroes / ouro weapons / ouro hero-card <hero>", "zh": "[4] 英雄/武器       ouro list-heroes / ouro weapons / ouro hero-card <英雄>"},
     "menu_entry_prompt": {"en": "[5] Prompt Style   ouro prompt-templates", "zh": "[5] 咒语风格        ouro prompt-templates"},
     "menu_entry_status": {"en": "[6] Status         ouro status", "zh": "[6] 状态总览        ouro status"},
     "menu_entry_codex": {"en": "[7] Codex          ouro codex", "zh": "[7] 图鉴            ouro codex"},

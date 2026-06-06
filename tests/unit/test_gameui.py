@@ -628,6 +628,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
         render_reward_choice,
         render_route_choice,
         render_shop,
+        render_weapon_gallery,
     )
 
     from ouro_agent.sessions import CodexProgress
@@ -658,6 +659,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
         "en": {
             "menu": (("mock-smart",), ("ouro.toml",), ("PLAYER JOURNEY BOARD",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("ouro run --mock",), ("Guided Demo",), ("ouro demo --seed 1",), ("Quick Battle",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("BUILD STAGE:",), ("Core Tags:",)),
+            "weapon": (("WEAPON GALLERY :: BUILD ARSENAL",), ("[W:STF] c==* Astia",), ("NEXT WEAPON ROUTE",)),
             "route": (("Cost:",), ("Reward:",), ("Build fit:",), ("Scout:",)),
             "reward": (("Build before/after:",), ("Tag delta:",), ("AI impact:",)),
             "shop": (("Restore MP to full",), ("Decision:",), ("Build before/after:",)),
@@ -686,6 +688,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
         "zh": {
             "menu": (("mock-smart",), ("ouro.toml",), ("玩家旅程",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("ouro run --mock",), ("引导试玩",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("构筑阶段:",), ("核心标签:",)),
+            "weapon": (("武器图鉴 :: 构筑兵装",), ("[W:STF] c==* 阿斯缇娅",), ("下一步武器路线",)),
             "route": (("消耗:",), ("收益:",), ("Build 适配:",), ("侦察:",)),
             "reward": (("Build 前后:",), ("标签变化:",), ("AI 影响:",)),
             "shop": (("MP 恢复至满",), ("决策:",), ("Build 前后:",)),
@@ -792,6 +795,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                     prompt_style="control",
                     width=width,
                 ),
+                "weapon": render_weapon_gallery(bundle, language=language, width=width),
                 "route": route,
                 "reward": reward,
                 "shop": shop,

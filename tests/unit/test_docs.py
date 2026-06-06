@@ -19,6 +19,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     examples_readme = (ROOT / "examples/README.md").read_text(encoding="utf-8")
     media_files = (
         "examples/ouro-readme-storefront.svg",
+        "examples/ouro-weapon-gallery.svg",
         "examples/ouro-battle-canvas.svg",
         "examples/ouro-after-action.svg",
     )
@@ -28,6 +29,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
 
     assert "Storefront Hero / 商店页封面" in text
     assert "商店页封面 / Storefront Hero" in zh_text
+    assert "Language Switch / 语言切换" in text
+    assert "语言切换 / Language" in zh_text
     assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
     assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
     assert "Model chooses. Local Judge decides." in text
@@ -62,6 +65,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "选择介绍页 / Choose Your Page" in zh_text
     assert "Hero Capsule" in text
     assert "首屏胶囊图" in zh_text
+    assert "Build / Weapon Gallery / 武器图鉴" in text
+    assert "Build / 武器图鉴 / Weapon Gallery" in zh_text
+    assert 'src="examples/ouro-weapon-gallery.svg"' in text
+    assert 'src="examples/ouro-weapon-gallery.svg"' in zh_text
     assert "Storefront Snapshot / 游戏速览" in text
     assert "游戏速览 / Storefront Snapshot" in zh_text
     assert "Language / 语言" in text
@@ -71,6 +78,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "Train one AI hero. Watch it survive your Prompt." in text
     assert "训练一个 AI 英雄，让它带着你的 Prompt 下地牢。" in zh_text
     assert "You are the builder behind the Agent." in text
+    assert "About This Game" in text
+    assert "关于这个游戏" in zh_text
     assert "商店页速览" in zh_text
     assert "See the fight, not a scroll of logs." in text
     assert "CLI is treated as a low-resolution game screen" in text
@@ -88,6 +97,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "Current Playable Content / 当前可玩内容" in text
     assert "当前可玩内容" in zh_text
     assert "Guided first run" in text
+    assert "Hero cards, weapon gallery, and Build planning" in text
+    assert "英雄卡、武器图鉴和 Build 配置" in zh_text
+    assert "ouro weapons --unicode" in text
+    assert "ouro weapons --unicode" in zh_text
     assert "完整副本：路线、商店、休息、奖励和 Boss" in zh_text
     assert "Recent Development" not in english_intro
     assert "近期开发" not in zh_intro
@@ -188,7 +201,7 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "370 passed" in changelog
+    assert "373 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
@@ -246,7 +259,7 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "370 passed" in audit
+    assert "373 passed" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
     assert "License 仍待决策" in audit
@@ -785,7 +798,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 370 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 373 tests collected; 247 release-bound text files." in (
         evidence_result.stdout
     )
 
