@@ -226,7 +226,7 @@ def test_battle_screen_uses_duel_layout_build_and_session(bundle):
         language="en",
     )
     assert "THE ECHO ALTAR" in screen
-    assert "[ ACTION ]" in screen
+    assert "[ ACTION LENS ]" in screen
     assert "[ BATTLE THESIS ]" in screen
     assert "[ ECHO READOUT ]" in screen
     assert "WEAPON [W:STF]" in screen
@@ -236,10 +236,12 @@ def test_battle_screen_uses_duel_layout_build_and_session(bundle):
     assert "Fresh Echo: be_snapshot_d" in screen
     assert "BUFF   : SHD shield" in screen
     assert "DEBUFF : CRP corrupt" in screen
-    assert "ACTION" in screen
-    assert "INTENT" in screen
-    assert "RISK" in screen
-    assert "ALIGN" in screen
+    assert "ACTION LENS" in screen
+    assert "SHOT" in screen
+    assert "JUDGE" in screen
+    assert "EVENT" in screen
+    assert "IMPACT" in screen
+    assert "DELTA" in screen
     assert any(effect in screen for effect in ("-- seal -->", "-- sting ->", "-- focus ->"))
     assert "CINEMATIC BEAT" in screen
     assert "VOX" in screen

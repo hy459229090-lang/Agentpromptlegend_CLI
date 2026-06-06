@@ -910,8 +910,9 @@ def test_weapon_icon_in_battle_screen(bundle):
     )
 
     assert "[W:STF]" in screen
-    assert "ACTION" in screen
-    assert "INTENT" in screen
+    assert "ACTION LENS" in screen
+    assert "SHOT" in screen
+    assert "JUDGE" in screen
 
 
 def test_build_badge_in_battle_screen(bundle):
@@ -950,7 +951,7 @@ def test_build_badge_in_battle_screen(bundle):
     )
 
     assert "[ONLINE]" in screen
-    assert "ALIGN" in screen
+    assert "ACTION LENS" in screen
 
 
 def test_dynamic_next_pick_in_battle_screen(bundle):

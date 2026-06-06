@@ -625,7 +625,8 @@ def test_unicode_battle_screen_draws_support_skill_payoff(bundle, width):
 
     assert "FOCUS SHD+8" in screen
     assert "SUPPORT SHD+8" in screen
-    assert "VALID SHD+8 MP42>42 INT:N" in screen
+    assert "JUDGE  VALID" in screen
+    assert "IMPACT  SHD+8 MP42>42 INT:N" in screen
     assert "DELTA MP42>42 I:N" in screen
     assert "Hex Seal is cooling down" in screen
     assert "CAST FOCUS SHD -MP0" in screen
@@ -1447,7 +1448,7 @@ def test_unicode_battle_screen_draws_enemy_stack_inside_canvas(bundle, width):
 @pytest.mark.parametrize("language", ["en", "zh"])
 @pytest.mark.parametrize("width", [80, 100, 120])
 def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, language, width):
-    """REQ-BEATFILM-001: evidence readout should present action, judge, and log as a film strip."""
+    """REQ-BEATFILM-001/REQ-BATTLECANVAS-002: evidence readout points to lens and beat panels."""
     from ouro_agent.tui.screens import render_battle_screen
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language=language), seed=1, language=language)
@@ -1464,26 +1465,33 @@ def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, languag
     )
 
     assert "MODEL TURN" in screen or "模型行动" in screen
-    assert "BEAT FILM" in screen or "战斗分镜" in screen
-    assert "[01 MODEL]" in screen or "[01 模型]" in screen
-    assert "[02 JUDGE]" in screen or "[02 裁判]" in screen
-    assert "[03 LOG]" in screen or "[03 战斗日志]" in screen
+    assert "CINEMATIC BEAT" in screen or "战斗分镜" in screen
+    assert "ACTION LENS" in screen or "行动镜头" in screen
+    assert "see ACTION LENS + CINEMATIC BEAT" in screen or "见行动镜头 + 战斗分镜" in screen
+    assert "[01 MODEL]" not in screen
+    assert "[02 JUDGE]" not in screen
+    assert "[03 LOG]" not in screen
+    assert "[01 模型]" not in screen
+    assert "[02 裁判]" not in screen
+    assert "[03 战斗日志]" not in screen
     assert "Hex Seal -> Hungry Cultist" in screen or "禁咒封印 -> 饥饿邪教徒" in screen
     if language == "zh":
-        assert "有效 命中-16 MP72>72 打断:是" in screen
+        assert "裁判  有效 | -16 HP" in screen
+        assert "影响  命中-16 MP72>72 打断:是" in screen
         assert "施放 HEX 命中-16" in screen
         assert "沉默 邪教徒" in screen
         assert "VALID HIT-16" not in screen
         assert "INT:Y" not in screen
         assert "SLN CULTIST" not in screen
     else:
-        assert "VALID HIT-16 MP72>72 INT:Y" in screen
+        assert "JUDGE  VALID | -16 HP" in screen
+        assert "IMPACT  HIT-16 MP72>72 INT:Y" in screen
         assert "CAST HEX HIT-16" in screen
         assert "SLN CULTIST" in screen
-    judge_lines = [line for line in screen.splitlines() if "[02 JUDGE]" in line or "[02 裁判]" in line]
+    judge_lines = [line for line in screen.splitlines() if "JUDGE" in line or "裁判" in line]
     assert judge_lines
     assert all("-16 HP | -16 HP" not in line and "next interrupt" not in line for line in judge_lines)
-    log_lines = [line for line in screen.splitlines() if "[03 LOG]" in line or "[03 战斗日志]" in line]
+    log_lines = [line for line in screen.splitlines() if "LOG" in line or "日志" in line]
     assert log_lines
     assert all("..." not in line for line in log_lines)
     for line in screen.splitlines():
@@ -1588,11 +1596,15 @@ def test_no_animation_seed7_frame_sequence_is_stable(bundle, language, width):
     for record, screen in captured:
         assert "ACTION" in screen or "行动" in screen
         if record.side == "hero":
-            assert "Judge:" in screen or "裁判:" in screen
-            assert "[01 MODEL]" in screen or "[01 模型]" in screen
+            assert "JUDGE" in screen or "裁判" in screen
+            assert "ACTION LENS" in screen or "行动镜头" in screen
+            assert "[01 MODEL]" not in screen
+            assert "[01 模型]" not in screen
         if record.side == "enemy":
-            assert "ENEMY TURN / BEAT FILM" in screen or "敌方行动 / 战斗分镜" in screen
-            assert "[01 ENEMY]" in screen or "[01 敌方]" in screen
+            assert "CINEMATIC BEAT" in screen or "战斗分镜" in screen
+            assert "MODEL TURN" in screen or "模型行动" in screen
+            assert "[01 ENEMY]" not in screen
+            assert "[01 敌方]" not in screen
             assert "LOCAL AI ->" not in screen
         for line in screen.splitlines():
             assert visual_width(line) <= width
@@ -1704,7 +1716,8 @@ def test_seed7_third_battle_action_result_is_readable(bundle, width):
     assert "Hex Seal -> Black Candle Priest" in screen
     assert "VALID" in screen
     assert "-19 HP" in screen
-    assert "Judge:" in screen
+    assert "JUDGE" in screen
+    assert "Judge:" not in screen
     assert "HP [######--] 73/100" in screen
     assert "MP [##----] 30/72" in screen
     assert "ATB" in screen
@@ -1806,6 +1819,64 @@ def test_cinematic_strip_uses_pixel_beat_tokens_without_text_chain(bundle):
     assert "... -> impact" not in combined
     for line in combined.splitlines():
         assert visual_width(line) <= 100
+
+
+@pytest.mark.parametrize(
+    ("language", "heading", "next_heading", "required", "forbidden"),
+    [
+        (
+            "en",
+            "ACTION LENS",
+            "CINEMATIC BEAT",
+            ("SHOT", "JUDGE", "EVENT", "IMPACT", "DELTA"),
+            ("INTENT", "RISK", "ALIGN"),
+        ),
+        (
+            "zh",
+            "行动镜头",
+            "战斗分镜",
+            ("镜头", "裁判", "事件", "影响", "变化"),
+            ("INTENT", "RISK", "ALIGN", "意图", "风险", "契合"),
+        ),
+    ],
+)
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_action_lens_dedupes_director_fields_in_battle_canvas(
+    bundle,
+    language,
+    heading,
+    next_heading,
+    required,
+    forbidden,
+    width,
+):
+    """REQ-BATTLECANVAS-002: Action Lens keeps outcome details without repeating director fields."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language=language), seed=1, language=language)
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.log.append("Astia casts Hex Seal for 16 damage.")
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language=language,
+        unicode_mode=True,
+        width=width,
+    )
+    lines = screen.splitlines()
+    start = next(idx for idx, line in enumerate(lines) if heading in line)
+    end = next(idx for idx, line in enumerate(lines[start + 1 :], start + 1) if next_heading in line)
+    panel = "\n".join(lines[start:end])
+
+    for token in required:
+        assert token in panel
+    for token in forbidden:
+        assert token not in panel
+    for line in lines:
+        assert visual_width(line) <= width
 
 
 def test_zh_unicode_battle_core_replaces_internal_short_codes(bundle):
@@ -1934,11 +2005,13 @@ def test_battle_screen_keeps_raw_model_reasoning_out_of_main_surface(bundle):
 
     assert "RAW_SECRET_MODEL_CHAIN_SHOULD_STAY_IN_TRACE" not in screen
     assert "Analysis:" not in screen
-    assert "INTENT" in screen
-    assert "RISK" in screen
-    assert "ALIGN" in screen
-    assert "Action:" in screen
-    assert "Judge:" in screen
+    assert "ACTION LENS" in screen
+    assert "SHOT" in screen
+    assert "JUDGE" in screen
+    assert "SHOT   Hex Seal -> Hungry Cultist" in screen
+    assert "JUDGE  VALID | -16 HP" in screen
+    assert "Action:" not in screen
+    assert "Judge:" not in screen
 
 
 def test_battle_assets_registry_serves_pose_sprites():

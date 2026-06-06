@@ -75,7 +75,8 @@ def test_battle_screen_zh_contains_chinese_labels(bundle):
     assert "英雄" in screen
     assert "敌人" in screen
     assert "模型行动" in screen
-    assert "战斗日志" in screen
+    assert "战斗分镜" in screen
+    assert "日志" in screen
     assert "阿斯缇娅" in screen
 
 

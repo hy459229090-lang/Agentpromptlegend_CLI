@@ -2661,10 +2661,9 @@ def _render_action_focus_panel(
     width: int,
     lang: str,
 ) -> list[str]:
-    action_title = "ACTION" if lang == "en" else "行动"
-    intent_title = "INTENT" if lang == "en" else "意图"
-    risk_title = "RISK" if lang == "en" else "风险"
-    align_title = "ALIGN" if lang == "en" else "契合"
+    action_title = "ACTION LENS" if lang == "en" else "行动镜头"
+    shot_title = "SHOT" if lang == "en" else "镜头"
+    judge_title = "JUDGE" if lang == "en" else "裁判"
     impact_title = "IMPACT" if lang == "en" else "影响"
     delta_title = "DELTA" if lang == "en" else "变化"
     banner_title = "EVENT" if lang == "en" else "事件"
@@ -2672,10 +2671,8 @@ def _render_action_focus_panel(
     max_text = max(24, width - 10)
 
     lines = [
-        f"{fit_text(_director_text(frame.action_label + ' | ' + frame.judge_label, lang), max_text)}",
-        f"{intent_title}  {fit_text(_director_text(frame.intent, lang), max_text)}",
-        f"{risk_title}    {fit_text(_director_text(frame.risk, lang), max_text)}",
-        f"{align_title}   {fit_text(_director_text(frame.align, lang), max_text)}",
+        f"{shot_title}   {fit_text(_director_text(frame.action_label, lang), max_text)}",
+        f"{judge_title}  {fit_text(_canvas_judge_label(frame.judge_label, lang=lang), max_text)}",
     ]
     if frame.boss_intel:
         boss_title = "BOSS" if lang == "en" else "首领"
@@ -2688,6 +2685,8 @@ def _render_action_focus_panel(
                 f"{enrage_title} {fit_text(_director_text(frame.boss_intel.enrage, lang), max_text)}",
             ]
         )
+    if frame.event_banner:
+        lines.append(f"{banner_title}   {_event_banner_display(frame.event_banner, lang)}")
     if frame.impact_line:
         impact = _canvas_impact_label(frame.impact_line, lang=lang)
         lines.append(f"{impact_title}  {fit_text(_director_text(impact, lang), max_text)}")
@@ -2706,8 +2705,6 @@ def _render_action_focus_panel(
                 lines.append(f"{counter_title} {fit_text(counter_clock, max_text)}")
     if frame.counter_hint:
         lines.append(f"{counter_title} {fit_text(_director_text(frame.counter_hint, lang), max_text)}")
-    if frame.event_banner:
-        lines.append(f"{banner_title}   {_event_banner_display(frame.event_banner, lang)}")
     return list(pixel_panel(action_title, [fit_text(line, max_text) for line in lines], width, tone=_frame_tone(frame)).lines)
 
 
@@ -3264,92 +3261,14 @@ def _render_evidence_panel(
         else "[选择] [起势] [通道] [命中] [裁判]"
     )
     body.append(f"{action_strip_word}  {strip}")
-    body.extend(_render_battle_film_lines(state, record, frame=frame, lang=lang))
+    if lang == "zh":
+        turn_text = "见行动镜头 + 战斗分镜" if record is not None else "等待第一回合"
+        body.append(f"{label('model_turn', lang)}  {turn_text}")
+    else:
+        turn_text = "see ACTION LENS + CINEMATIC BEAT" if record is not None else "waiting for first turn"
+        body.append(f"{label('model_turn', lang)}  {turn_text}")
     title = "ECHO READOUT" if lang == "en" else "回声读数"
     return list(pixel_panel(title, [fit_text(line, width - 4) for line in body], width, tone="quiet").lines)
-
-
-def _render_battle_film_lines(
-    state: BattleState,
-    record: TurnRecord | None,
-    *,
-    frame: BattleFrame,
-    lang: str,
-) -> list[str]:
-    if lang == "zh":
-        if record is not None and record.side == "enemy":
-            header = "敌方行动 / 战斗分镜"
-        else:
-            header = f"{label('model_turn', lang)} / 战斗分镜"
-        model_label = "模型"
-        enemy_label = "敌方"
-        judge_label = "裁判"
-        log_label = label("log", lang)
-        no_log = label("no_events", lang)
-    else:
-        if record is not None and record.side == "enemy":
-            header = "ENEMY TURN / BEAT FILM"
-        else:
-            header = f"{label('model_turn', lang)} / BEAT FILM"
-        model_label = "MODEL"
-        enemy_label = "ENEMY"
-        judge_label = "JUDGE"
-        log_label = label("log", lang)
-        no_log = label("no_events", lang)
-
-    actor_label = model_label
-    if record is None:
-        model_text = label("awaiting", lang)
-    elif record.side == "enemy":
-        actor_label = enemy_label
-        model_text = _battle_film_enemy_action_text(record, frame, lang=lang)
-    else:
-        model_text = _director_text(frame.action_label, lang)
-
-    judge_text = _battle_film_judge_text(frame, lang=lang)
-    latest_log = _battle_film_log_text(state.log[-2:], no_log=no_log, lang=lang)
-
-    return [
-        header,
-        f"[01 {actor_label}] {label('action_label', lang)}: {model_text}",
-        f"[02 {judge_label}] {label('judge_label', lang)}: {judge_text}",
-        f"[03 {log_label}] {latest_log}",
-    ]
-
-
-def _battle_film_enemy_action_text(record: TurnRecord, frame: BattleFrame, *, lang: str) -> str:
-    text = _director_text(frame.action_label, lang)
-    if lang == "zh":
-        return text
-    action_type = str((record.enemy_action or {}).get("type", ""))
-    suffixes = {
-        "basic_attack": "STRIKE",
-        "attack": "STRIKE",
-        "chant_charge": "CHARGE",
-        "chant_release": "RELEASE",
-        "silenced": "SILENCED",
-    }
-    suffix = suffixes.get(action_type)
-    if suffix:
-        base = text.rsplit(" ", 1)[0] if text.endswith(f" {action_type}") else text
-        return f"{base} {suffix}"
-    return text
-
-
-def _battle_film_log_text(logs: list[str], *, no_log: str, lang: str = "en") -> str:
-    if not logs:
-        return no_log
-    return " / ".join(_compact_battle_log_event(log, lang=lang) for log in logs)
-
-
-def _battle_film_judge_text(frame: BattleFrame, *, lang: str) -> str:
-    status = frame.judge_label.split("|", 1)[0].strip()
-    status = _director_text(status, lang)
-    if not frame.impact_line:
-        return status
-    impact = _canvas_impact_label(frame.impact_line, lang=lang)
-    return f"{status} {impact}".strip()
-
 
 def _compact_battle_log_event(log: str, *, lang: str = "en") -> str:
     text = " ".join(log.split())
