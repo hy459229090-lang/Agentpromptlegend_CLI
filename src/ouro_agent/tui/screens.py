@@ -179,6 +179,7 @@ def render_battle_screen(
             frame=frame,
             width=width,
             lang=lang,
+            unicode_mode=unicode_mode,
         )
     )
     lines.extend(
@@ -2717,6 +2718,7 @@ def _render_cinematic_beat_panel(
     frame: BattleFrame,
     width: int,
     lang: str,
+    unicode_mode: bool,
 ) -> list[str]:
     title = "CINEMATIC BEAT" if lang == "en" else "战斗分镜"
     max_text = max(24, width - 10)
@@ -2734,7 +2736,7 @@ def _render_cinematic_beat_panel(
     )
     enm_raw = _select_enemy_line(state, last_record, frame, lang=lang, width=max_text)
     float_raw = _build_cinematic_float(frame, width=max_text, lang=lang)
-    strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text)
+    strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text, unicode_mode=unicode_mode)
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
 
     vox_label = "VOX" if lang == "en" else "声"
@@ -2806,25 +2808,87 @@ def _build_cinematic_strip(
     *,
     lang: str,
     width: int,
+    unicode_mode: bool = False,
 ) -> str:
-    windup = "windup" if lang == "en" else "起势"
-    lane = frame.effect_glyph or frame.effect_kind or "lane"
-    if lang == "zh" and lane == "lane":
-        lane = "通道"
-    elif lang == "zh":
-        lane = _zh_effect_lane(lane)
+    windup = "WIND" if lang == "en" else "起势"
+    lane = _cinematic_lane_token(frame.effect_glyph or frame.effect_kind, lang=lang)
     impact = (
         _canvas_impact_label(frame.impact_line, lang=lang)
         if frame.impact_line
-        else ("impact" if lang == "en" else "命中")
+        else ""
     )
-    judge = frame.judge_label.split("|", 1)[0].strip() if frame.judge_label else ("WAIT" if lang == "en" else "等待")
-    if lang == "zh":
-        judge = _director_text(judge, lang)
-        impact = _director_text(impact, lang)
+    impact_token = _cinematic_impact_token(impact, lang=lang)
+    judge = _cinematic_judge_token(frame.judge_label, lang=lang)
 
-    strip = f"{windup} -> {lane} -> {_director_text(impact, lang)} -> {_director_text(judge, lang)}"
-    return fit_text(_fit_visual(strip, width), width)
+    if unicode_mode:
+        chips = (
+            f"[{windup}]",
+            f"░{lane}░",
+            f"▓{impact_token}▓",
+            f"█{judge}█",
+        )
+    else:
+        chips = (
+            f"[{windup}]",
+            f"[{lane}]",
+            f"[{impact_token}]",
+            f"[{judge}]",
+        )
+    strip = " ".join(chips)
+    return fit_text(strip, width, ellipsis="")
+
+
+def _cinematic_lane_token(lane: str | None, *, lang: str) -> str:
+    if not lane:
+        return "LANE" if lang == "en" else "通道"
+    if lang == "zh":
+        text = _zh_effect_lane(lane)
+        if "封印" in text:
+            return "封印"
+        if "沉默" in text:
+            return "沉默"
+        if "破防" in text:
+            return "破防"
+        if "窗口" in text:
+            return "窗口"
+        compact = re.sub(r"[\-_=<>|/\\]+", " ", text).strip()
+        return " ".join(compact.split()[:2]) or "通道"
+    text = _director_text(lane, lang).upper()
+    if "SEAL" in text:
+        return "SEAL LANE"
+    if "STING" in text:
+        return "STING"
+    if "FOCUS" in text:
+        return "FOCUS"
+    compact = re.sub(r"[^A-Z0-9]+", " ", text).strip()
+    words = compact.split()
+    if not words:
+        return "LANE"
+    return " ".join(words[:2])
+
+
+def _cinematic_impact_token(impact: str, *, lang: str) -> str:
+    if not impact:
+        return "IMPACT" if lang == "en" else "命中"
+    hit = re.search(r"HIT-([0-9]+)", impact)
+    if hit:
+        return f"HIT -{hit.group(1)}" if lang == "en" else f"命中 -{hit.group(1)}"
+    zh_hit = re.search(r"命中-([0-9]+)", impact)
+    if zh_hit:
+        return f"命中 -{zh_hit.group(1)}"
+    shield = re.search(r"SHD\s+([0-9]+)", impact, flags=re.IGNORECASE)
+    if shield:
+        return f"SHD {shield.group(1)}" if lang == "en" else f"护盾 {shield.group(1)}"
+    translated = _director_text(impact, lang)
+    compact = " ".join(translated.split())
+    return fit_text(compact, 12 if lang == "en" else 10, ellipsis="")
+
+
+def _cinematic_judge_token(judge_label: str, *, lang: str) -> str:
+    judge = judge_label.split("|", 1)[0].strip() if judge_label else "WAIT"
+    if lang == "zh":
+        return _director_text(judge, lang)
+    return (judge or "WAIT").upper()
 
 
 def _zh_effect_lane(lane: str) -> str:
@@ -3195,9 +3259,9 @@ def _render_evidence_panel(
     session = _render_session_panel(record, provider_label=provider_label, lang=lang)
     body.extend(session[1:])
     strip = (
-        "select -> windup -> effect lane -> impact -> judge"
+        "[SELECT] [WIND] [LANE] [IMPACT] [JUDGE]"
         if lang == "en"
-        else "选择 -> 起势 -> 效果通道 -> 命中 -> 裁判"
+        else "[选择] [起势] [通道] [命中] [裁判]"
     )
     body.append(f"{action_strip_word}  {strip}")
     body.extend(_render_battle_film_lines(state, record, frame=frame, lang=lang))

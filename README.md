@@ -10,10 +10,10 @@
     <th colspan="4">Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
-    <td align="center"><a href="README.zh.md"><strong>中文完整介绍</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
-    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>Gameplay pitch first</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Screenshots / 游戏画面</strong><br><sub>Real TUI Captures</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub>Mock, offline, no API key</sub></a></td>
+    <td align="center"><a href="README.zh.md"><strong>中文</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>游戏画面</strong><br><sub>Real TUI Captures</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
 </table>
 
@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <strong>Playable offline now.</strong> No network, no API key, no real model required for the first run.
+  <strong>Playable offline now.</strong> Install, run the mock demo, and watch a full AI battle without network access or API keys.
 </p>
 
 <a id="english-store-page"></a>
@@ -31,33 +31,30 @@
 
 ### You are the builder behind the Agent.
 
-**Ouro Agent: Prompt Legend** is a playable command-line AI roguelike. You are
-not clicking skills mid-fight. You prepare one hero Agent before the dungeon
-starts: hero, equipment, affixes, Build direction, Prompt style, and tactical
-bias. Then you release it into battle and watch whether your plan survives.
+**Ouro Agent: Prompt Legend** is a playable CLI AI roguelike about preparation,
+pressure, and readable failure. You do not click skills during combat. You build
+one hero Agent before the dungeon starts: hero, weapon, affixes, Build direction,
+Prompt style, and tactical bias. Then the run begins, and you watch whether that
+plan can survive the dungeon.
 
-The model chooses structured actions. The local engine validates resources,
-targets, cooldowns, damage, statuses, rewards, defeat, and victory. That boundary
-is the game: your Prompt can be clever, but the dungeon still has rules.
+The model chooses structured actions. The local engine validates targets,
+cooldowns, resources, damage, statuses, rewards, defeat, and victory. That
+boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
+
+| Storefront Snapshot / 游戏速览 | Current Promise |
+|--------------------------------|-----------------|
+| **Genre** | CLI roguelike / auto-battler / prompt-building game |
+| **Player Fantasy** | Build one Agent, release it, then watch it read pressure, miss windows, interrupt rituals, and grow through failure |
+| **Language / 语言** | README has Chinese and English pages; CLI 语言切换 uses `ouro --lang zh` or `ouro --lang en` |
+| **Playable State** | Mock provider is deterministic, offline, and ready without network or API keys |
+| **Combat Rule** | Model chooses action; local judge resolves legality, damage, rewards, defeat, and victory |
+| **Visual Target** | Graphical TUI with low-resolution stage, actor sprites, weapon cards, projectile lane, floating damage, VOX/ENM barks, and cinematic beat |
 
 | Player Promise | What You Actually Do | Why It Feels Different |
 |----------------|----------------------|------------------------|
-| Train the Prompt, then watch the dungeon answer. | Choose one hero, equipment, affixes, Build direction, Prompt style, and tactical bias before combat. | The model chooses structured actions; the local engine owns legality, damage, rewards, defeat, and victory. |
-| See the fight, not a scroll of logs. | Watch a left-hero vs right-enemy TUI stage with sprites, projectile lane, VOX/ENM battle barks, HP/MP/ATB, intent, judge result, and floating numbers. | CLI is the medium, not the ceiling: the screen is framed as a low-resolution terminal battle canvas. |
-| Turn every failure into the next build. | Read the battle report, Codex progress, death history, status dashboard, replay, and balance reports. | Mock mode works offline with no API key; real providers stay optional and never decide damage or victory. |
-
-<table>
-  <tr>
-    <td><strong>Genre</strong><br>CLI roguelike / auto-battler / prompt-building game</td>
-    <td><strong>Player Fantasy</strong><br>Train one Agent, then watch it read pressure, miss windows, interrupt rituals, and grow through failure</td>
-    <td><strong>Playable Now</strong><br>Mock provider is offline, deterministic, and does not need network or API keys</td>
-  </tr>
-  <tr>
-    <td><strong>Combat Rule</strong><br>Model chooses action; local judge resolves the battle</td>
-    <td><strong>Visual Target</strong><br>Graphical TUI, low-resolution Canvas, actor sprites, projectile lane, floating damage, cinematic beat</td>
-    <td><strong>Current State</strong><br>MVP release candidate: installable, playable, replayable, and bilingual</td>
-  </tr>
-</table>
+| Build before the fight. Watch the Agent answer under pressure. | Pick one hero, weapon, affixes, Build tags, Prompt style, and tactical bias before combat. | The run tests your preparation instead of your reaction speed. |
+| See the fight, not a scroll of logs. | Watch a left-hero vs right-enemy battle canvas with HP/MP/ATB, intent, risk, model action, judge result, floating numbers, and battle barks. | CLI is treated as a low-resolution game screen, not a debug console. |
+| Let failure teach the next build. | Read battle reports, Codex progress, death history, status boards, replays, and batch balance reports. | Every mistake leaves a trace you can actually use in the next run. |
 
 <a id="screenshots-build-fight-learn"></a>
 
@@ -67,11 +64,14 @@ Screenshots below are captured from reproducible CLI output, not concept art.
 Run `ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
 to reproduce the battle style. The SVG media lives in `examples/`.
 
-1. **Run Ready Board** - your Agent's Prompt, Build stage, tags, next pick, and first rule.
-2. **Battle Stage** - the model chooses an action; the local judge resolves the impact.
-3. **After-Action Report** - tempo, mistakes, Codex progress, and next-run commands stay visible.
-
 <table>
+  <tr>
+    <td colspan="2">
+      <img alt="Ouro Agent storefront capsule with hero, judge, and battle stage" src="examples/ouro-readme-storefront.svg">
+      <br><strong>Hero Capsule / 首屏胶囊图</strong><br>
+      The whole pitch in one frame: one trained Agent, one local judge, and a dungeon that answers the Prompt.
+    </td>
+  </tr>
   <tr>
     <td width="50%">
       <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
@@ -85,6 +85,12 @@ to reproduce the battle style. The SVG media lives in `examples/`.
     </td>
   </tr>
 </table>
+
+The first playable loop is meant to read like a compact game journey:
+
+1. **RUN READY BOARD** - your Agent's Prompt, Build stage, tags, next pick, and first rule.
+2. **THE ECHO ALTAR / COUNTER WINDOW** - the model chooses an action; the local judge resolves the impact.
+3. **BATTLE RESULT BOARD** - tempo, mistakes, Codex progress, and next-run commands stay visible.
 
 <details>
 <summary>Reproducible CLI Capture / 可复现终端片段</summary>
@@ -105,7 +111,7 @@ HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
 CINEMATIC BEAT
   VOX There. The wick forgets its prayer.
   FLOAT -16 HP | SLN
-  STRIP windup -> --x seal -- -> HIT-16 MP72>54 INT:N -> VALID
+  STRIP [WIND] ░SEAL LANE░ ▓HIT -16▓ █VALID█
 
 BATTLE RESULT BOARD
   [RESULT] victory | HP 85/100 | MP 0/72
@@ -120,7 +126,7 @@ BATTLE TURN MAP
 
 ## Core Loop / 每局你会做什么
 
-1. **Prepare the Agent** - choose the hero, equipment, affixes, Prompt style, and tactical bias.
+1. **Prepare the Agent** - choose the hero, weapon, affixes, Prompt style, and tactical bias.
 2. **Release it into battle** - combat is automatic; the model picks a structured action.
 3. **Watch the local judge** - legality, damage, statuses, resources, drops, defeat, and victory are resolved locally.
 4. **Read the scars, rebuild smarter** - Codex progress, death history, replay, and run reports tell you what to change next.
@@ -136,6 +142,8 @@ BATTLE TURN MAP
 <a id="play-now"></a>
 
 ## Play Now: No Network, No API Key / 立即试玩
+
+One command gets you from install to a guided first run:
 
 ```bash
 pip install -e .
@@ -173,7 +181,7 @@ ouro history --lang en --limit 5
 ## 中文简介
 
 **暗影代理：祷文传说** 是一款黑暗终端风格的 AI 肉鸽。你战前训练一个英雄
-Agent，把 Prompt、装备、词条和 Build 方向交给它；战斗开始后你不能救场，
+Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后你不能救场，
 只能看它执行你的计划、暴露你的构筑缺陷，然后带着复盘回到下一局。
 
 模型只负责选择结构化行动；本地引擎负责校验行动、结算伤害、状态、胜负、奖励和长期存档。
@@ -194,12 +202,12 @@ Agent，把 Prompt、装备、词条和 Build 方向交给它；战斗开始后�
 | Balance and batch reports | yes | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-362%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-363%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`362 tests passing`. No real network calls in any test.
+`363 tests passing`. No real network calls in any test.
 
 ---
 

@@ -1758,6 +1758,56 @@ def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundl
         assert visual_width(line) <= 100
 
 
+def test_cinematic_strip_uses_pixel_beat_tokens_without_text_chain(bundle):
+    """REQ-CINESTRIP-001: Cinematic Beat strip should look like a beat lane, not a text chain."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.log.append("Astia casts Hex Seal for 16 damage.")
+
+    unicode_screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        unicode_mode=True,
+        width=100,
+    )
+    ascii_screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        unicode_mode=False,
+        width=100,
+    )
+    zh_screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        unicode_mode=True,
+        width=100,
+    )
+
+    assert "STRIP [WIND] ░SEAL LANE░ ▓HIT -16▓ █VALID█" in unicode_screen
+    assert "STRIP [WIND] [SEAL LANE] [HIT -16] [VALID]" in ascii_screen
+    assert ascii_screen.isascii()
+    assert "节奏 [起势] ░封印░ ▓命中 -16▓ █有效█" in zh_screen
+    assert "STRIP" not in zh_screen
+
+    combined = "\n".join((unicode_screen, ascii_screen, zh_screen))
+    assert "STRIP windup" not in combined
+    assert "windup ->" not in combined
+    assert "... -> impact" not in combined
+    for line in combined.splitlines():
+        assert visual_width(line) <= 100
+
+
 def test_zh_unicode_battle_core_replaces_internal_short_codes(bundle):
     """REQ-ZHCOMBATCODES-001: Chinese combat UI should not read like debug tokens."""
     from ouro_agent.tui.screens import render_battle_screen
@@ -1798,7 +1848,7 @@ def test_zh_unicode_battle_core_replaces_internal_short_codes(bundle):
     assert "状态 护盾7" in screen
     assert "状态 沉默1 腐化2" in screen
     assert "施法 切断" in cast_screen
-    assert "行动流程  选择 -> 起势 -> 效果通道 -> 命中 -> 裁判" in screen
+    assert "行动流程  [选择] [起势] [通道] [命中] [裁判]" in screen
 
     core_text = "\n".join(
         line

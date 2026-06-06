@@ -28,9 +28,14 @@ def test_readme_covers_install_mock_provider_and_privacy():
 
     assert "完整中文文档 / Full Chinese README" in text
     assert "English Store Page" in text
+    assert "game first, docs later" in text
     assert "双语首页 / Bilingual README" in zh_text
     assert "Choose Your Page / 选择介绍页" in text
     assert "选择介绍页 / Choose Your Page" in zh_text
+    assert "Hero Capsule" in text
+    assert "首屏胶囊图" in zh_text
+    assert "Storefront Snapshot / 游戏速览" in text
+    assert "游戏速览 / Storefront Snapshot" in zh_text
     assert "Language / 语言" in text
     assert "语言切换 / Language" in zh_text
     assert "CLI 语言切换" in text
@@ -40,7 +45,11 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "You are the builder behind the Agent." in text
     assert "商店页速览" in zh_text
     assert "See the fight, not a scroll of logs." in text
+    assert "CLI is treated as a low-resolution game screen" in text
+    assert "CLI 被当作低分辨率游戏画面使用" in zh_text
     assert "Visual Target" in text
+    assert "Playable State" in text
+    assert "试玩状态" in zh_text
     assert "Core Loop / 每局你会做什么" in text
     assert "每局你会做什么" in zh_text
     assert "Why It Plays / Key Features / 为什么它值得试玩" in text
@@ -70,6 +79,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "After-Action Report" in text
     assert "战后复盘屏" in zh_text
     assert "Play Now" in text
+    assert "One command gets you from install to a guided first run" in text
+    assert "一条命令从安装进入引导式首局" in zh_text
     for media_file in media_files:
         assert media_file in text
         assert media_file in zh_text
@@ -77,6 +88,15 @@ def test_readme_covers_install_mock_provider_and_privacy():
         assert "<svg" in (ROOT / media_file).read_text(encoding="utf-8")
     assert "CINEMATIC BEAT" in battle_media
     assert "FLOAT -16 HP | SLN" in battle_media
+    assert "STRIP [WIND]" in text
+    assert "STRIP [WIND]" in zh_text
+    assert "STRIP [WIND]" in battle_media
+    assert "STRIP windup" not in text
+    assert "STRIP windup" not in zh_text
+    assert "STRIP windup" not in battle_media
+    assert "windup ->" not in text
+    assert "windup ->" not in zh_text
+    assert "windup -&gt;" not in battle_media
     assert "README media captures" in examples_readme
     assert "storefront-friendly" in examples_readme
     assert "RUN READY BOARD" in text
@@ -137,7 +157,7 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "362 passed" in changelog
+    assert "363 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
@@ -195,7 +215,7 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "362 passed" in audit
+    assert "363 passed" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
     assert "License 仍待决策" in audit
@@ -734,7 +754,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 362 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 363 tests collected; 247 release-bound text files." in (
         evidence_result.stdout
     )
 
