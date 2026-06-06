@@ -264,7 +264,10 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Prompt guarded" in text
     assert "[3] Vela" in text
     assert "Prompt aggressive" in text
-    assert "Next: ouro hero-card <hero_id> --prompt-style <name>" in text
+    assert "Next: ouro hero-card 1 --prompt-style control, or ouro hero-card astia" in text
+    assert "Open: ouro hero-card 1" in text
+    assert "hero_shadow_apprentice" not in text
+    assert "<hero_id>" not in text
 
 
 def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
@@ -295,7 +298,7 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "[BUILD] [ONLINE] Online / Black Candle Interrupt" in text
     assert "[CORE] shadow / control" in text
     assert "[OPENER] open by denying chant windows" in text
-    assert "[RUN] ouro run --mock --hero hero_shadow_apprentice --prompt-style control" in text
+    assert "[RUN] ouro run --mock --hero astia --prompt-style control" in text
     assert "Corruption School" in text
     assert "skill_shadow_sting" not in text
     assert "skill_hex_seal" not in text
@@ -351,7 +354,8 @@ def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
         assert "ACTION KIT BOARD" in text
         assert text.count("ACTION KIT BOARD") == 1
         assert "[PROMPT] hero default / agent behavior" in text
-        assert f"[RUN] ouro run --mock --hero {hero_id}" in text
+        assert "[RUN] ouro run --mock --hero" in text
+        assert "[RUN] ouro run --mock --hero hero_" not in text
         assert "AI Bias:" in text
         assert "MP " in text
         assert "cd " in text

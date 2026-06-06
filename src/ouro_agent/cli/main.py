@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import sys
 import textwrap
@@ -119,6 +120,7 @@ CONTENT_DIR_HELP = (
     "installed content)"
 )
 ABORT_EXIT_CODE = 130
+HERO_PICK_EXIT_CODE = 2
 
 
 class CliAbort(RuntimeError):
@@ -131,6 +133,91 @@ def _read_input(prompt: str) -> str:
     except (KeyboardInterrupt, EOFError) as err:
         sys.stderr.write("\nAborted.\n")
         raise CliAbort() from err
+
+
+def _normalize_hero_ref(value: str) -> str:
+    return re.sub(r"[\s_\-\[\]()/]+", "", value).casefold()
+
+
+def _hero_public_alias(hero) -> str:
+    name = hero.display_name.get("en")
+    first = name.split()[0] if name else hero.id
+    alias = re.sub(r"[^A-Za-z0-9]+", "", first).lower()
+    return alias or hero.id
+
+
+def _resolve_hero_ref(bundle, raw_ref: str) -> str | None:
+    ref = (raw_ref or "").strip()
+    if not ref:
+        return None
+    heroes = list(bundle.heroes.values())
+    if ref in bundle.heroes:
+        return ref
+    if ref.isdigit():
+        idx = int(ref) - 1
+        if 0 <= idx < len(heroes):
+            return heroes[idx].id
+
+    wanted = _normalize_hero_ref(ref)
+    aliases: dict[str, str] = {}
+    for idx, hero in enumerate(heroes, start=1):
+        values = {
+            str(idx),
+            hero.id,
+            _hero_public_alias(hero),
+            hero.short_tag.strip("[]"),
+            hero.display_name.get("en"),
+            hero.display_name.get("zh"),
+            hero.class_name.get("en"),
+            hero.class_name.get("zh"),
+        }
+        for value in values:
+            if value:
+                aliases[_normalize_hero_ref(value)] = hero.id
+    return aliases.get(wanted)
+
+
+def _write_hero_pick_error(raw_ref: str, bundle, lang: str) -> None:
+    if lang == "zh":
+        lines = [
+            "英雄选择错误",
+            f"未识别英雄: {raw_ref}",
+            "可用英雄:",
+        ]
+        for idx, hero in enumerate(bundle.heroes.values(), start=1):
+            lines.append(
+                f"  [{idx}] {hero.display_name.get('zh')} / {_hero_public_alias(hero)} {hero.short_tag}"
+            )
+        lines.extend(
+            [
+                "下一步: ouro list-heroes",
+                "示例: ouro hero-card 1 | ouro run --mock --hero astia",
+            ]
+        )
+    else:
+        lines = [
+            "HERO PICK ERROR",
+            f"Unknown hero: {raw_ref}",
+            "Available heroes:",
+        ]
+        for idx, hero in enumerate(bundle.heroes.values(), start=1):
+            lines.append(
+                f"  [{idx}] {_hero_public_alias(hero)} / {hero.display_name.get('en')} {hero.short_tag}"
+            )
+        lines.extend(
+            [
+                "Next: ouro list-heroes",
+                "Example: ouro hero-card 1 | ouro run --mock --hero astia",
+            ]
+        )
+    sys.stderr.write("\n".join(lines) + "\n")
+
+
+def _resolve_cli_hero_id(bundle, raw_ref: str, lang: str) -> str | None:
+    hero_id = _resolve_hero_ref(bundle, raw_ref)
+    if hero_id is None:
+        _write_hero_pick_error(raw_ref, bundle, lang)
+    return hero_id
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -312,7 +399,7 @@ def _build_parser() -> argparse.ArgumentParser:
     demo.add_argument(
         "--hero",
         default=DEFAULT_HERO_ID,
-        help="Hero id to showcase (see 'ouro list-heroes')",
+        help="Hero number, name, tag, or id to showcase (see 'ouro list-heroes')",
     )
     demo.add_argument(
         "--content-dir",
@@ -370,7 +457,7 @@ def _build_parser() -> argparse.ArgumentParser:
     play.add_argument(
         "--hero",
         default=None,
-        help="Hero id to use (see 'ouro list-heroes')",
+        help="Hero number, name, tag, or id to use (see 'ouro list-heroes')",
     )
     play.add_argument(
         "--content-dir",
@@ -397,7 +484,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # hero-card
     card = sub.add_parser("hero-card", help="Show a single hero detail card")
-    card.add_argument("hero_id")
+    card.add_argument("hero_id", help="Hero number, name, tag, or id")
     card.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help=CONTENT_DIR_HELP)
     card.add_argument("--prompt-style", choices=supported_prompt_styles(), default=None)
     card.add_argument("--unicode", action="store_true")
@@ -510,7 +597,7 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--hero",
         default=None,
-        help="Hero id to use (see 'ouro list-heroes')",
+        help="Hero number, name, tag, or id to use (see 'ouro list-heroes')",
     )
     run.add_argument(
         "--dungeon",
@@ -569,7 +656,7 @@ def _build_parser() -> argparse.ArgumentParser:
     batch.add_argument(
         "--hero",
         default=DEFAULT_HERO_ID,
-        help="Hero id to use (see 'ouro list-heroes')",
+        help="Hero number, name, tag, or id to use (see 'ouro list-heroes')",
     )
     batch.add_argument(
         "--enemies",
@@ -659,7 +746,9 @@ def _cmd_demo(args: argparse.Namespace) -> int:
         unicode_mode=bool(args.unicode) or saved_config.unicode_mode,
         language=lang,
     )
-    hero_id = args.hero or DEFAULT_HERO_ID
+    hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
+    if hero_id is None:
+        return HERO_PICK_EXIT_CODE
     hero = bundle.get_hero(hero_id)
     build = resolve_build(hero, bundle)
 
@@ -1089,7 +1178,10 @@ def _cmd_hero_card(args: argparse.Namespace) -> int:
     lang = _resolve_lang(args, config)
     unicode_mode = bool(args.unicode) or config.unicode_mode
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
-    hero = bundle.get_hero(args.hero_id)
+    hero_id = _resolve_cli_hero_id(bundle, args.hero_id, lang)
+    if hero_id is None:
+        return HERO_PICK_EXIT_CODE
+    hero = bundle.get_hero(hero_id)
     build = resolve_build(hero, bundle)
     sys.stdout.write(
         render_hero_card(
@@ -1277,16 +1369,16 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def _prompt_hero_choice(bundle, lang: str) -> str:
-    heroes = list(bundle.heroes.values())
-    prompt = "Choose hero number or id" if lang == "en" else "选择英雄编号或 ID"
+    prompt = (
+        "Choose hero number/name/tag"
+        if lang == "en"
+        else "选择英雄编号/名字/标签"
+    )
     while True:
         raw = _read_input(f"\n{prompt}: ")
-        if raw.isdigit():
-            idx = int(raw) - 1
-            if 0 <= idx < len(heroes):
-                return heroes[idx].id
-        if raw in bundle.heroes:
-            return raw
+        hero_id = _resolve_hero_ref(bundle, raw)
+        if hero_id is not None:
+            return hero_id
         sys.stderr.write(
             ("Invalid hero. Try again.\n" if lang == "en" else "英雄无效，请重新输入。\n")
         )
@@ -1319,7 +1411,9 @@ def _cmd_batch(args: argparse.Namespace) -> int:
     lang = _resolve_lang(args, config)
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
 
-    hero_id = args.hero or DEFAULT_HERO_ID
+    hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
+    if hero_id is None:
+        return HERO_PICK_EXIT_CODE
     enemy_ids = list(args.enemies) or DEFAULT_ENEMY_IDS
     hero_name = bundle.get_hero(hero_id).display_name.get(lang)
     enemy_names = [
@@ -1373,7 +1467,9 @@ def _cmd_play(args: argparse.Namespace) -> int:
 
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
     codex_progress = load_codex_progress()
-    hero_id = args.hero or DEFAULT_HERO_ID
+    hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
+    if hero_id is None:
+        return HERO_PICK_EXIT_CODE
     hero_data = bundle.get_hero(hero_id)
     build = resolve_build(hero_data, bundle)
     prompt_override = apply_prompt_style(
@@ -1669,7 +1765,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
     codex_progress = load_codex_progress()
-    hero_id = args.hero or DEFAULT_HERO_ID
+    hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
+    if hero_id is None:
+        return HERO_PICK_EXIT_CODE
     dungeon_id = args.dungeon or "dungeon_ember_crypt"
 
     # Validate dungeon exists

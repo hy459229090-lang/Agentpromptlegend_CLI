@@ -5367,9 +5367,9 @@ def render_hero_list(
 ) -> str:
     lang = language
     prompt = (
-        "Enter a number to choose; use 'ouro hero-card <id>' for full details."
+        "Enter a number to choose; use 'ouro hero-card 1' or 'ouro hero-card astia'."
         if lang == "en"
-        else "输入编号选择；用 ouro hero-card <id> 查看完整详情。"
+        else "输入编号选择；用 ouro hero-card 1 或 ouro hero-card astia 查看详情。"
     )
     lines: list[str] = [label("hero_list_title", lang), prompt]
     lines.append("")
@@ -5406,7 +5406,6 @@ def render_hero_list(
                 weapon=weapon,
                 risk=label(f"hero_card_risk_{risk}", lang) or risk,
                 tags=tags,
-                hero_id=hero.id,
                 description=desc,
                 lang=lang,
             )
@@ -5451,9 +5450,9 @@ def _render_hero_roster_board(bundle: ContentBundle, *, lang: str) -> list[str]:
             )
         lines.append(fit_text(line, 96))
     next_line = (
-        "Next: ouro hero-card <hero_id> --prompt-style <name>"
+        "Next: ouro hero-card 1 --prompt-style control, or ouro hero-card astia"
         if lang == "en"
-        else "下一步: ouro hero-card <英雄ID> --prompt-style <name>"
+        else "下一步: ouro hero-card 1 --prompt-style control，或 ouro hero-card astia"
     )
     lines.append(next_line)
     return lines
@@ -5505,6 +5504,13 @@ def _hero_default_prompt_style(hero_id: str) -> str:
     }.get(hero_id, "guarded")
 
 
+def _hero_command_alias(hero: HeroData) -> str:
+    name = hero.display_name.get("en") or hero.id
+    first = name.split()[0] if name else hero.id
+    alias = re.sub(r"[^A-Za-z0-9]+", "", first).lower()
+    return alias or hero.id
+
+
 def _hero_select_card(
     *,
     idx: int,
@@ -5516,7 +5522,6 @@ def _hero_select_card(
     weapon: str,
     risk: str,
     tags: str,
-    hero_id: str,
     description: str,
     lang: str,
 ) -> list[str]:
@@ -5526,7 +5531,7 @@ def _hero_select_card(
         subtitle,
         f"{label('hero_card_build', lang)}: {build_name}  {label('hero_card_weapon', lang)}: {weapon}",
         f"{label('hero_card_risk', lang)}: {risk}  {label('hero_card_tags', lang)}: {tags}",
-        hero_id,
+        f"Open: ouro hero-card {idx}" if lang == "en" else f"打开: ouro hero-card {idx}",
     ]
     return _choice_card(header, body, width=39, tone="hero")
 
@@ -5644,7 +5649,7 @@ def _render_hero_loadout_board(
     risk = build.risk_level()
     stage = f"{progress.stage.badge} {progress.stage_name}"
     opener = _hero_loadout_opener(hero.id, prompt_style=prompt_style, lang=lang)
-    command = f"ouro run --mock --hero {hero.id}"
+    command = f"ouro run --mock --hero {_hero_command_alias(hero)}"
     if prompt_style:
         command += f" --prompt-style {prompt_style}"
 

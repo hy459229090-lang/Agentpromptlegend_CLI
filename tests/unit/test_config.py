@@ -315,6 +315,57 @@ def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
     assert "Trace :" not in out
 
 
+def test_cli_hero_entry_accepts_player_refs_and_reports_errors(
+    isolated_home,
+    content_root,
+    capsys,
+):
+    rc = main(["--lang", "en", "hero-card", "1", "--content-dir", str(content_root)])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "HERO CARD :: Astia [CNDL]" in out
+    assert "[RUN] ouro run --mock --hero astia" in out
+    assert "hero_shadow_apprentice" not in out
+
+    rc = main(["--lang", "zh", "hero-card", "阿斯缇娅", "--content-dir", str(content_root)])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "英雄详情 :: 阿斯缇娅 [CNDL]" in out
+    assert "[RUN] ouro run --mock --hero astia" in out
+
+    rc = main(["--lang", "en", "hero-card", "foo", "--content-dir", str(content_root)])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "HERO PICK ERROR" in captured.err
+    assert "Unknown hero: foo" in captured.err
+    assert "[1] astia / Astia [CNDL]" in captured.err
+    assert "Example: ouro hero-card 1 | ouro run --mock --hero astia" in captured.err
+    assert "Traceback" not in captured.err + captured.out
+    assert "SchemaError" not in captured.err + captured.out
+
+    rc = main(
+        [
+            "--lang",
+            "zh",
+            "run",
+            "--mock",
+            "--auto",
+            "--hero",
+            "foo",
+            "--no-animation",
+            "--no-trace",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "英雄选择错误" in captured.err
+    assert "未识别英雄: foo" in captured.err
+    assert "示例: ouro hero-card 1 | ouro run --mock --hero astia" in captured.err
+    assert "Traceback" not in captured.err + captured.out
+
+
 @pytest.mark.parametrize(
     "command",
     [
