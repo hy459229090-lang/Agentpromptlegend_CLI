@@ -8,6 +8,7 @@ import pytest
 from ouro_agent.content import load_content_bundle
 from ouro_agent.engine import resolve_build
 from ouro_agent.engine.battle import BattleLoop
+from ouro_agent.i18n import visual_width
 from ouro_agent.providers.mock import MockProvider
 
 
@@ -289,6 +290,15 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "Build Before -> After: [ONLINE] shadow/control" in text
     assert "AI Effect: AI favors interrupts and tempo skills." in text
     assert "HERO LOADOUT BOARD" in text
+    assert "BUILD MAP BOARD" in text
+    assert "  Weapon: [W:STF] c==* Cracked Wand [common] tags shadow" in text
+    assert "  Affix : Corrupted Focus [shadow, corruption] + Candle Smoke [shadow, control]" in text
+    assert "  Link  : [R] Corruption School <- shadow 5/3" in text
+    assert "  Core  : [ONLINE] Online | shadow [###] 5/3 | control [##-] 2/3" in text
+    assert "  Skill Plan:" in text
+    assert "    [HEX] Hex Seal MP18 CD4 -> core/shadow/control | seal chant windows" in text
+    assert "  AI Bias: prompt control + Black Candle Interrupt -> open by denying chant windows" in text
+    assert "  Best next: guard +2 for Iron Legion | armor +2 for Iron Legion" in text
     assert "ACTION KIT BOARD" in text
     assert text.count("ACTION KIT BOARD") == 1
     assert "[STG] Shadow Sting MP 12, cd 2 | Pos DAMAGE | Use convert MP to pressure | Build core/shadow" in text
@@ -307,6 +317,20 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "AI Bias:" in text
     assert "Prompt Template: control" in text
     assert "interrupt high-ATB" in text
+    assert "skill_" not in text
+    assert "item_" not in text
+    assert "affix_" not in text
+    assert "resonance_" not in text
+
+    attrition_text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        prompt_style="attrition",
+    )
+    assert "  AI Bias: prompt attrition + Black Candle Interrupt -> set damage over time early" in attrition_text
+    assert "  AI Bias: prompt control + Black Candle Interrupt -> open by denying chant windows" not in attrition_text
 
     zh_text = render_hero_card(
         astia,
@@ -315,6 +339,12 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
         language="zh",
         prompt_style="control",
     )
+    assert "BUILD MAP BOARD :: 构筑关系图" in zh_text
+    assert "  武器    : [W:STF] c==* 裂痕短杖 [普通] 标签 暗影" in zh_text
+    assert "  连接    : [R] 腐化学派 <- 暗影 5/3" in zh_text
+    assert "  技能计划:" in zh_text
+    assert "    [HEX] 禁咒封印 蓝量18 冷却4 -> 核心/暗影/控制 | 封住吟唱窗口" in zh_text
+    assert "  AI倾向: Prompt control + 黑烛打断 -> 先控吟唱窗口" in zh_text
     assert "ACTION KIT BOARD :: 技能行动套件" in zh_text
     assert "Build 关系 核心/shadow/control" in zh_text
     assert "封住吟唱窗口" in zh_text
@@ -359,6 +389,13 @@ def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
         assert "AI Bias:" in text
         assert "MP " in text
         assert "cd " in text
+        assert "BUILD MAP BOARD" in text
+
+        for width in (80, 100, 120):
+            matrix_text = render_hero_card(hero, bundle, build, language="en", width=width)
+            assert "BUILD MAP BOARD" in matrix_text
+            for line in matrix_text.splitlines():
+                assert visual_width(line) <= width
 
 
 def test_build_progress_calculates_stage_for_astia(bundle):

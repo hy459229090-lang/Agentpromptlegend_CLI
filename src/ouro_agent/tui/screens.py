@@ -5605,6 +5605,19 @@ def render_hero_card(
     )
     lines.append("")
 
+    lines.extend(
+        _render_build_map_board(
+            hero,
+            bundle,
+            build,
+            progress,
+            prompt_style=prompt_style,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
+
     lines.extend(_render_build_progress_panel(progress, hero.id, bundle, lang))
     lines.append("")
 
@@ -5672,6 +5685,192 @@ def _render_hero_loadout_board(
         f"  [OPENER] {opener}",
         f"  [RUN] {command}",
     ]
+
+
+def _render_build_map_board(
+    hero: HeroData,
+    bundle: ContentBundle,
+    build: ResolvedBuild,
+    progress: BuildProgress,
+    *,
+    prompt_style: str | None,
+    lang: str,
+    width: int,
+) -> list[str]:
+    max_width = max(60, width)
+    title = "BUILD MAP BOARD" if lang == "en" else "BUILD MAP BOARD :: 构筑关系图"
+    lines = [title]
+
+    weapon_icon, _badge = _hero_card_icons(hero.id)
+    primary = build.items[0] if build.items else None
+    if primary is not None:
+        tag_label = "tags" if lang == "en" else "标签"
+        weapon = (
+            f"{weapon_icon} {primary.display_name.get(lang)} "
+            f"[{_format_tier_label(primary.tier, lang)}] "
+            f"{tag_label} {_format_tag_list(primary.tags, lang)}"
+        )
+    else:
+        weapon = f"{weapon_icon} {_format_tag_list(tuple(build.tags[:3]), lang)}"
+    lines.append(_fit_build_map_line(f"  {_build_map_label('weapon', lang):6}: {weapon}", max_width))
+
+    affix_text = _build_map_affix_text(build, lang)
+    lines.append(_fit_build_map_line(f"  {_build_map_label('affix', lang):6}: {affix_text}", max_width))
+
+    lines.append(_fit_build_map_line(f"  {_build_map_label('link', lang):6}: {_build_map_resonance_link(progress, build, bundle, lang)}", max_width))
+    lines.append(_fit_build_map_line(f"  {_build_map_label('core', lang):6}: {_build_map_core_line(hero, progress, lang)}", max_width))
+
+    lines.append(f"  {_build_map_label('skill_plan', lang)}:")
+    for skill in [bundle.get_skill(sid) for sid in hero.skills[:3]]:
+        code = _canvas_skill_code(skill)
+        relation = _build_map_relation_text(skill, build, hero, lang)
+        purpose = _action_kit_purpose(skill, lang)
+        if lang == "zh":
+            skill_line = (
+                f"    [{code}] {skill.display_name.get(lang)} 蓝量{skill.mp_cost} "
+                f"冷却{skill.cooldown} -> {relation} | {purpose}"
+            )
+        else:
+            skill_line = (
+                f"    [{code}] {skill.display_name.get(lang)} MP{skill.mp_cost} "
+                f"CD{skill.cooldown} -> {relation} | {purpose}"
+            )
+        lines.append(_fit_build_map_line(skill_line, max_width))
+
+    bias = _build_map_ai_bias(hero, build, prompt_style=prompt_style, lang=lang)
+    lines.append(_fit_build_map_line(f"  {_build_map_label('ai_bias', lang)}: {bias}", max_width))
+    next_line = _build_map_next_line(progress, lang)
+    if next_line:
+        lines.append(_fit_build_map_line(f"  {_build_map_label('best_next', lang)}: {next_line}", max_width))
+    return lines
+
+
+def _build_map_label(key: str, lang: str) -> str:
+    if lang == "zh":
+        return {
+            "weapon": "武器",
+            "affix": "词条",
+            "link": "连接",
+            "core": "核心",
+            "skill_plan": "技能计划",
+            "ai_bias": "AI倾向",
+            "best_next": "下次选择",
+        }.get(key, key)
+    return {
+        "weapon": "Weapon",
+        "affix": "Affix",
+        "link": "Link",
+        "core": "Core",
+        "skill_plan": "Skill Plan",
+        "ai_bias": "AI Bias",
+        "best_next": "Best next",
+    }.get(key, key)
+
+
+def _fit_build_map_line(text: str, width: int) -> str:
+    if visual_width(text) <= width:
+        return text
+    result = ""
+    for ch in text:
+        if visual_width(result + ch + "...") > width:
+            break
+        result += ch
+    return result.rstrip() + "..."
+
+
+def _build_map_affix_text(build: ResolvedBuild, lang: str) -> str:
+    if not build.affixes:
+        return label("hero_card_none", lang)
+    parts: list[str] = []
+    for affix in build.affixes[:3]:
+        tags = _format_tag_list(affix.tags, lang) or "-"
+        parts.append(f"{affix.display_name.get(lang)} [{tags}]")
+    return " + ".join(parts)
+
+
+def _build_map_resonance_link(
+    progress: BuildProgress,
+    build: ResolvedBuild,
+    bundle: ContentBundle,
+    lang: str,
+) -> str:
+    counts = build.tag_counts()
+    if progress.active_resonances:
+        res_id = progress.active_resonances[0]
+        res = bundle.resonances.get(res_id)
+        if res is not None:
+            req = ", ".join(
+                f"{_display_build_tag(tag, lang)} {counts.get(tag, 0)}/{need}"
+                for tag, need in res.required_tag_counts.items()
+            )
+            return f"[R] {res.display_name.get(lang)} <- {req}"
+
+    if progress.near_resonances:
+        near = progress.near_resonances[0]
+        name = near["display_name"].get(lang) or near["display_name"].get("en", "")
+        req = ", ".join(
+            f"{_display_build_tag(miss['tag'], lang)} {miss['have']}/{miss['need']}"
+            for miss in near["missing"]
+        )
+        return f"[ ] {name} <- {req}"
+    return "[ ] no resonance link" if lang == "en" else "[ ] 暂无羁绊连接"
+
+
+def _build_map_core_line(hero: HeroData, progress: BuildProgress, lang: str) -> str:
+    parts: list[str] = []
+    for tag in HERO_CORE_TAGS.get(hero.id, ())[:3]:
+        count = progress.core_tags.get(tag, 0)
+        filled = min(count, 3)
+        bar_str = "[" + "#" * filled + "-" * (3 - filled) + "]"
+        parts.append(f"{_display_build_tag(tag, lang)} {bar_str} {count}/3")
+    stage = _build_stage_display(progress.stage, progress.stage_name, lang=lang)
+    return f"{progress.stage.badge} {stage} | " + " | ".join(parts)
+
+
+def _build_map_ai_bias(
+    hero: HeroData,
+    build: ResolvedBuild,
+    *,
+    prompt_style: str | None,
+    lang: str,
+) -> str:
+    style = prompt_style or ("hero default" if lang == "en" else "英雄默认")
+    opener = _hero_loadout_opener(hero.id, prompt_style=prompt_style, lang=lang)
+    if lang == "zh":
+        return f"Prompt {style} + {build.archetype(lang)} -> {opener}"
+    return f"prompt {style} + {build.archetype(lang)} -> {opener}"
+
+
+def _build_map_next_line(progress: BuildProgress, lang: str) -> str:
+    seen: set[str] = set()
+    parts: list[str] = []
+    for pick in progress.best_next_picks:
+        tag = pick["tag"]
+        if tag in seen:
+            continue
+        seen.add(tag)
+        res_name = pick["resonance_name"].get(lang) or pick["resonance_name"].get("en", "")
+        joiner = " for " if lang == "en" else " 对应 "
+        parts.append(f"{_display_build_tag(tag, lang)} +{pick['need']}{joiner}{res_name}")
+        if len(parts) >= 2:
+            break
+    return " | ".join(parts)
+
+
+def _build_map_relation_text(
+    skill,
+    build: ResolvedBuild,
+    hero: HeroData,
+    lang: str,
+) -> str:
+    relation = _action_kit_build_relation(skill, build, hero, lang)
+    if lang != "zh":
+        return relation
+    parts = relation.split("/")
+    return "/".join(
+        part if part in {"核心", "支援", "非构筑"} else _display_build_tag(part, lang)
+        for part in parts
+    )
 
 
 def _hero_loadout_opener(hero_id: str, *, prompt_style: str | None, lang: str) -> str:
