@@ -218,7 +218,9 @@ def test_unicode_battle_screen_uses_canvas_block_stage(bundle):
     )
 
     assert "THE ECHO ALTAR" in screen
-    assert "GRAPHICAL TUI" in screen
+    assert "STAGE [ALTAR]" in screen
+    assert "GRAPHICAL TUI" not in screen
+    assert "ASCII fallback" not in screen
     assert "▄██▄" in screen
     assert "SELECT" in screen
     assert "IMPACT" in screen
@@ -260,7 +262,9 @@ def test_unicode_battle_screen_optional_color_keeps_canvas_width(bundle, monkeyp
     stripped = strip_ansi(colored)
     assert "\x1b[" not in plain
     assert "\x1b[" in colored
-    assert "GRAPHICAL TUI" in stripped
+    assert "STAGE [ALTAR]" in stripped
+    assert "GRAPHICAL TUI" not in stripped
+    assert "ASCII fallback" not in stripped
     assert "SELECT" in stripped
     assert "HIT -16 HP SLN" in stripped
     for line in stripped.splitlines():
@@ -296,7 +300,9 @@ def test_unicode_battle_screen_canvas_width_matrix(bundle, width):
         unicode_mode=True,
     )
 
-    assert "GRAPHICAL TUI" in screen
+    assert "STAGE [ALTAR]" in screen
+    assert "GRAPHICAL TUI" not in screen
+    assert "ASCII fallback" not in screen
     assert "SELECT" in screen
     assert "IMPACT" in screen
     assert "HIT -16 HP SLN" in screen
@@ -1757,6 +1763,7 @@ def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundl
     assert "浮字" in screen
     assert "节奏" in screen
     assert "日志" in screen
+    assert "舞台 [祭坛]" in screen
 
     assert "MOMENTUM BOARD" not in screen
     assert "[FLOW]" not in screen
@@ -1767,6 +1774,8 @@ def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundl
     assert "CINEMATIC BEAT" not in screen
     assert "FLOAT none" not in screen
     assert "STRIP windup" not in screen
+    assert "图形化 TUI" not in screen
+    assert "ASCII 兼容输出" not in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100
 

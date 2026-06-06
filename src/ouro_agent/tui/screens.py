@@ -608,9 +608,9 @@ def _render_canvas_duel_panel(
     if frame.boss_intel:
         rendered.append(fit_text(_boss_intel_summary(frame, lang), width))
     if lang == "zh":
-        rendered.append(fit_text("图形化 TUI: 终端低分辨率 Canvas / ASCII 兼容输出", width))
+        rendered.append(fit_text("舞台 [祭坛] 灰烛压住战线 | 回声通道待发", width))
     else:
-        rendered.append(fit_text("GRAPHICAL TUI: low-resolution terminal Canvas / ASCII fallback remains available", width))
+        rendered.append(fit_text("STAGE [ALTAR] ash candles frame the duel | echo lane armed", width))
     return rendered
 
 
