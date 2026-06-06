@@ -104,19 +104,70 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "low": [" ~(k)~", " /|w|\\", "  / \\", " flame dim"],
         "death": ["   .", "  /_\\", " wick ash", ""],
     },
+    "C": {
+        "idle": ["  [C]", " /|>|", " /|\\", " torn banner"],
+        "attack": ["  [C]--", " /|>|", " /|\\", " banner hook"],
+        "skill": [" = [C]", " /|>|", " /|\\", " hunger rite"],
+        "hit": ["  [X]", " /|>!", " /|\\", " banner split"],
+        "break": ["  [X]!", " /|>", " /|", " rite broken"],
+        "low": ["  [C]", " /|>", " /", " banner low"],
+        "death": ["  .", " /_\\", " torn cloth", ""],
+    },
+    "K": {
+        "idle": [" ((K))", " /|w|\\", " / ^ \\", " rite ring"],
+        "attack": [" ((K)--", " /|w|\\", " / ^ \\", " black lash"],
+        "skill": ["((K*))", " /|w|\\", " / ^ \\", " wick rite"],
+        "hit": [" ((K))", " /|w|!", " / ^", " ring bent"],
+        "break": [" ((X))", " /|x|!", " /", " rite cut"],
+        "low": [" ((K))", " /|w|", " /", " ring dim"],
+        "death": ["  . .", "  /_\\", " ring ash", ""],
+    },
+    "B": {
+        "idle": [" <BOSS>", " /|W|\\", " /###\\", " archive flame"],
+        "attack": [" <BOSS--", " /|W|\\", " /###\\", " crozier smash"],
+        "skill": [" <B*SS>", " /|W|\\", " /###\\", " archive chant"],
+        "hit": [" <BOSS>", " /|W|!", " /##", " seal cracks"],
+        "break": [" <BRK>", " /|x|!", " /#", " archive break"],
+        "low": [" <BOSS>", " /|W|", " /#", " phase gutter"],
+        "death": ["  .#.", " /___\\", " archive ash", ""],
+    },
+    "r": {
+        "idle": ["  ,r,", " <\\_/", "  ^^", " mire teeth"],
+        "attack": ["  ,r--", " <\\_/", "  ^^", " rat rush"],
+        "skill": [" ~,r,~", " <\\_/", "  ^^", " poison spit"],
+        "hit": ["  ,x,", " <\\_!", "  ^", " tail snap"],
+        "break": ["  ,x!", " <\\_", "  ^", " spine break"],
+        "low": ["  ,r", " <\\_", "  ^", " belly low"],
+        "death": ["  ..", " _/ ", " mire still", ""],
+    },
+    "S": {
+        "idle": ["  <S>", " /\\_/\\", "  /\\", " stinger high"],
+        "attack": [" --<S>", " /\\_/\\", "  /\\", " claw snap"],
+        "skill": [" ~<S>~", " /\\_/\\", "  /\\", " venom arc"],
+        "hit": ["  <X>", " /\\_/!", "  /", " shell split"],
+        "break": ["  <X!", " /\\_", "  /", " sting cut"],
+        "low": ["  <S", " /\\_", "  /", " stinger low"],
+        "death": ["  .", " /__\\", " venom dry", ""],
+    },
+    "w": {
+        "idle": ["  {w}", " ~| |~", "  / \\", " ash drift"],
+        "attack": ["  {w}--", " ~| |~", "  / \\", " ash claw"],
+        "skill": [" ~{w}~", " ~| |~", "  / \\", " gray hex"],
+        "hit": ["  {x}", " ~| !", "  /", " ash torn"],
+        "break": ["  {x}!", " ~|", "  /", " veil broken"],
+        "low": ["  {w}", " ~|", "  /", " smoke thin"],
+        "death": ["  .", " ~ ~", " ash fall", ""],
+    },
+    "G": {
+        "idle": [" [GOL]", " /[#]\\", " _/ \\_", " ash plates"],
+        "attack": [" [GOL]--", " /[#]\\", " _/ \\_", " stone swing"],
+        "skill": [" [G*L]", " /[#]\\", " _/ \\_", " ember core"],
+        "hit": [" [GOL]", " /[#]!", " _/", " plate crack"],
+        "break": [" [BRK]", " /[x]!", " _/", " core open"],
+        "low": [" [GOL]", " /[#]", " _/", " plates low"],
+        "death": [" [___]", "  /_\\", " ash rubble", ""],
+    },
 }
-
-ENEMY_SPRITES.update(
-    {
-        "C": ENEMY_SPRITES["c"],
-        "K": ENEMY_SPRITES["k"],
-        "B": ENEMY_SPRITES["k"],
-        "r": ENEMY_SPRITES["c"],
-        "S": ENEMY_SPRITES["c"],
-        "w": ENEMY_SPRITES["k"],
-        "G": ENEMY_SPRITES["k"],
-    }
-)
 
 
 DEFAULT_HERO_SPRITE = ["  ???", " /|?|\\", "  / \\", " unknown"]

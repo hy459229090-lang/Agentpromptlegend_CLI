@@ -2446,3 +2446,88 @@ def test_reusable_art_assets_cover_mvp_heroes_enemies_and_weapons(bundle):
 
     assert "candle low" in "\n".join(HERO_SPRITES["hero_shadow_apprentice"]["idle"])
     assert "hooked blade" in "\n".join(ENEMY_SPRITES["c"]["idle"])
+
+
+def test_mvp_enemy_silhouettes_are_family_and_tier_distinct(bundle):
+    """REQ-MONSPRITE-001: MVP monsters should not share generic c/k silhouettes."""
+    from ouro_agent.art.battle_assets import ENEMY_SPRITES, enemy_sprite
+    from ouro_agent.art.block_sprites import ENEMY_BLOCK_SPRITES, enemy_block_sprite
+
+    required_poses = ("idle", "attack", "skill", "hit", "break", "low", "death")
+    glyphs = [enemy.short_glyph for enemy in bundle.enemies.values()]
+
+    assert glyphs == ["c", "C", "k", "K", "B", "r", "S", "w", "G"]
+
+    ascii_idle: dict[str, tuple[str, ...]] = {}
+    block_idle: dict[str, tuple[str, ...]] = {}
+    for glyph in glyphs:
+        assert glyph in ENEMY_SPRITES
+        assert glyph in ENEMY_BLOCK_SPRITES
+        for pose in required_poses:
+            ascii_sprite = enemy_sprite(glyph, pose)
+            block_sprite = enemy_block_sprite(glyph, pose)
+            assert len(ascii_sprite) >= 4
+            assert len(block_sprite) >= 4
+            assert "\n".join(ascii_sprite).isascii()
+            assert all(visual_width(line) <= 8 for line in block_sprite)
+        ascii_idle[glyph] = tuple(enemy_sprite(glyph, "idle"))
+        block_idle[glyph] = tuple(enemy_block_sprite(glyph, "idle"))
+
+    assert len(set(ascii_idle.values())) == len(glyphs)
+    assert len(set(block_idle.values())) == len(glyphs)
+    assert block_idle["C"] != block_idle["c"]
+    assert block_idle["K"] != block_idle["k"]
+    assert block_idle["B"] != block_idle["K"]
+    assert block_idle["r"] != block_idle["c"]
+    assert block_idle["S"] != block_idle["r"]
+    assert block_idle["w"] != block_idle["k"]
+    assert block_idle["G"] != block_idle["w"]
+
+
+def test_monster_variant_silhouettes_render_in_canvas_and_codex(bundle):
+    """REQ-MONSPRITE-001: battle stage and Codex cards consume the same monster art."""
+    from ouro_agent.sessions import CodexProgress
+    from ouro_agent.tui.screens import render_battle_screen, render_codex_card
+
+    scorpion_loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    scorpion_state = scorpion_loop.setup("hero_shadow_apprentice", ["enemy_mire_scorpion_rite"])
+    scorpion_screen = render_battle_screen(
+        scorpion_state,
+        None,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        unicode_mode=True,
+        width=100,
+    )
+
+    golem_loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    golem_state = golem_loop.setup("hero_shadow_apprentice", ["enemy_ash_golem_rite"])
+    golem_screen = render_battle_screen(
+        golem_state,
+        None,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        unicode_mode=True,
+        width=100,
+    )
+
+    progress = CodexProgress()
+    progress.record_encounter("family_mire_vermin", "ritebound")
+    scorpion_card = render_codex_card(
+        "enemy_mire_scorpion_rite",
+        bundle,
+        progress,
+        language="en",
+        width=80,
+    )
+
+    assert "▐S▒▒▌" in scorpion_screen
+    assert "▐█G█▌" in golem_screen
+    assert "▐S▒▒▌" in scorpion_card
+    assert "▐▒c▒▌" not in scorpion_screen
+    assert "▐▓k▓▌" not in golem_screen
+    for output in (scorpion_screen, golem_screen, scorpion_card):
+        for line in output.splitlines():
+            assert visual_width(line) <= 100
