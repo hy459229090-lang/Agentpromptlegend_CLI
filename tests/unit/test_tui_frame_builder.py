@@ -878,8 +878,10 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             width=zh_width,
             unicode_mode=True,
         )
-        assert "VOX 封住咏唱" in zh_screen
-        assert "ENM 护甲开裂" in zh_screen
+        assert "声 封住咏唱" in zh_screen
+        assert "敌 护甲开裂" in zh_screen
+        assert "VOX 封住咏唱" not in zh_screen
+        assert "ENM 护甲开裂" not in zh_screen
         assert "ENM      Agent" not in zh_screen
         assert "盯住威胁" not in zh_screen
         assert "盯住威胁" in zh_wait
@@ -916,7 +918,7 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         assert "队列" in zh_screen
         assert "技能" in zh_screen
         assert "伤口" in zh_screen
-        for prefix in ("VOX", "ENM"):
+        for prefix in ("声", "敌"):
             segments = [
                 line.split(prefix, 1)[1].split("█", 1)[0]
                 for line in zh_screen.splitlines()
@@ -933,6 +935,8 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             )
         canvas_block = "\n".join(canvas_blocks)
         for bad in (
+            "VOX",
+            "ENM",
             "BEAT T",
             "SELECT",
             "WINDOW",
@@ -948,6 +952,13 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
             "ATB READY",
             "裁判  WAIT",
             "裁判  VALID",
+            "HIT-",
+            "INT:Y",
+            "INT:N",
+            "FX ",
+            "SLN",
+            "CRP",
+            "CAST CUT",
         ):
             assert bad not in canvas_block
         assert "waiting for first echo" not in zh_wait
@@ -1040,6 +1051,25 @@ def test_unicode_battle_screen_draws_status_chips_inside_canvas(bundle, width):
     assert "ACTION HEX -> c" in screen
     assert "JUDGE  VALID | -16 HP" in screen
     for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+    zh_screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=width,
+        unicode_mode=True,
+    )
+
+    assert "状态 护盾7" in zh_screen
+    assert "状态 沉默1 腐化2" in zh_screen
+    assert "FX SHD7" not in zh_screen
+    assert "FX SLN1 CRP2" not in zh_screen
+    assert "SLN1" not in zh_screen
+    assert "CRP2" not in zh_screen
+    for line in zh_screen.splitlines():
         assert visual_width(line) <= width
 
 
@@ -1439,12 +1469,20 @@ def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, languag
     assert "[02 JUDGE]" in screen or "[02 裁判]" in screen
     assert "[03 LOG]" in screen or "[03 战斗日志]" in screen
     assert "Hex Seal -> Hungry Cultist" in screen or "禁咒封印 -> 饥饿邪教徒" in screen
-    assert "VALID HIT-16 MP72>72 INT:Y" in screen or "有效 HIT-16 MP72>72 INT:Y" in screen
+    if language == "zh":
+        assert "有效 命中-16 MP72>72 打断:是" in screen
+        assert "施放 HEX 命中-16" in screen
+        assert "沉默 邪教徒" in screen
+        assert "VALID HIT-16" not in screen
+        assert "INT:Y" not in screen
+        assert "SLN CULTIST" not in screen
+    else:
+        assert "VALID HIT-16 MP72>72 INT:Y" in screen
+        assert "CAST HEX HIT-16" in screen
+        assert "SLN CULTIST" in screen
     judge_lines = [line for line in screen.splitlines() if "[02 JUDGE]" in line or "[02 裁判]" in line]
     assert judge_lines
     assert all("-16 HP | -16 HP" not in line and "next interrupt" not in line for line in judge_lines)
-    assert "CAST HEX HIT-16" in screen
-    assert "SLN CULTIST" in screen
     log_lines = [line for line in screen.splitlines() if "[03 LOG]" in line or "[03 战斗日志]" in line]
     assert log_lines
     assert all("..." not in line for line in log_lines)
@@ -1472,7 +1510,11 @@ def test_battle_screen_width_matrix(bundle, language, width):
     for line in screen.splitlines():
         assert visual_width(line) <= width
     assert "status_silence" not in screen
-    assert "SLN silence(1)" in screen
+    if language == "zh":
+        assert "沉默(1)" in screen or "状态 沉默1" in screen
+        assert "SLN silence(1)" not in screen
+    else:
+        assert "SLN silence(1)" in screen
     if width > 88:
         assert "THE ECHO ALTAR" in screen or "回声祭坛" in screen
     assert "BATTLE THESIS" in screen or "战斗命题" in screen
@@ -1692,7 +1734,6 @@ def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundl
         unicode_mode=True,
         width=100,
     )
-
     assert "战斗势能板" in screen
     assert "[流势]" in screen
     assert "[战线]" in screen
@@ -1713,6 +1754,84 @@ def test_zh_unicode_battle_readout_localizes_momentum_and_cinematic_panels(bundl
     assert "CINEMATIC BEAT" not in screen
     assert "FLOAT none" not in screen
     assert "STRIP windup" not in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= 100
+
+
+def test_zh_unicode_battle_core_replaces_internal_short_codes(bundle):
+    """REQ-ZHCOMBATCODES-001: Chinese combat UI should not read like debug tokens."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    state.log.extend(["Astia casts Hex Seal for 16 damage.", "Hungry Cultist is silenced."])
+    state.hero.add_status(StatusEffect("status_shield", stacks=7, duration=2))
+    target = state.enemies[0]
+    target.chant_charge_turns = 1
+    target.add_status(StatusEffect("status_silence", stacks=1, duration=1))
+    target.add_status(StatusEffect("status_corruption", stacks=2, duration=3))
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        unicode_mode=True,
+        width=100,
+    )
+    cast_screen = render_battle_screen(
+        state,
+        None,
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        unicode_mode=True,
+        width=100,
+    )
+
+    assert "声 封住咏唱" in screen
+    assert "敌 护甲开裂" in screen
+    assert "命中-16 MP72>72 打断:是" in screen
+    assert "事件   蓄力打断" in screen
+    assert "浮字 -16 HP | 沉默" in screen
+    assert "状态 护盾7" in screen
+    assert "状态 沉默1 腐化2" in screen
+    assert "施法 切断" in cast_screen
+    assert "行动流程  选择 -> 起势 -> 效果通道 -> 命中 -> 裁判" in screen
+
+    core_text = "\n".join(
+        line
+        for line in (screen + "\n" + cast_screen).splitlines()
+        if any(
+            marker in line
+            for marker in (
+                "█",
+                "战斗势能板",
+                "行动",
+                "战斗分镜",
+                "回声读数",
+                "敌方队列",
+            )
+        )
+    )
+    for bad in (
+        "VOX",
+        "ENM",
+        "SEAL PLACED",
+        "KILL CONFIRMED",
+        "CLIMAX HIT",
+        "BOSS BREAK",
+        "HIT-",
+        "INT:Y",
+        "INT:N",
+        "FX ",
+        "SLN",
+        "CRP",
+        "CAST CUT",
+        "COUNTER CLOCK",
+    ):
+        assert bad not in core_text
     for line in screen.splitlines():
         assert visual_width(line) <= 100
 

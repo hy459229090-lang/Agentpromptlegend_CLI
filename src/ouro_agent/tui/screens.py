@@ -15,7 +15,11 @@ import re
 
 from ouro_agent.art.battle_assets import enemy_sprite as asset_enemy_sprite
 from ouro_agent.art.battle_assets import hero_sprite as asset_hero_sprite
-from ouro_agent.art.block_sprites import block_effect_rows, enemy_block_sprite, hero_block_sprite
+from ouro_agent.art.block_sprites import (
+    block_effect_rows as _asset_block_effect_rows,
+    enemy_block_sprite,
+    hero_block_sprite,
+)
 from ouro_agent.art.battle_dialogue import select_dialogue_line
 from ouro_agent.art.glyphs import bar, hp_bar, mp_bar, atb_bar, status_indicator
 from ouro_agent.art.weapon_cards import battle_weapon_line, hero_weapon_card, hero_weapon_card_art
@@ -446,7 +450,7 @@ def _render_canvas_duel_panel(
         width=left_w - 6,
         lang=lang,
     )
-    _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses)
+    _draw_canvas_status_chips(surface, 3, 14, left_w - 6, state.hero.statuses, lang=lang)
     _draw_canvas_skill_rail(surface, 3, 15, left_w - 6, state.hero, lang=lang)
 
     enemy_title = (
@@ -473,8 +477,16 @@ def _render_canvas_duel_panel(
         lang=lang,
     )
     if target is not None:
-        _draw_canvas_cast_meter(surface, right_x + 2, 8, right_w - 6, target)
-    _draw_canvas_floating_numbers(surface, right_x + 2, 8, right_w - 4, last_record, frame)
+        _draw_canvas_cast_meter(surface, right_x + 2, 8, right_w - 6, target, lang=lang)
+    _draw_canvas_floating_numbers(
+        surface,
+        right_x + 2,
+        8,
+        right_w - 4,
+        last_record,
+        frame,
+        lang=lang,
+    )
     if target is not None:
         _draw_canvas_actor_hud(
             surface,
@@ -488,7 +500,14 @@ def _render_canvas_duel_panel(
             width=right_w - 6,
             lang=lang,
         )
-        _draw_canvas_status_chips(surface, right_x + 2, 12, right_w - 6, target.statuses)
+        _draw_canvas_status_chips(
+            surface,
+            right_x + 2,
+            12,
+            right_w - 6,
+            target.statuses,
+            lang=lang,
+        )
         _draw_canvas_enemy_intent(surface, right_x + 2, 13, right_w - 6, target, frame, lang=lang)
     _draw_canvas_enemy_stack(
         surface,
@@ -559,9 +578,17 @@ def _render_canvas_duel_panel(
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
     if frame.counter_clock:
-        surface.draw_text(center_x + 1, 14, fit_text(_canvas_counter_rail_label(frame.counter_clock), center_w - 2))
+        surface.draw_text(
+            center_x + 1,
+            14,
+            fit_text(_canvas_counter_rail_label(frame.counter_clock, lang=lang), center_w - 2),
+        )
     elif frame.impact_line:
-        surface.draw_text(center_x + 1, 14, fit_text(_canvas_impact_label(frame.impact_line), center_w - 2))
+        surface.draw_text(
+            center_x + 1,
+            14,
+            fit_text(_canvas_impact_label(frame.impact_line, lang=lang), center_w - 2),
+        )
     _draw_canvas_delta_ribbon(
         surface,
         center_x + 1,
@@ -876,20 +903,23 @@ def _draw_canvas_cast_meter(
     y: int,
     width: int,
     target: Enemy,
+    *,
+    lang: str,
 ) -> None:
     if width < 12 or not target.chant_charge_turns:
         return
-    surface.draw_text(x, y, fit_text(_canvas_cast_meter_label(target), width))
+    surface.draw_text(x, y, fit_text(_canvas_cast_meter_label(target, lang=lang), width))
 
 
-def _canvas_cast_meter_label(target: Enemy) -> str:
+def _canvas_cast_meter_label(target: Enemy, *, lang: str = "en") -> str:
+    cast_label = "施法" if lang == "zh" else "CAST"
     if not target.is_alive:
-        return "CAST --"
+        return f"{cast_label} --"
     if target.find_status("status_silence") is not None:
-        return "CAST CUT"
+        return f"{cast_label} 切断" if lang == "zh" else "CAST CUT"
     total = max(1, target.chant_charge_turns)
     current = max(0, min(total, target.chant_progress))
-    return f"CAST {_canvas_cast_bar(current, total)} {current}/{total}"
+    return f"{cast_label} {_canvas_cast_bar(current, total)} {current}/{total}"
 
 
 def _canvas_cast_bar(current: int, total: int) -> str:
@@ -1016,16 +1046,18 @@ def _canvas_support_effect_label(record: TurnRecord | None, frame: BattleFrame, 
         tag = _canvas_skill_action_tag(record, frame)
     else:
         tag = support
-    return f"{tag} {_canvas_support_token(frame)}"
+    if lang == "zh" and tag == "GUARD":
+        tag = "守护"
+    return f"{tag} {_canvas_support_token(frame, lang=lang)}"
 
 
-def _canvas_support_token(frame: BattleFrame) -> str:
+def _canvas_support_token(frame: BattleFrame, *, lang: str = "en") -> str:
     for delta in frame.resource_deltas:
         label_code = delta.label.upper()
         if label_code in {"SHD", "FOC", "GRD", "HST"}:
             amount = delta.text.split(" ", 1)[0]
-            return f"{label_code}+{amount}"
-    return "READY"
+            return f"{_status_code_display(label_code, lang)}+{amount}"
+    return "就绪" if lang == "zh" else "READY"
 
 
 def _is_canvas_support_record(record: TurnRecord | None) -> bool:
@@ -1039,9 +1071,9 @@ def _is_canvas_support_record(record: TurnRecord | None) -> bool:
     return bool(targets) and record.actor_id in targets
 
 
-def _canvas_counter_rail_label(counter_clock: str | None) -> str:
+def _canvas_counter_rail_label(counter_clock: str | None, *, lang: str = "en") -> str:
     if not counter_clock:
-        return "CUT WATCH"
+        return "反制时钟 观测" if lang == "zh" else "CUT WATCH"
     bar = ""
     if "[" in counter_clock and "]" in counter_clock:
         bar = counter_clock.split("[", 1)[1].split("]", 1)[0]
@@ -1053,7 +1085,19 @@ def _canvas_counter_rail_label(counter_clock: str | None) -> str:
     marker = "NEXT HERO CAN INTERRUPT:"
     if marker in counter_clock:
         ready = _canvas_counter_ready_label(counter_clock.split(marker, 1)[1].strip())
+    if lang == "zh":
+        status = _director_text(status, lang)
+        ready = _canvas_counter_ready_zh(ready)
+        return f"反制时钟 {_canvas_counter_bar(bar)} {status} {ready}"
     return f"CUT {_canvas_counter_bar(bar)} {status} {ready}"
+
+
+def _canvas_counter_ready_zh(text: str) -> str:
+    return {
+        "CHECK": "检查",
+        "READY": "就绪",
+        "NO SKILL": "无技能",
+    }.get(text, text.replace("CD", "冷却").replace("MP", "MP"))
 
 
 def _canvas_counter_bar(bar: str) -> str:
@@ -1081,25 +1125,32 @@ def _canvas_counter_ready_label(text: str) -> str:
     return "CHECK"
 
 
-def _canvas_impact_label(impact_line: str) -> str:
+def _canvas_impact_label(impact_line: str, *, lang: str = "en") -> str:
     parts: list[str] = []
     for raw_part in impact_line.split("|"):
         part = raw_part.strip()
         if not part:
             continue
-        compact = _canvas_impact_part(part)
+        compact = _canvas_impact_part(part, lang=lang)
         if compact:
             parts.append(compact)
     return " ".join(parts) if parts else impact_line
 
 
-def _canvas_impact_part(part: str) -> str:
+def _canvas_impact_part(part: str, *, lang: str = "en") -> str:
     lower = part.lower()
     support_match = re.match(r"^(shd|foc|grd|hst)\s+(\d+)\b", lower)
     if support_match:
-        return f"{support_match.group(1).upper()}+{support_match.group(2)}"
+        code = support_match.group(1).upper()
+        amount = support_match.group(2)
+        if lang == "zh":
+            return f"{_status_code_display(code, lang)}+{amount}"
+        return f"{code}+{amount}"
     if lower.startswith("-") and " hp" in lower:
         damage = part.split(" ", 1)[0].lstrip("-")
+        if lang == "zh":
+            suffix = " 倒下" if "down" in lower else ""
+            return f"命中-{damage}{suffix}"
         suffix = " DOWN" if "down" in lower else ""
         return f"HIT-{damage}{suffix}"
     if lower.startswith("hp ") and "->" in part:
@@ -1107,22 +1158,23 @@ def _canvas_impact_part(part: str) -> str:
     if lower.startswith("mp ") and "->" in part:
         return "MP" + part.split(" ", 1)[1].replace("->", ">")
     if lower == "next interrupt: yes":
-        return "INT:Y"
+        return "打断:是" if lang == "zh" else "INT:Y"
     if lower == "next interrupt: no":
-        return "INT:N"
+        return "打断:否" if lang == "zh" else "INT:N"
     if lower == "chant released":
-        return "CAST:REL"
+        return "吟唱:释" if lang == "zh" else "CAST:REL"
     if lower == "window opened":
-        return "WIN:OPEN"
+        return "窗口:开" if lang == "zh" else "WIN:OPEN"
     if lower in {"attack", "basic_attack"}:
-        return "STRIKE"
+        return "攻击" if lang == "zh" else "STRIKE"
     if lower == "chant_charge":
-        return "CHARGE"
+        return "蓄力" if lang == "zh" else "CHARGE"
     if lower == "chant_release":
-        return "RELEASE"
+        return "释放" if lang == "zh" else "RELEASE"
     if lower.startswith("fallback:"):
-        return "FB:" + _canvas_action_token(part.split(":", 1)[1].strip())
-    return _canvas_action_token(part)
+        token = _canvas_action_token(part.split(":", 1)[1].strip())
+        return f"回退:{token}" if lang == "zh" else "FB:" + token
+    return _director_text(part, lang) if lang == "zh" else _canvas_action_token(part)
 
 
 def _canvas_action_label(
@@ -1404,7 +1456,8 @@ def _canvas_hero_dialogue(
     hp_pct = hero.hp / hero.max_hp if hero.max_hp > 0 else 1.0
     mp_pct = hero.mp / hero.max_mp if hero.max_mp > 0 else 1.0
     line = _canvas_hero_voice_beat(hero, record, frame, hp_pct=hp_pct, mp_pct=mp_pct, lang=lang)
-    return fit_text(f"VOX {line}", width)
+    prefix = "VOX" if lang == "en" else "声"
+    return fit_text(f"{prefix} {line}", width)
 
 
 def _canvas_hero_voice_beat(
@@ -1474,10 +1527,12 @@ def _canvas_enemy_dialogue(
 ) -> str:
     if target is None:
         line = "no hostile echo" if lang == "en" else "无敌对回声"
-        return fit_text(f"ENM {line}", width)
+        prefix = "ENM" if lang == "en" else "敌"
+        return fit_text(f"{prefix} {line}", width)
     if not target.is_alive:
         line = "signal collapsing" if lang == "en" else "信号崩塌"
-        return fit_text(f"ENM {line}", width)
+        prefix = "ENM" if lang == "en" else "敌"
+        return fit_text(f"{prefix} {line}", width)
     if record is not None and record.side == "enemy":
         kind = (record.enemy_action or {}).get("type", "attack")
         if kind == "chant_charge":
@@ -1488,7 +1543,8 @@ def _canvas_enemy_dialogue(
             line = "the chant is cut" if lang == "en" else "吟唱被切断"
         else:
             line = "strike pressure rising" if lang == "en" else "打击压力升高"
-        return fit_text(f"ENM {line}", width)
+        prefix = "ENM" if lang == "en" else "敌"
+        return fit_text(f"{prefix} {line}", width)
     if (
         record is not None
         and record.side == "hero"
@@ -1505,7 +1561,8 @@ def _canvas_enemy_dialogue(
         line = "next strike loaded" if lang == "en" else "下一击已装填"
     else:
         line = "watching the agent" if lang == "en" else "盯住威胁"
-    return fit_text(f"ENM {line}", width)
+    prefix = "ENM" if lang == "en" else "敌"
+    return fit_text(f"{prefix} {line}", width)
 
 
 def _draw_canvas_scene_texture(
@@ -1589,17 +1646,30 @@ def _draw_canvas_floating_numbers(
     width: int,
     record: TurnRecord | None,
     frame: BattleFrame,
+    *,
+    lang: str,
 ) -> None:
     if record is None or not frame.floating_numbers:
         return
-    label_text = " ".join(frame.floating_numbers[:3])
+    label_text = " ".join(
+        _display_floating_number(value, lang=lang) for value in frame.floating_numbers[:3]
+    )
+    hit_label = "HIT" if lang == "en" else "命中"
     if record.side == "enemy":
         x = 3
         y = 5
-        label_text = "HIT " + label_text
+        label_text = f"{hit_label} {label_text}"
     else:
-        label_text = "HIT " + label_text
+        label_text = f"{hit_label} {label_text}"
     surface.draw_text(x, y, fit_text(label_text, width))
+
+
+def _display_floating_number(value: str, *, lang: str) -> str:
+    if lang != "zh":
+        return value
+    if value in {"SLN", "CRP", "BRK"}:
+        return _status_code_display(value, lang)
+    return value
 
 
 def _draw_canvas_delta_ribbon(
@@ -1613,7 +1683,10 @@ def _draw_canvas_delta_ribbon(
 ) -> None:
     if not frame.resource_deltas:
         return
-    parts = [_compact_canvas_delta(delta.label, delta.text, state) for delta in frame.resource_deltas[:2]]
+    parts = [
+        _compact_canvas_delta(delta.label, delta.text, state, lang=lang)
+        for delta in frame.resource_deltas[:2]
+    ]
     surface.draw_text(
         x,
         y,
@@ -1621,13 +1694,17 @@ def _draw_canvas_delta_ribbon(
     )
 
 
-def _compact_canvas_delta(label_text: str, delta_text: str, state: BattleState) -> str:
+def _compact_canvas_delta(label_text: str, delta_text: str, state: BattleState, *, lang: str = "en") -> str:
     label_code = label_text.upper()
     compact = _canvas_delta_actor_tokens(delta_text, state)
     if label_code == "MP":
         compact = compact.replace(" -> ", ">")
-        compact = compact.replace(" | interrupt ready: yes", " I:Y")
-        compact = compact.replace(" | interrupt ready: no", " I:N")
+        if lang == "zh":
+            compact = compact.replace(" | interrupt ready: yes", " 打:是")
+            compact = compact.replace(" | interrupt ready: no", " 打:否")
+        else:
+            compact = compact.replace(" | interrupt ready: yes", " I:Y")
+            compact = compact.replace(" | interrupt ready: no", " I:N")
         return f"MP{compact}"
     if label_code == "HP":
         compact = compact.replace(" -> ", ">")
@@ -1649,7 +1726,7 @@ def _compact_canvas_delta(label_text: str, delta_text: str, state: BattleState) 
         return f"CD:{_canvas_action_token(compact)}"
     if label_code == "SHD":
         amount = compact.split(" ", 1)[0]
-        return f"SHD{amount}"
+        return f"{_status_code_display('SHD', lang)}{amount}"
     return f"{label_code}:{_canvas_action_token(compact)}"
 
 
@@ -1833,19 +1910,45 @@ def _draw_canvas_status_chips(
     y: int,
     width: int,
     statuses: list,
+    *,
+    lang: str,
 ) -> None:
     if width < 8 or not statuses:
         return
-    chips = [_canvas_status_chip(status) for status in statuses[:3]]
+    chips = [_canvas_status_chip(status, lang=lang) for status in statuses[:3]]
     hidden = len(statuses) - len(chips)
     if hidden > 0:
         chips.append(f"+{hidden}")
-    surface.draw_text(x, y, fit_text("FX " + " ".join(chips), width))
+    prefix = "FX" if lang == "en" else "状态"
+    surface.draw_text(x, y, fit_text(prefix + " " + " ".join(chips), width))
 
 
-def _canvas_status_chip(status) -> str:
+def _canvas_status_chip(status, *, lang: str = "en") -> str:
     code = format_status_short(status).split(" ", 1)[0]
-    return f"{code}{status.stacks}"
+    return f"{_status_code_display(code, lang)}{status.stacks}"
+
+
+def _status_code_display(code: str, lang: str) -> str:
+    if lang != "zh":
+        return code
+    return {
+        "SHD": "护盾",
+        "FOC": "凝神",
+        "HST": "迅捷",
+        "GRD": "守护",
+        "ECH": "回声",
+        "STL": "潜行",
+        "CDX": "图鉴",
+        "PSN": "毒",
+        "BLD": "流血",
+        "CRP": "腐化",
+        "SLN": "沉默",
+        "EXP": "暴露",
+        "STG": "踉跄",
+        "OMN": "预兆",
+        "EMB": "余烬",
+        "BRK": "破防",
+    }.get(code, code)
 
 
 _CANVAS_SKILL_CODES = {
@@ -1932,6 +2035,13 @@ def _canvas_beat_fill(idx: int, record: TurnRecord | None, frame: BattleFrame, g
     return glyphs.mid if idx == 0 else glyphs.solid
 
 
+def block_effect_rows(effect_key: str, label: str, width: int, *, lang: str = "en") -> list[str]:
+    rows = _asset_block_effect_rows(effect_key, label, width)
+    if lang != "zh":
+        return rows
+    return [_zh_effect_lane(row) for row in rows]
+
+
 def _block_effect_lane(
     record: TurnRecord | None,
     frame: BattleFrame,
@@ -1943,43 +2053,52 @@ def _block_effect_lane(
             "wait",
             "░░░ waiting for first echo ░░░" if lang == "en" else "░░░ 等待第一缕回声 ░░░",
             width,
+            lang=lang,
         )
     damage = 0
     if record.judge is not None:
         damage = record.judge.damage
     if frame.event_banner == "CLIMAX HIT" or damage >= 40:
-        return block_effect_rows("climax", f"▓▓▓▓▓▓▓▓▓▓▓▓ -{damage} HP", width)
+        return block_effect_rows("climax", f"▓▓▓▓▓▓▓▓▓▓▓▓ -{damage} HP", width, lang=lang)
     if record.side == "enemy":
         kind = (record.enemy_action or {}).get("type", "attack")
         amount = (record.enemy_action or {}).get("damage", 0)
         if kind == "chant_charge":
-            return block_effect_rows("counter", _canvas_counter_rail_label(frame.counter_clock), width)
+            return block_effect_rows("counter", _canvas_counter_rail_label(frame.counter_clock, lang=lang), width, lang=lang)
         if kind == "chant_release":
-            return block_effect_rows("chant", f"CHANT RELEASE -{amount} HP", width)
+            text = f"吟唱释放 -{amount} HP" if lang == "zh" else f"CHANT RELEASE -{amount} HP"
+            return block_effect_rows("chant", text, width, lang=lang)
         if kind == "silenced":
-            return block_effect_rows("break", "CHANT BROKEN", width)
-        return block_effect_rows("enemy_strike", f"STRIKE -{amount} HP", width)
+            return block_effect_rows("break", "吟唱中断" if lang == "zh" else "CHANT BROKEN", width, lang=lang)
+        text = f"打击 -{amount} HP" if lang == "zh" else f"STRIKE -{amount} HP"
+        return block_effect_rows("enemy_strike", text, width, lang=lang)
     if record.action is not None:
         support_label = _canvas_support_effect_label(record, frame, lang=lang)
         if support_label:
-            return block_effect_rows("guard", support_label, width)
+            return block_effect_rows("guard", support_label, width, lang=lang)
         if record.action.type == "basic_attack":
-            return block_effect_rows("strike", f"STRIKE -{damage} HP", width)
+            text = f"打击 -{damage} HP" if lang == "zh" else f"STRIKE -{damage} HP"
+            return block_effect_rows("strike", text, width, lang=lang)
         if record.action.type == "defend":
-            return block_effect_rows("guard", "GUARD ONLINE", width)
+            return block_effect_rows("guard", "守护上线" if lang == "zh" else "GUARD ONLINE", width, lang=lang)
         if record.action.type == "observe":
-            return block_effect_rows("observe", "SCAN FIELD", width)
+            return block_effect_rows("observe", "观测战场" if lang == "zh" else "SCAN FIELD", width, lang=lang)
         skill = record.action.skill_id or ""
         if "hex" in skill or "silent" in skill:
-            return block_effect_rows("seal", f"SEAL -{damage} HP", width)
+            text = f"封印 -{damage} HP" if lang == "zh" else f"SEAL -{damage} HP"
+            return block_effect_rows("seal", text, width, lang=lang)
         if "sting" in skill or "corrupted" in skill:
-            return block_effect_rows("shadow", f"SHADOW -{damage} HP", width)
+            text = f"暗影 -{damage} HP" if lang == "zh" else f"SHADOW -{damage} HP"
+            return block_effect_rows("shadow", text, width, lang=lang)
         if "mire" in skill or "omen" in skill:
-            return block_effect_rows("poison", f"VENOM -{damage} HP", width)
+            text = f"毒雾 -{damage} HP" if lang == "zh" else f"VENOM -{damage} HP"
+            return block_effect_rows("poison", text, width, lang=lang)
         if "ember" in skill or "burial" in skill:
-            return block_effect_rows("fire", f"FIRE -{damage} HP", width)
-        return block_effect_rows("skill", f"SKILL -{damage} HP", width)
-    return block_effect_rows("wait", "PENDING", width)
+            text = f"火焰 -{damage} HP" if lang == "zh" else f"FIRE -{damage} HP"
+            return block_effect_rows("fire", text, width, lang=lang)
+        text = f"技能 -{damage} HP" if lang == "zh" else f"SKILL -{damage} HP"
+        return block_effect_rows("skill", text, width, lang=lang)
+    return block_effect_rows("wait", "待机" if lang == "zh" else "PENDING", width, lang=lang)
 
 
 def _battle_visual_tone(state: BattleState, frame: BattleFrame) -> str:
@@ -2021,6 +2140,26 @@ def _stage_event_title(frame: BattleFrame, lang: str) -> str:
     if frame.counter_hint or frame.counter_clock:
         return "反制窗口" if lang == "zh" else "COUNTER WINDOW"
     return "裂隙" if lang == "zh" else "RIFT LANE"
+
+
+def _event_banner_display(event_banner: str, lang: str) -> str:
+    if lang != "zh":
+        return event_banner
+    return {
+        "SEAL PLACED": "封印落位",
+        "CHARGE BROKEN": "蓄力打断",
+        "KILL CONFIRMED": "击杀确认",
+        "CLIMAX HIT": "高潮命中",
+        "BOSS BREAK": "首领破防",
+        "BOSS DOWN": "首领击破",
+        "BOSS PHASE II": "首领转阶段 II",
+        "BOSS PHASE III": "首领转阶段 III",
+        "BOSS CHARGE": "首领蓄力",
+        "BREAK WINDOW OPEN": "反制窗口开启",
+        "CHANT RELEASED": "吟唱释放",
+        "BUILD ONLINE": "构筑上线",
+        "HIGH ROLL": "高光成型",
+    }.get(event_banner, _director_text(event_banner, lang))
 
 
 def _stage_header(left_title: str, center_title: str, right_title: str, *, width: int) -> str:
@@ -2298,7 +2437,12 @@ def _boss_enemy_hud(enemy: Enemy, *, lang: str) -> str:
         else "CHG -"
     )
     if lang == "zh":
-        return f"BOSS {phase} {charge} 破防看蓄力"
+        zh_charge = (
+            f"蓄力 {enemy.chant_progress}/{enemy.chant_charge_turns}"
+            if enemy.chant_charge_turns
+            else "蓄力 -"
+        )
+        return f"首领 {phase} {zh_charge} 破防看蓄力"
     return f"BOSS {phase} {charge} BREAK via window"
 
 
@@ -2308,7 +2452,7 @@ def _boss_intel_summary(frame: BattleFrame, lang: str) -> str:
         return ""
     if lang == "zh":
         return _director_text(
-            f"BOSS {intel.name} | {intel.phase} | {intel.charge} | "
+            f"首领 {intel.name} | {intel.phase} | {intel.charge} | "
             f"{intel.break_state} | {intel.enrage}",
             lang,
         )
@@ -2319,8 +2463,8 @@ def _boss_intel_summary(frame: BattleFrame, lang: str) -> str:
 
 
 def _status_groups(statuses: list, *, lang: str) -> list[str]:
-    buffs = [_format_status(s) for s in statuses if _status_kind(s.id) == "BUFF"]
-    debuffs = [_format_status(s) for s in statuses if _status_kind(s.id) == "DEBUFF"]
+    buffs = [_format_status(s, lang=lang) for s in statuses if _status_kind(s.id) == "BUFF"]
+    debuffs = [_format_status(s, lang=lang) for s in statuses if _status_kind(s.id) == "DEBUFF"]
     lines = []
     if buffs:
         lines.append(f"{label('hud_buff', lang)}   : " + ", ".join(buffs[:4]))
@@ -2329,10 +2473,6 @@ def _status_groups(statuses: list, *, lang: str) -> list[str]:
     if not lines:
         lines.append(f"{label('status_label', lang)}: {label('status_none', lang)}")
     return lines
-
-
-def _format_status(status) -> str:
-    return format_status_short(status)
 
 
 def _status_kind(status_id: str) -> str:
@@ -2548,21 +2688,25 @@ def _render_action_focus_panel(
             ]
         )
     if frame.impact_line:
-        lines.append(f"{impact_title}  {fit_text(_director_text(frame.impact_line, lang), max_text)}")
+        impact = _canvas_impact_label(frame.impact_line, lang=lang)
+        lines.append(f"{impact_title}  {fit_text(_director_text(impact, lang), max_text)}")
     if frame.resource_deltas:
         for delta in frame.resource_deltas:
             text = f"{delta.label} {_director_text(delta.text, lang)}"
             lines.append(f"{delta_title}   {fit_text(text, max_text)}")
     if frame.counter_clock:
-        counter_clock = _director_text(frame.counter_clock, lang)
-        if counter_clock.startswith("COUNTER "):
-            lines.append(fit_text(counter_clock, width))
+        if lang == "zh":
+            lines.append(fit_text(_canvas_counter_rail_label(frame.counter_clock, lang=lang), width))
         else:
-            lines.append(f"{counter_title} {fit_text(counter_clock, max_text)}")
+            counter_clock = _director_text(frame.counter_clock, lang)
+            if counter_clock.startswith("COUNTER "):
+                lines.append(fit_text(counter_clock, width))
+            else:
+                lines.append(f"{counter_title} {fit_text(counter_clock, max_text)}")
     if frame.counter_hint:
         lines.append(f"{counter_title} {fit_text(_director_text(frame.counter_hint, lang), max_text)}")
     if frame.event_banner:
-        lines.append(f"{banner_title}   {frame.event_banner}")
+        lines.append(f"{banner_title}   {_event_banner_display(frame.event_banner, lang)}")
     return list(pixel_panel(action_title, [fit_text(line, max_text) for line in lines], width, tone=_frame_tone(frame)).lines)
 
 
@@ -2593,9 +2737,11 @@ def _render_cinematic_beat_panel(
     strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text)
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
 
+    vox_label = "VOX" if lang == "en" else "声"
+    enm_label = "ENM" if lang == "en" else "敌"
     body = [
-        f"VOX   {fit_text(_director_text(vox_raw, lang), max_text)}",
-        f"ENM   {fit_text(_director_text(enm_raw, lang), max_text)}",
+        f"{vox_label}   {fit_text(_director_text(vox_raw, lang), max_text)}",
+        f"{enm_label}   {fit_text(_director_text(enm_raw, lang), max_text)}",
         f"{'FLOAT' if lang == 'en' else '浮字'} {fit_text(float_raw, max_text)}",
         f"{'STRIP' if lang == 'en' else '节奏'} {fit_text(strip_raw, max_text)}",
     ]
@@ -2627,6 +2773,8 @@ def _select_enemy_line(
     )
     if line.startswith("ENM "):
         line = line[4:]
+    elif line.startswith("敌 "):
+        line = line[2:]
     return line
 
 
@@ -2637,11 +2785,15 @@ def _build_cinematic_float(
     lang: str = "en",
 ) -> str:
     if frame.floating_numbers:
-        values = [value for value in frame.floating_numbers if value]
+        values = [
+            _display_floating_number(value, lang=lang)
+            for value in frame.floating_numbers
+            if value
+        ]
         if values:
             return " | ".join(values)
 
-    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else ""
+    impact = _canvas_impact_label(frame.impact_line, lang=lang) if frame.impact_line else ""
     if impact:
         return fit_text(impact, width)
     if lang == "zh":
@@ -2659,7 +2811,13 @@ def _build_cinematic_strip(
     lane = frame.effect_glyph or frame.effect_kind or "lane"
     if lang == "zh" and lane == "lane":
         lane = "通道"
-    impact = _canvas_impact_label(frame.impact_line) if frame.impact_line else ("impact" if lang == "en" else "命中")
+    elif lang == "zh":
+        lane = _zh_effect_lane(lane)
+    impact = (
+        _canvas_impact_label(frame.impact_line, lang=lang)
+        if frame.impact_line
+        else ("impact" if lang == "en" else "命中")
+    )
     judge = frame.judge_label.split("|", 1)[0].strip() if frame.judge_label else ("WAIT" if lang == "en" else "等待")
     if lang == "zh":
         judge = _director_text(judge, lang)
@@ -2669,12 +2827,41 @@ def _build_cinematic_strip(
     return fit_text(_fit_visual(strip, width), width)
 
 
+def _zh_effect_lane(lane: str) -> str:
+    replacements = {
+        "SEAL": "封印",
+        "SLN": "沉默",
+        "BRK": "破防",
+        "WINDOW": "窗口",
+        "COUNTER CLOCK": "反制时钟",
+        "ANSWER": "回应",
+        "CHANT BROKEN": "吟唱中断",
+        "CHANT RELEASE": "吟唱释放",
+        "STRIKE": "打击",
+        "CLIMAX": "高潮",
+        "IMPACT": "命中",
+        "RUPTURE": "裂解",
+        "SKILL": "技能",
+        "seal": "封印",
+        "sting": "影刺",
+        "poison": "毒雾",
+        "strike": "打击",
+        "chant": "咏唱",
+        "break": "破",
+        "skill": "技能",
+    }
+    result = lane
+    for source, target in replacements.items():
+        result = result.replace(source, target)
+    return result
+
+
 def _build_cinematic_logs(logs: list[str], *, lang: str, width: int) -> list[str]:
     if not logs:
         return []
     compacted: list[str] = []
     for event in logs[:2]:
-        compact = _compact_battle_log_event(event)
+        compact = _compact_battle_log_event(event, lang=lang)
         compacted.append(_director_text(_fit_visual(compact, width), lang))
     return compacted
 
@@ -2698,13 +2885,16 @@ def _render_build_climax_panel(
     if event is None:
         return []
     title = "CLIMAX" if lang == "en" else "高潮"
+    event_label = "EVENT" if lang == "en" else "事件"
+    build_label = "BUILD" if lang == "en" else "构筑"
+    resonance_label = "RESONANCE" if lang == "en" else "羁绊"
     body = [
-        f"EVENT   {event}",
-        f"BUILD   {build.archetype(lang)} {progress.stage.badge}",
+        f"{event_label}   {_event_banner_display(event, lang)}",
+        f"{build_label}   {build.archetype(lang)} {progress.stage.badge}",
     ]
     if progress.active_resonances:
         names = _resonance_display_names(bundle, progress.active_resonances[:2], lang)
-        body.append(f"RESONANCE {', '.join(names)}")
+        body.append(f"{resonance_label} {', '.join(names)}")
     return list(pixel_panel(title, [fit_text(line, width - 4) for line in body], width, tone="climax").lines)
 
 
@@ -2803,7 +2993,7 @@ def _battle_momentum_swing(record: TurnRecord | None, frame: BattleFrame, *, lan
     damage = record.judge.damage if record.judge is not None else 0
     if record.side == "hero":
         if damage > 0:
-            return f"hero hit -{damage} HP"
+            return f"hero hit -{damage} HP" if lang == "en" else f"英雄命中 -{damage} HP"
         if frame.counter_hint:
             return _director_text(frame.counter_hint, lang)
         return _director_text(frame.action_label, lang)
@@ -2813,9 +3003,9 @@ def _battle_momentum_swing(record: TurnRecord | None, frame: BattleFrame, *, lan
     if kind == "chant_charge":
         return "enemy chant charging" if lang == "en" else "敌方吟唱蓄力"
     if kind == "chant_release":
-        return f"enemy chant -{amount} HP"
+        return f"enemy chant -{amount} HP" if lang == "en" else f"敌方吟唱 -{amount} HP"
     if amount:
-        return f"enemy hit -{amount} HP"
+        return f"enemy hit -{amount} HP" if lang == "en" else f"敌方命中 -{amount} HP"
     return "enemy action resolved" if lang == "en" else "敌方行动结算"
 
 
@@ -2862,12 +3052,24 @@ def _director_text(text: str, lang: str) -> str:
         "Phase I": "阶段 I",
         "Phase II": "阶段 II",
         "Phase III": "阶段 III",
+        "BOSS PHASE II": "首领转阶段 II",
+        "BOSS PHASE III": "首领转阶段 III",
+        "BOSS BREAK": "首领破防",
+        "BOSS DOWN": "首领击破",
+        "BOSS CHARGE": "首领蓄力",
+        "SEAL PLACED": "封印落位",
+        "CHARGE BROKEN": "蓄力打断",
+        "KILL CONFIRMED": "击杀确认",
+        "CLIMAX HIT": "高潮命中",
+        "BREAK WINDOW OPEN": "反制窗口开启",
+        "CHANT RELEASED": "吟唱释放",
         "Opening Rite": "开场仪式",
         "Black Index": "黑索引",
         "Archive Unbound": "档案解封",
         "archive sealed": "档案封存",
         "Charge": "蓄力",
         "FULL release threat": "已满，释放威胁",
+        "FULL": "满",
         "WINDOW interrupt now": "窗口开启，立即打断",
         "arming": "蓄力中",
         "Break": "破防",
@@ -2893,6 +3095,20 @@ def _director_text(text: str, lang: str) -> str:
         "interrupt ready: no": "打断就绪: 否",
         "COUNTER CLOCK": "反制时钟",
         "NEXT HERO CAN INTERRUPT": "下次英雄可打断",
+        "CUT WATCH": "反制观测",
+        "CAST CUT": "施法切断",
+        "CAST": "施法",
+        "TRACE charge": "追踪蓄力",
+        "TRACE": "追踪",
+        "charge": "蓄力",
+        "silenced": "沉默中断",
+        "FX": "状态",
+        "SLN": "沉默",
+        "CRP": "腐化",
+        "SHD": "护盾",
+        "FOC": "凝神",
+        "GRD": "守护",
+        "HST": "迅捷",
         "not ready": "未就绪",
         "ready": "已就绪",
         "no interrupt skill": "无打断技能",
@@ -2978,7 +3194,12 @@ def _render_evidence_panel(
     body: list[str] = []
     session = _render_session_panel(record, provider_label=provider_label, lang=lang)
     body.extend(session[1:])
-    body.append(f"{action_strip_word}  select -> windup -> effect lane -> impact -> judge")
+    strip = (
+        "select -> windup -> effect lane -> impact -> judge"
+        if lang == "en"
+        else "选择 -> 起势 -> 效果通道 -> 命中 -> 裁判"
+    )
+    body.append(f"{action_strip_word}  {strip}")
     body.extend(_render_battle_film_lines(state, record, frame=frame, lang=lang))
     title = "ECHO READOUT" if lang == "en" else "回声读数"
     return list(pixel_panel(title, [fit_text(line, width - 4) for line in body], width, tone="quiet").lines)
@@ -3022,7 +3243,7 @@ def _render_battle_film_lines(
         model_text = _director_text(frame.action_label, lang)
 
     judge_text = _battle_film_judge_text(frame, lang=lang)
-    latest_log = _battle_film_log_text(state.log[-2:], no_log=no_log)
+    latest_log = _battle_film_log_text(state.log[-2:], no_log=no_log, lang=lang)
 
     return [
         header,
@@ -3051,10 +3272,10 @@ def _battle_film_enemy_action_text(record: TurnRecord, frame: BattleFrame, *, la
     return text
 
 
-def _battle_film_log_text(logs: list[str], *, no_log: str) -> str:
+def _battle_film_log_text(logs: list[str], *, no_log: str, lang: str = "en") -> str:
     if not logs:
         return no_log
-    return " / ".join(_compact_battle_log_event(log) for log in logs)
+    return " / ".join(_compact_battle_log_event(log, lang=lang) for log in logs)
 
 
 def _battle_film_judge_text(frame: BattleFrame, *, lang: str) -> str:
@@ -3062,33 +3283,43 @@ def _battle_film_judge_text(frame: BattleFrame, *, lang: str) -> str:
     status = _director_text(status, lang)
     if not frame.impact_line:
         return status
-    impact = _canvas_impact_label(frame.impact_line)
+    impact = _canvas_impact_label(frame.impact_line, lang=lang)
     return f"{status} {impact}".strip()
 
 
-def _compact_battle_log_event(log: str) -> str:
+def _compact_battle_log_event(log: str, *, lang: str = "en") -> str:
     text = " ".join(log.split())
     lower = text.lower()
     amount = _first_number(text)
     mp = _mp_cost_token(text)
     if "casts hex seal" in lower:
+        if lang == "zh":
+            return _join_tokens("施放 HEX", mp, f"命中-{amount}" if "damage" in lower and amount else "")
         return _join_tokens("CAST HEX", mp, f"HIT-{amount}" if "damage" in lower and amount else "")
     if "casts shadow sting" in lower:
-        return _join_tokens("CAST STING", mp)
+        return _join_tokens("施放 STING" if lang == "zh" else "CAST STING", mp)
     if "casts corrupted focus" in lower:
-        return _join_tokens("CAST FOCUS", "SHD", mp)
+        return _join_tokens("施放 FOCUS" if lang == "zh" else "CAST FOCUS", _status_code_display("SHD", lang), mp)
     if "chant breaks" in lower or "under silence" in lower:
-        return "CHANT BREAK"
+        return "吟唱中断" if lang == "zh" else "CHANT BREAK"
     if "continues a low chant" in lower:
-        return "CHANT +1"
+        return "吟唱 +1" if lang == "zh" else "CHANT +1"
     if "releases a shadow chant" in lower:
+        if lang == "zh":
+            return f"吟唱 -{amount}" if amount else "吟唱释放"
         return f"CHANT -{amount}" if amount else "CHANT RELEASE"
     if "shield absorbs" in lower:
-        return f"SHD -{amount}" if amount else "SHD ABSORB"
+        shield = _status_code_display("SHD", lang)
+        return f"{shield} -{amount}" if amount else (f"{shield} 吸收" if lang == "zh" else "SHD ABSORB")
     if "hits astia" in lower:
+        if lang == "zh":
+            return f"打击 -{amount}" if amount else "打击"
         return f"STRIKE -{amount}" if amount else "STRIKE"
     if "is silenced" in lower:
         target = "CULTIST" if "hungry cultist" in lower else "ENEMY"
+        if lang == "zh":
+            target = "邪教徒" if target == "CULTIST" else "敌人"
+            return f"{_status_code_display('SLN', lang)} {target}"
         return f"SLN {target}"
     return _fit_visual(text, 42)
 
@@ -4683,7 +4914,7 @@ def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, la
     limit = 14
     visible = records[:limit]
     hidden = max(0, len(records) - limit)
-    flow = " -> ".join(_battle_turn_token(record) for record in visible)
+    flow = " -> ".join(_battle_turn_token(record, lang=lang) for record in visible)
     if hidden:
         flow = f"{flow} -> +{hidden}" if flow else f"+{hidden}"
     if not flow:
@@ -4710,16 +4941,16 @@ def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, la
     ]
 
 
-def _battle_turn_token(record: TurnRecord) -> str:
+def _battle_turn_token(record: TurnRecord, *, lang: str = "en") -> str:
     prefix = "H" if record.side == "hero" else "E"
     suffix = ""
     damage = _battle_turn_damage(record)
     if damage:
         suffix = f"-{damage}"
     elif record.side == "enemy" and (record.enemy_action or {}).get("type") == "chant_charge":
-        suffix = "CHG"
+        suffix = "CHG" if lang == "en" else "蓄"
     elif record.side == "enemy" and (record.enemy_action or {}).get("type") == "silenced":
-        suffix = "BRK"
+        suffix = "BRK" if lang == "en" else "断"
     return f"{prefix}{record.tick:03d}{suffix}"
 
 
@@ -4817,10 +5048,11 @@ def _timeout_readout(state: BattleState, *, lang: str) -> list[str]:
 def _battle_report_status_details(state: BattleState, *, lang: str) -> list[str]:
     entries: list[str] = []
     for status in state.hero.statuses:
-        entries.append(f"  - HERO {format_status_detail(status)}")
+        actor = "HERO" if lang == "en" else "英雄"
+        entries.append(f"  - {actor} {_format_status_detail(status, lang=lang)}")
     for enemy in state.enemies:
         for status in enemy.statuses:
-            entries.append(f"  - [{enemy.short_glyph}] {format_status_detail(status)}")
+            entries.append(f"  - [{enemy.short_glyph}] {_format_status_detail(status, lang=lang)}")
     if not entries:
         return []
     title = "Status Details:" if lang == "en" else "状态详情:"
@@ -4832,7 +5064,7 @@ def _render_hero(hero: Hero, *, lang: str, unicode_mode: bool) -> list[str]:
     mp_bar = bar(hero.mp, hero.max_mp, width=8, unicode_mode=unicode_mode)
     atb_bar = bar(min(hero.atb, 100), 100, width=10, unicode_mode=unicode_mode)
     status = (
-        ", ".join(_format_status(s) for s in hero.statuses)
+        ", ".join(_format_status(s, lang=lang) for s in hero.statuses)
         or label("status_none", lang)
     )
     return [
@@ -4847,7 +5079,7 @@ def _render_hero(hero: Hero, *, lang: str, unicode_mode: bool) -> list[str]:
 def _render_enemy(idx: int, enemy: Enemy, *, lang: str, unicode_mode: bool) -> str:
     hp_bar = bar(enemy.hp, enemy.max_hp, width=6, unicode_mode=unicode_mode)
     atb_bar = bar(min(enemy.atb, 100), 100, width=6, unicode_mode=unicode_mode)
-    status = _roster_status_chips(enemy.statuses)
+    status = _roster_status_chips(enemy.statuses, lang=lang)
     status_part = f" {status}" if status else ""
     state_tag = label("down", lang) if not enemy.is_alive else ""
     name_field = pad_right(_roster_enemy_name(enemy), 16)
@@ -4858,14 +5090,15 @@ def _render_enemy(idx: int, enemy: Enemy, *, lang: str, unicode_mode: bool) -> s
     ).rstrip()
 
 
-def _roster_status_chips(statuses: list) -> str:
+def _roster_status_chips(statuses: list, *, lang: str = "en") -> str:
     if not statuses:
         return ""
-    chips = [_canvas_status_chip(status) for status in statuses[:3]]
+    chips = [_canvas_status_chip(status, lang=lang) for status in statuses[:3]]
     hidden = len(statuses) - len(chips)
     if hidden > 0:
         chips.append(f"+{hidden}")
-    return "FX " + " ".join(chips)
+    prefix = "FX" if lang == "en" else "状态"
+    return prefix + " " + " ".join(chips)
 
 
 def _roster_enemy_name(enemy: Enemy) -> str:
@@ -5132,8 +5365,18 @@ def _get_critical_line(hero_id: str, lang: str) -> str:
     return hero_critical.get(lang, hero_critical.get("en", fallback[lang]))
 
 
-def _format_status(status) -> str:
+def _format_status(status, *, lang: str = "en") -> str:
+    if lang == "zh":
+        code = format_status_short(status).split(" ", 1)[0]
+        return f"{_status_code_display(code, lang)}({status.stacks})"
     return format_status_short(status)
+
+
+def _format_status_detail(status, *, lang: str = "en") -> str:
+    if lang == "zh":
+        code = format_status_short(status).split(" ", 1)[0]
+        return f"{_status_code_display(code, lang)} x{status.stacks} / {status.duration}回合"
+    return format_status_detail(status)
 
 
 def render_hero_list(

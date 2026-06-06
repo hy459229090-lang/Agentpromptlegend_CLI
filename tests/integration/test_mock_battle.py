@@ -378,6 +378,8 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
     assert "[FIRST HERO]" not in board_text
     assert "[IMPACT]" not in board_text
     assert "[READ]" not in board_text
+    assert "CHG" not in board_text
+    assert "BRK" not in board_text
     assert "victory | HP" not in board_text
     assert "hero " not in board_text
     assert "enemy " not in board_text
