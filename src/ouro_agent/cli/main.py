@@ -480,6 +480,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # list-heroes
     listh = sub.add_parser("list-heroes", help="List all heroes")
     listh.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help=CONTENT_DIR_HELP)
+    listh.add_argument("--unicode", action="store_true")
     listh.set_defaults(handler=_cmd_list_heroes)
 
     # hero-card
@@ -1168,8 +1169,9 @@ def _setup_text(key: str, lang: str) -> str:
 def _cmd_list_heroes(args: argparse.Namespace) -> int:
     config = load_config()
     lang = _resolve_lang(args, config)
+    unicode_mode = bool(args.unicode) or config.unicode_mode
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
-    sys.stdout.write(render_hero_list(bundle, language=lang) + "\n")
+    sys.stdout.write(render_hero_list(bundle, language=lang, unicode_mode=unicode_mode) + "\n")
     return 0
 
 

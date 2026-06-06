@@ -248,7 +248,12 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Build:" in text
     assert "Weapon:" in text
     assert "Risk:" in text
-    assert "[HERO]  ##@##  prompt / build / ..." in text
+    assert "[HERO] [CNDL] .^." in text
+    assert "[HERO] [SHLD] /###\\" in text
+    assert "[HERO] [XBOW] __/->" in text
+    assert "[HERO] [VENM] .-." in text
+    assert "[HERO] [GEAR] [o]" in text
+    assert "[HERO]  ##@##" not in text
     assert "[PATH]  ##==>##  route" not in text
     assert "HERO ROSTER BOARD" in text
     assert "WEAPON GALLERY BOARD" in text
@@ -258,7 +263,11 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "[4] [W:VIL] (v) [ONLINE] | Online" in text
     assert "[5] [W:GER] [o] [ONLINE] | Online" in text
     assert "[6] [W:BEL] )o( [ONLINE] | Online" in text
-    assert "AI: AI favors interrupts and tempo skills." in text
+    assert "      c==*" in text
+    assert "      --###-" in text
+    assert "      ||" in text
+    assert "      Build: [ONLINE] shadow/control" in text
+    assert "      AI: AI favors interrupts and tempo skills." in text
     assert "Next: compare weapon silhouettes, then open hero-card for full Build plan" in text
     assert "[1] Astia [ONLINE] | Prompt control | Risk normal | shadow / control" in text
     assert "[2] Norn" in text
@@ -269,6 +278,17 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Open: ouro hero-card 1" in text
     assert "hero_shadow_apprentice" not in text
     assert "<hero_id>" not in text
+    for line in text.splitlines():
+        assert visual_width(line) <= 100
+
+    unicode_text = render_hero_list(bundle, language="en", unicode_mode=True)
+    assert "▄██▄" in unicode_text
+    assert "░▓███░" in unicode_text
+    assert "████▸" in unicode_text
+    assert "[HERO] [CNDL] ▄██▄" in unicode_text
+    assert "[HERO]  ##@##" not in unicode_text
+    for line in unicode_text.splitlines():
+        assert visual_width(line) <= 100
 
 
 def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):

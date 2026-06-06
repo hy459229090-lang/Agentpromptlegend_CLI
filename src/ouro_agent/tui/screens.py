@@ -5363,7 +5363,7 @@ def _format_status_detail(status, *, lang: str = "en") -> str:
 
 
 def render_hero_list(
-    bundle: ContentBundle, *, language: str = DEFAULT_LANGUAGE
+    bundle: ContentBundle, *, language: str = DEFAULT_LANGUAGE, unicode_mode: bool = False
 ) -> str:
     lang = language
     prompt = (
@@ -5375,7 +5375,7 @@ def render_hero_list(
     lines.append("")
     lines.extend(_render_hero_roster_board(bundle, lang=lang))
     lines.append("")
-    lines.extend(_render_weapon_gallery_board(bundle, lang=lang))
+    lines.extend(_render_weapon_gallery_board(bundle, lang=lang, unicode_mode=unicode_mode))
     lines.append("")
     cards: list[list[str]] = []
     for idx, hero in enumerate(bundle.heroes.values(), start=1):
@@ -5407,6 +5407,9 @@ def render_hero_list(
                 risk=label(f"hero_card_risk_{risk}", lang) or risk,
                 tags=tags,
                 description=desc,
+                hero_id=hero.id,
+                avatar_lines=list(hero.avatar_ascii),
+                unicode_mode=unicode_mode,
                 lang=lang,
             )
         )
@@ -5458,7 +5461,9 @@ def _render_hero_roster_board(bundle: ContentBundle, *, lang: str) -> list[str]:
     return lines
 
 
-def _render_weapon_gallery_board(bundle: ContentBundle, *, lang: str) -> list[str]:
+def _render_weapon_gallery_board(
+    bundle: ContentBundle, *, lang: str, unicode_mode: bool = False
+) -> list[str]:
     title = "WEAPON GALLERY BOARD" if lang == "en" else "武器图鉴面板"
     lines = [title]
     for idx, hero in enumerate(bundle.heroes.values(), start=1):
@@ -5468,22 +5473,27 @@ def _render_weapon_gallery_board(bundle: ContentBundle, *, lang: str) -> list[st
         stage_name = progress.stage_name if progress else "Seed"
         card = hero_weapon_card_art(hero.id)
         weapon, _badge = hero_weapon_card(hero.id)
-        art = " / ".join(row.strip() for row in card.ascii_art[:2])
+        art = card.unicode_art if unicode_mode else card.ascii_art
         name = hero.display_name.get(lang) or hero.display_name.get("en", hero.id)
         if lang == "zh":
             line = (
-                f"  [{idx}] {weapon} {stage} | {name} | {art} | "
+                f"  [{idx}] {weapon} {stage} | {name} | "
                 f"{stage_name}"
             )
-            detail = f"      Build: {card.build_shift} | AI: {card.ai_effect}"
+            build_line = f"      Build: {card.build_shift}"
+            ai_line = f"      AI: {card.ai_effect}"
         else:
             line = (
-                f"  [{idx}] {weapon} {stage} | {stage_name} | {art} | "
+                f"  [{idx}] {weapon} {stage} | {stage_name} | "
                 f"{name}"
             )
-            detail = f"      Build: {card.build_shift} | AI: {card.ai_effect}"
+            build_line = f"      Build: {card.build_shift}"
+            ai_line = f"      AI: {card.ai_effect}"
         lines.append(fit_text(line, 96))
-        lines.append(fit_text(detail, 96))
+        for art_row in art[:3]:
+            lines.append(fit_text(f"      {art_row.strip()}", 96))
+        lines.append(fit_text(build_line, 96))
+        lines.append(fit_text(ai_line, 96))
     next_line = (
         "Next: compare weapon silhouettes, then open hero-card for full Build plan"
         if lang == "en"
@@ -5523,6 +5533,9 @@ def _hero_select_card(
     risk: str,
     tags: str,
     description: str,
+    hero_id: str,
+    avatar_lines: list[str],
+    unicode_mode: bool,
     lang: str,
 ) -> list[str]:
     header = f"[{idx}] {name} {short_tag} {stage_badge}".strip()
@@ -5533,7 +5546,18 @@ def _hero_select_card(
         f"{label('hero_card_risk', lang)}: {risk}  {label('hero_card_tags', lang)}: {tags}",
         f"Open: ouro hero-card {idx}" if lang == "en" else f"打开: ouro hero-card {idx}",
     ]
-    return _choice_card(header, body, width=39, tone="hero")
+    return _choice_card(
+        header,
+        body,
+        width=39,
+        tone="hero",
+        art_lines=_hero_select_card_art(
+            hero_id,
+            short_tag=short_tag,
+            avatar_lines=avatar_lines,
+            unicode_mode=unicode_mode,
+        ),
+    )
 
 
 def render_hero_card(
@@ -6704,12 +6728,40 @@ def _render_rest_decision_ring(
     return list(pixel_panel(title, [fit_text(line, max(12, width - 4)) for line in body], width, tone="counter").lines)
 
 
-def _choice_card(title: str, body: list[str], *, width: int, tone: str = "normal") -> list[str]:
+def _choice_card(
+    title: str,
+    body: list[str],
+    *,
+    width: int,
+    tone: str = "normal",
+    art_lines: list[str] | None = None,
+) -> list[str]:
     card_width = max(36, width)
     inner = max(12, card_width - 4)
-    art_lines = _choice_card_art(title, body, tone=tone)
-    fitted_body = [fit_text(line.strip(), inner) for line in [*art_lines, *body]]
+    card_art = art_lines if art_lines is not None else _choice_card_art(title, body, tone=tone)
+    fitted_body = [fit_text(line.strip(), inner) for line in [*card_art, *body]]
     return list(pixel_panel(title, fitted_body, card_width, tone=tone).lines)
+
+
+def _hero_select_card_art(
+    hero_id: str,
+    *,
+    short_tag: str,
+    avatar_lines: list[str],
+    unicode_mode: bool,
+) -> list[str]:
+    if unicode_mode:
+        raw_rows = hero_block_sprite(hero_id, "idle")[:3]
+    else:
+        raw_rows = avatar_lines[:3]
+    rows = [row.strip() for row in raw_rows if row.strip()]
+    while len(rows) < 3:
+        rows.append("")
+    return [
+        f"[HERO] {short_tag} {rows[0]}",
+        f"       {rows[1]}",
+        f"       {rows[2]}",
+    ]
 
 
 def _choice_card_art(title: str, body: list[str], *, tone: str) -> list[str]:

@@ -30,6 +30,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - `scripts/release_scope.py` audits dirty-tree paths against the release-candidate boundary, prints a read-only `--stage-plan`, and is included in the release gate as `scope-boundary`.
 - `scripts/completion_audit.py` summarizes release gates, scope, and external sign-offs so the broader goal is not marked complete while sign-offs remain pending.
 - `docs/engineering/LICENSE_DECISION_20260601.md` gives the project owner a pending License/private-policy decision template without selecting a License automatically.
+- `ouro list-heroes` now uses each hero's own ASCII/Unicode low-pixel silhouette and expands the weapon gallery into 3-line weapon card art; `ouro list-heroes --unicode` previews the block-art roster before opening a hero card.
 
 ### Validation
 
