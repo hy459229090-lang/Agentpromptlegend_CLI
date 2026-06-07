@@ -1,15 +1,44 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
-**CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable**
+<p align="center">
+  <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
+  <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
+  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable</sub>
+</p>
 
 <p align="center">
   <strong>Language Switch / 语言切换: 中文 / English</strong><br>
-  <a href="README.zh.md"><strong>中文介绍页</strong></a>
+  <a href="README.zh.md"><strong>中文介绍页 / Full Chinese README</strong></a>
   &nbsp;|&nbsp;
-  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
+  <a href="#english-store-page"><strong>English Store Page</strong></a>
   &nbsp;|&nbsp;
-  CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+  <strong>CLI Language Toggle / CLI 语言切换:</strong>
+  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
+
+<a id="storefront-hero"></a>
+
+## Storefront Hero / 商店页封面
+
+<p align="center">
+  <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
+  <br><strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
+  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
+  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
+  <sub>Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
+</p>
+
+<table>
+  <tr>
+    <th colspan="4">Steam-Style Front Page / Steam 风格首页 · Choose Your Page / 选择介绍页</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="README.zh.md"><strong>中文 / Chinese</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Best First Screen</strong><br><sub>Media Gallery / 先看游戏画面</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
+  </tr>
+</table>
 
 <p align="center">
   <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
@@ -17,54 +46,23 @@
   <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
 </p>
 
-<table>
-  <tr>
-    <th colspan="4">Steam-Style Front Page / Steam 风格首页</th>
-  </tr>
-  <tr>
-    <td align="center"><strong>中文玩家</strong><br><a href="README.zh.md">进入中文介绍</a><br><sub>CLI: <code>ouro demo --lang zh --seed 1</code></sub></td>
-    <td align="center"><strong>English Players</strong><br><a href="#english-store-page">Read the English intro</a><br><sub>CLI: <code>ouro demo --lang en --seed 1</code></sub></td>
-    <td align="center"><strong>Best First Screen</strong><br><a href="#screenshots-build-fight-learn">Open the media gallery</a><br><sub>Build / Fight / Learn captures</sub></td>
-    <td align="center"><strong>Play Now</strong><br><a href="#play-now">Run the mock demo</a><br><sub>Mock, offline, no API key</sub></td>
-  </tr>
-</table>
-
-<a id="storefront-hero"></a>
-
-## Storefront Hero / 商店页封面
+| Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
+|--------------------|----------------|-------------------------|
+| `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
 
 <p align="center">
-  <strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
-  <strong>Train one Agent. Release it into the dungeon. Read the scars, rebuild, run again.</strong><br>
-  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
-  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
-  <sub>Store-page pitch: Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
-</p>
-
-<table>
-  <tr>
-    <th colspan="5">Choose Your Page / 选择介绍页</th>
-  </tr>
-  <tr>
-    <td align="center"><a href="README.zh.md"><strong>中文</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
-    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
-    <td align="center"><strong>CLI Language Toggle</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery / 先看游戏画面</strong><br><sub>Steam-style screenshot wall / Real TUI Captures</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub>Mock, offline, no API key</sub></a></td>
-  </tr>
-</table>
-
-<p align="center">
-  <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
-  <br><strong>Hero Capsule / 首屏胶囊图</strong><br>
+  <strong>Hero Capsule / 首屏胶囊图</strong><br>
   <sub>One trained Agent, one local judge, and a dungeon that answers the Prompt.</sub>
 </p>
 
 <p align="center">
   <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
   <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
-  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI media before the engineering notes begin.</sub>
+  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub>
 </p>
+
+<details>
+<summary>What a Steam page would show first / 好的 Steam 页面会先展示什么</summary>
 
 | What a Steam page would show first | How this README now handles it |
 |------------------------------------|--------------------------------|
@@ -72,6 +70,8 @@
 | **A one-sentence fantasy** | Build one Agent, release it, and watch whether your Prompt survives pressure. |
 | **Playable status and CTA** | `ouro demo --lang en --seed 1` and `ouro demo --lang zh --seed 1` are above the engineering sections. |
 | **Feature proof, not promises** | Every media panel names a reproducible CLI command and uses mock-friendly game screens. |
+
+</details>
 
 ## Game Capsule / 游戏胶囊
 
@@ -82,10 +82,6 @@
 | 这是什么 | 你做什么 | 你会看到什么 | 为什么再开一局 |
 |----------|----------|--------------|----------------|
 | **一款命令行 AI 肉鸽，胜负由本地裁判结算。** | 战前构筑一个 Agent：英雄、武器、词条、Prompt 风格和战术偏好。 | 低像素 TUI 舞台：英雄/敌人剪影、HP/MP/ATB、弹道、VOX/ENM 台词、浮字和裁判结果同屏。 | 战报会告诉你 Prompt 哪里失手、图鉴解锁了什么、下一局该怎么改 Build。 |
-
-| Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
-|--------------------|----------------|-------------------------|
-| `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
 
 **Playable offline now.** The mock provider runs a full guided demo with no
 network, no API key, and deterministic seeds. Build once, release the Agent,

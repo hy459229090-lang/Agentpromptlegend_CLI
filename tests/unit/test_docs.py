@@ -72,6 +72,16 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert zh_text.count('src="examples/ouro-readme-storefront.svg"') == 1
     assert text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
     assert zh_text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
+    assert text.index("Train one AI hero. Watch it survive your Prompt.") < text.index("Storefront Hero / 商店页封面")
+    assert zh_text.index("训练一个 AI 英雄，让它带着你的 Prompt 下地牢。") < zh_text.index("商店页封面 / Storefront Hero")
+    assert text.index('src="examples/ouro-readme-storefront.svg"') < text.index("Steam-Style Front Page / Steam 风格首页")
+    assert zh_text.index('src="examples/ouro-readme-storefront.svg"') < zh_text.index("Steam 风格首页 / Steam-Style Front Page")
+    assert text.index("Play in 30 seconds") < text.index('src="examples/ouro-readme-screenshot-wall.svg"')
+    assert zh_text.index("中文 30 秒开局") < zh_text.index('src="examples/ouro-readme-screenshot-wall.svg"')
+    assert text.index("<details>") < text.index("What a Steam page would show first")
+    assert zh_text.index("<details>") < zh_text.index("好的 Steam 页面会先展示什么")
+    assert text.index("What a Steam page would show first") < text.index("</details>")
+    assert zh_text.index("好的 Steam 页面会先展示什么") < zh_text.index("</details>")
     assert text.index("Storefront Hero / 商店页封面") < text.index("Screenshots: Build, Fight, Learn")
     assert text.index("Screenshots: Build, Fight, Learn") < text.index("## Core Loop")
     assert text.index("## Core Loop") < text.index("## Play Now")
