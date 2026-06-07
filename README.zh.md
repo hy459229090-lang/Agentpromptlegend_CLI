@@ -7,37 +7,41 @@
   <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI · 先像游戏页，再像工程文档</sub>
 </p>
 
-## 玩家入口面板 / Player Start Panel
-
-<table>
-  <tr>
-    <th colspan="5">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
-  </tr>
-  <tr>
-    <td align="center"><strong>中文</strong><br><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub></td>
-    <td align="center"><a href="README.md#english-store-page"><strong>ENGLISH</strong><br><strong>English Store Page</strong><br><sub>Read in English · game first, docs later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>进入地牢</strong><br><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn</sub></a></td>
-    <td align="center"><a href="#game-capsule"><strong>查看构筑</strong><br><strong>Hero Capsule</strong><br><sub>武器、角色、Codex</sub></a></td>
-  </tr>
-  <tr>
-    <td colspan="5" align="center">
-      <strong>CLI 语言切换 / CLI Language Toggle:</strong>
-      <code>ouro --lang zh</code> / <code>ouro --lang en</code>
-      <br><sub>Mock 离线，无需 API key；中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="5" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
-  </tr>
-</table>
-
 <p align="center">
   <img alt="暗影代理首屏主视觉：语言切换、试玩入口和图形化 TUI 战斗" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
   <br><strong>Steam 式玩家承诺：</strong>你设计它带进地牢的战斗脑子；一局运行会证明这套 Prompt 能不能承受压力。<br>
   <strong>Steam-style promise:</strong> build the mind, release the run, then read the scars.<br>
   <sub>先看画面，再看工程说明。Media first. Rules second. Engineering third.</sub>
 </p>
+
+## 玩家入口面板 / Player Start Panel
+
+<table>
+  <tr>
+    <th colspan="4">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
+  </tr>
+  <tr>
+    <td align="center"><strong>中文</strong><br><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub><br><a href="README.md#english-store-page"><strong>ENGLISH</strong> · English Store Page</a><br><sub>Read in English · game first, docs later</sub></td>
+    <td align="center"><a href="#play-now"><strong>进入地牢</strong><br><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn</sub></a></td>
+    <td align="center"><a href="#game-capsule"><strong>查看构筑</strong><br><strong>Hero Capsule</strong><br><sub>武器、角色、Codex</sub></a></td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">
+      <strong>CLI 语言切换 / CLI Language Toggle:</strong>
+      <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+      <br><sub>Mock 离线，无需 API key；中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
+  </tr>
+</table>
+
+| 这是一款什么游戏？ | 为什么会想再开一局？ |
+|--------------------|------------------------|
+| **一款 Prompt 构筑型命令行肉鸽。** 战斗前你配置一个 AI 英雄；开战后模型只选择行动，本地裁判负责伤害、状态、奖励、失败和胜利。 | Agent 会读局、失误、打断、缺蓝、击杀显影。每次失败都会留下战报、图鉴线索和下一局构筑方向。 |
+| **A dark terminal roguelike where the Prompt is the build.** You configure one hero Agent before combat, then the run plays out automatically under local rules. | The Agent can read the moment, miss a counter window, run out of MP, or reveal a Codex clue. The after-action report turns that failure into the next build. |
 
 <a id="storefront-hero"></a>
 

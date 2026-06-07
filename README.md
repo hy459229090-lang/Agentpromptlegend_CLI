@@ -7,21 +7,27 @@
   <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI · Store page first, engineering later</sub>
 </p>
 
+<p align="center">
+  <img alt="Ouro Agent storefront showcase with language switch, play CTA, and graphical TUI battle" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
+  <br><strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
+  <strong>玩家承诺：</strong>你设计 Agent 的战斗脑子，地牢负责验证它能不能活下来。<br>
+  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
+</p>
+
 ## Player Start Panel / 玩家入口面板
 
 <table>
   <tr>
-    <th colspan="5">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
+    <th colspan="4">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
-    <td align="center"><strong>ENGLISH</strong><br><strong>English (current)</strong><br><sub>game first, docs later</sub></td>
-    <td align="center"><a href="README.zh.md"><strong>中文</strong><br><strong>切到中文介绍</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><strong>ENGLISH</strong><br><strong>English (current)</strong><br><sub>game first, docs later</sub><br><a href="README.zh.md"><strong>中文</strong> · 切到中文介绍</a><br><sub>完整中文文档 / Full Chinese README</sub></td>
     <td align="center"><a href="#play-now"><strong>ENTER THE RUN</strong><br><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
     <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH THE GAME</strong><br><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn</sub></a></td>
     <td align="center"><a href="#game-capsule"><strong>BROWSE BUILD</strong><br><strong>Hero Capsule</strong><br><sub>weapons, roles, Codex</sub></a></td>
   </tr>
   <tr>
-    <td colspan="5" align="center">
+    <td colspan="4" align="center">
       <strong>CLI Language Toggle / CLI 语言切换:</strong>
       <code>ouro --lang en</code> / <code>ouro --lang zh</code>
       <br><sub>Mock, offline, no API key. English is ASCII-safe. 中文界面建议 UTF-8 终端。</sub>
@@ -29,12 +35,10 @@
   </tr>
 </table>
 
-<p align="center">
-  <img alt="Ouro Agent storefront showcase with language switch, play CTA, and graphical TUI battle" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
-  <br><strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
-  <strong>玩家承诺：</strong>你设计 Agent 的战斗脑子，地牢负责验证它能不能活下来。<br>
-  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
-</p>
+| What kind of game is this? | Why open one more run? |
+|----------------------------|------------------------|
+| **A dark terminal roguelike where the Prompt is the build.** You configure one hero Agent before combat, then the run plays out automatically under local rules. | The Agent can read the moment, miss a counter window, run out of MP, or reveal a Codex clue. The after-action report turns that failure into the next build. |
+| **这是一款 Prompt 构筑型命令行肉鸽。** 战斗前你配置一个 AI 英雄；开战后模型只选择行动，本地裁判负责伤害、状态、奖励、失败和胜利。 | 它会读局、失误、打断、缺蓝、击杀显影。每次失败都会留下战报、图鉴线索和下一局构筑方向。 |
 
 <a id="storefront-hero"></a>
 
