@@ -1755,21 +1755,65 @@ def _draw_canvas_scene_texture(
     if width < 18:
         return
     scene = (scene_text or "").lower()
-    if lang == "zh":
-        if "candle" in scene or "烛" in scene:
-            motifs = ("░ ·烛影· ░", "  ░ 灰烬 ░  ", "░ · 断拱 · ░")
-        elif "ash" in scene or "灰" in scene:
-            motifs = ("░ ·回响· ░", "  ░ 岩尘 ░  ", "░ · 断拱 · ░")
-        else:
-            motifs = ("░ ·回响· ░", "  ░ 现场 ░  ", "░ · 轻响 · ░")
-    elif "candle" in scene or "烛" in scene:
-        motifs = ("░  . candle .  ░", "  ░ wick ash ░  ", "░ . broken arch . ░")
-    elif "ash" in scene or "灰" in scene:
-        motifs = ("░  . ash .  ░", "  ░ ember dust ░  ", "░ . stone arch . ░")
-    else:
-        motifs = ("░  . echo .  ░", "  ░ field noise ░  ", "░ . rift dust . ░")
-    for row, motif in enumerate(motifs):
-        surface.draw_text(x, y + row * 3, fit_text(_center_canvas_text(motif, width), width))
+    motifs = _canvas_scene_motifs(scene, lang=lang)
+    surface.draw_text(x, y, fit_text(_center_canvas_text(motifs[0], width), width))
+    if width >= 24:
+        undertone = f"{motifs[1].strip()}  {motifs[2].strip()}"
+        surface.draw_text(x, y + 8, fit_text(_center_canvas_text(undertone, width), width))
+
+
+def _canvas_scene_motifs(scene: str, *, lang: str = "en") -> tuple[str, str, str]:
+    has_gate = _scene_has_any(scene, ("gate", "门"))
+    has_shield_fragment = _scene_has_any(scene, ("shield", "fragment", "盾", "碎"))
+    if has_gate and has_shield_fragment:
+        return (
+            "场景 灰门/碎盾/灰线" if lang == "zh" else "SCENE GATE / SHIELD FRAGMENTS / ASH",
+            "  ░ 灰线 ░  " if lang == "zh" else "  ░ ash line ░  ",
+            "░ · 碎盾 · ░" if lang == "zh" else "░ . shield fragments . ░",
+        )
+    if _scene_has_any(scene, ("mire", "fog", "vial", "poison", "瘴", "雾", "毒", "瓶")):
+        return (
+            "场景 瘴雾/毒瓶/湿影" if lang == "zh" else "SCENE MIRE / VIALS / FOG",
+            "  ░ 湿影 ░  " if lang == "zh" else "  ░ mire drift ░  ",
+            "░ · 毒瓶 · ░" if lang == "zh" else "░ . green vials . ░",
+        )
+    if _scene_has_any(scene, ("archive", "index", "page", "book", "档案", "索引", "书", "页")):
+        return (
+            "场景 档案/缺页/索引" if lang == "zh" else "SCENE ARCHIVE / PAGES / INDEX",
+            "  ░ 缺页 ░  " if lang == "zh" else "  ░ missing pages ░  ",
+            "░ · 索引 · ░" if lang == "zh" else "░ . index dust . ░",
+        )
+    if _scene_has_any(scene, ("grave", "gear", "engine", "crank", "nail", "坟", "墓", "齿轮", "机关", "钉")):
+        return (
+            "场景 墓钉/齿轮/机关" if lang == "zh" else "SCENE GRAVE / GEARS / ENGINE",
+            "  ░ 齿轮 ░  " if lang == "zh" else "  ░ gear teeth ░  ",
+            "░ · 墓钉 · ░" if lang == "zh" else "░ . grave nails . ░",
+        )
+    has_candle = _scene_has_any(scene, ("candle", "wick", "烛", "烛火", "烛影"))
+    has_ash = _scene_has_any(scene, ("ash", "ember", "灰", "灰烬"))
+    has_arch = _scene_has_any(scene, ("arch", "gate", "拱", "门"))
+    if has_candle or has_ash or has_arch:
+        if lang == "zh":
+            header = "场景 "
+            header += "/".join(
+                part for part, enabled in (("烛火", has_candle), ("灰烬", has_ash), ("断拱", has_arch)) if enabled
+            )
+            return (header, "  ░ 灰烬烛影 ░  ", "░ · 断拱 · ░")
+        parts = [
+            part
+            for part, enabled in (("CANDLE", has_candle), ("ASH", has_ash), ("BROKEN ARCH", has_arch))
+            if enabled
+        ]
+        return ("SCENE " + "/".join(parts), "  ░ wick ash ░  ", "░ . broken arch . ░")
+    return (
+        "场景 回响/现场/轻响" if lang == "zh" else "SCENE ECHO / FIELD / RIFT",
+        "  ░ 现场噪声 ░  " if lang == "zh" else "  ░ field noise ░  ",
+        "░ · 轻响 · ░" if lang == "zh" else "░ . rift dust . ░",
+    )
+
+
+def _scene_has_any(scene: str, tokens: tuple[str, ...]) -> bool:
+    return any(token in scene for token in tokens)
 
 
 def _center_canvas_text(text: str, width: int) -> str:

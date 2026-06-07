@@ -975,6 +975,8 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
     assert "VOX seal the chant" in screen
     assert "VOX There. The wick forg..." not in screen
     assert "ENM armor cracking" in screen
+    assert "SCENE CANDLE/ASH/BROKEN ARCH" in screen
+    assert "wick ash" in screen
     assert "candle" in screen
     assert "broken arch" in screen
     assert "SEAL -16 HP" in screen
@@ -1020,6 +1022,8 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         assert "攻击" in zh_wait
         assert "ATB 就绪" in zh_wait
         assert "裁判  等待" in zh_wait
+        assert "场景 烛火/灰烬/断拱" in zh_screen
+        assert "灰烬烛影" in zh_screen
         assert "稳住" in zh_screen
         trace_state = zh_loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
         trace_state.enemies[0].chant_charge_turns = 2
@@ -1091,7 +1095,8 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         assert ". candle ." not in zh_wait
         assert ". broken arch ." not in zh_wait
         assert "等待第一缕回声" in zh_wait
-        assert "·烛影·" in zh_wait
+        assert "场景 烛火/灰烬/断拱" in zh_wait
+        assert "灰烬烛影" in zh_wait
         assert "· 断拱 ·" in zh_wait
         canvas_lines = [line for line in zh_screen.splitlines() if line.startswith("█")][:25]
         canvas = "\n".join(canvas_lines)
@@ -1117,6 +1122,66 @@ def test_unicode_battle_screen_embeds_scene_and_hero_voice_in_canvas(bundle):
         for candidate in (zh_screen, zh_wait, zh_trace):
             for line in candidate.splitlines():
                 assert visual_width(line) <= zh_width
+
+    ascii_screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=100,
+        unicode_mode=False,
+        scene_text="ash candles flicker under a broken arch",
+    )
+    assert "ash candles flicker under a broken arch" in ascii_screen
+    assert "SCENE CANDLE/ASH/BROKEN ARCH" not in ascii_screen
+
+
+@pytest.mark.parametrize(
+    ("scene_text", "expected", "undertone"),
+    [
+        (
+            "a guard gate sealed by shield fragments",
+            "SCENE GATE / SHIELD FRAGMENTS / ASH",
+            "shield fragments",
+        ),
+        ("green mire haze and vial fog", "SCENE MIRE / VIALS / FOG", "green vials"),
+        (
+            "the archive opens under missing pages and index dust",
+            "SCENE ARCHIVE / PAGES / INDEX",
+            "missing pages",
+        ),
+        (
+            "rusted grave engine and crank nails",
+            "SCENE GRAVE / GEARS / ENGINE",
+            "grave nails",
+        ),
+    ],
+)
+def test_unicode_battle_screen_draws_scene_layer_variants(
+    bundle, scene_text, expected, undertone
+):
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=120,
+        unicode_mode=True,
+        scene_text=scene_text,
+    )
+
+    assert expected in screen
+    assert undertone in screen
+    assert "VOX seal the chant" in screen
+    assert "SEAL -16 HP" in screen
+    for line in screen.splitlines():
+        assert visual_width(line) <= 120
 
 
 def test_unicode_battle_screen_embeds_resource_thresholds_in_canvas(bundle):
