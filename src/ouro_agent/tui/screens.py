@@ -20,7 +20,7 @@ from ouro_agent.art.block_sprites import (
     enemy_block_sprite,
     hero_block_sprite,
 )
-from ouro_agent.art.battle_dialogue import select_dialogue_line
+from ouro_agent.art.battle_dialogue import select_dialogue_category, select_dialogue_line
 from ouro_agent.art.glyphs import bar, hp_bar, mp_bar, atb_bar, status_indicator
 from ouro_agent.art.weapon_cards import battle_weapon_line, hero_weapon_card, hero_weapon_card_art
 from ouro_agent.content import CodexStage, ContentBundle, EnemyData, HeroData
@@ -92,6 +92,31 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
     "threat": {"en": "THREAT", "zh": "威胁"},
     "focus": {"en": "FOCUS", "zh": "焦点"},
     "select": {"en": "SELECT", "zh": "选定"},
+}
+
+_HERO_VOICE_CUE_TAGS: dict[str, dict[str, str]] = {
+    "intro": {"en": "OPENING", "zh": "开场"},
+    "advantage": {"en": "ADVANTAGE", "zh": "优势"},
+    "low_hp": {"en": "LOW HP", "zh": "低血"},
+    "mp_low": {"en": "MP LOW", "zh": "低蓝"},
+    "interrupt_success": {"en": "INTERRUPT", "zh": "打断"},
+    "build_trigger": {"en": "BUILD", "zh": "构筑"},
+    "boss_phase": {"en": "BOSS", "zh": "首领"},
+    "near_defeat": {"en": "LAST STAND", "zh": "濒死"},
+}
+
+_ENEMY_VOICE_CUE_TAGS: dict[str, dict[str, str]] = {
+    "none": {"en": "NONE", "zh": "无目标"},
+    "down": {"en": "DOWN", "zh": "倒下"},
+    "charge": {"en": "CHARGE", "zh": "蓄力"},
+    "cast": {"en": "CAST", "zh": "施法"},
+    "silenced": {"en": "SILENCED", "zh": "沉默"},
+    "strike": {"en": "STRIKE", "zh": "攻击"},
+    "hit": {"en": "HIT", "zh": "受击"},
+    "window": {"en": "WINDOW", "zh": "窗口"},
+    "low_hp": {"en": "LOW HP", "zh": "低血"},
+    "ready": {"en": "READY", "zh": "就绪"},
+    "watch": {"en": "WATCH", "zh": "观测"},
 }
 
 
@@ -2922,13 +2947,20 @@ def _render_cinematic_beat_panel(
     strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text, unicode_mode=unicode_mode)
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
     script_lines = _turn_script_lines(state, last_record, frame, width=max_text, lang=lang)
+    vox_cue = _hero_voice_cue_tag(
+        frame=frame,
+        hp_pct=hero_hp_pct,
+        mp_pct=hero_mp_pct,
+        lang=lang,
+    )
+    enm_cue = _enemy_voice_cue_tag(state, last_record, frame, lang=lang)
 
     vox_label = "VOX" if lang == "en" else "声"
     enm_label = "ENM" if lang == "en" else "敌"
     body = [
         *script_lines,
-        f"{vox_label}   {fit_text(_director_text(vox_raw, lang), max_text)}",
-        f"{enm_label}   {fit_text(_director_text(enm_raw, lang), max_text)}",
+        _voice_cue_line(vox_label, vox_cue, _director_text(vox_raw, lang), max_text),
+        _voice_cue_line(enm_label, enm_cue, _director_text(enm_raw, lang), max_text),
         f"{'FLOAT' if lang == 'en' else '浮字'} {fit_text(float_raw, max_text)}",
         f"{'STRIP' if lang == 'en' else '节奏'} {fit_text(strip_raw, max_text)}",
     ]
@@ -2940,6 +2972,72 @@ def _render_cinematic_beat_panel(
         body.append(f"{'LOG' if lang == 'en' else '日志'}   {label('no_events', lang)}")
 
     return list(pixel_panel(title, body, width, tone=_frame_tone(frame)).lines)
+
+
+def _voice_cue_line(label_text: str, cue_tag: str, text: str, width: int) -> str:
+    prefix = f"{label_text}   [{cue_tag}] "
+    remaining = max(8, width - visual_width(prefix))
+    return f"{prefix}{fit_text(text, remaining)}"
+
+
+def _hero_voice_cue_tag(
+    *,
+    frame: BattleFrame | None,
+    hp_pct: float,
+    mp_pct: float,
+    lang: str,
+) -> str:
+    category = select_dialogue_category(frame=frame, hp_pct=hp_pct, mp_pct=mp_pct)
+    tags = _HERO_VOICE_CUE_TAGS.get(category, _HERO_VOICE_CUE_TAGS["intro"])
+    return tags.get(lang, tags["en"])
+
+
+def _enemy_voice_cue_tag(
+    state: BattleState,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    lang: str,
+) -> str:
+    tag_key = _enemy_voice_cue_key(state, record, frame)
+    tags = _ENEMY_VOICE_CUE_TAGS.get(tag_key, _ENEMY_VOICE_CUE_TAGS["watch"])
+    return tags.get(lang, tags["en"])
+
+
+def _enemy_voice_cue_key(
+    state: BattleState,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+) -> str:
+    target = _screen_target(state, record)
+    if target is None:
+        return "none"
+    if not target.is_alive:
+        return "down"
+    if record is not None and record.side == "enemy":
+        kind = str((record.enemy_action or {}).get("type", "attack"))
+        if kind == "chant_charge":
+            return "charge"
+        if kind == "chant_release":
+            return "cast"
+        if kind == "silenced":
+            return "silenced"
+        return "strike"
+    if (
+        record is not None
+        and record.side == "hero"
+        and record.judge is not None
+        and record.judge.damage > 0
+        and target.id in record.judge.target_ids
+    ):
+        return "hit"
+    if frame.counter_clock or target.chant_progress > 0:
+        return "window"
+    if target.hp / max(1, target.max_hp) <= 0.3:
+        return "low_hp"
+    if target.atb >= 90:
+        return "ready"
+    return "watch"
 
 
 def _select_enemy_line(

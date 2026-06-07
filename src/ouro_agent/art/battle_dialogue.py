@@ -380,6 +380,16 @@ def select_dialogue_line(
     return localized[tick % len(localized)]
 
 
+def select_dialogue_category(
+    *,
+    frame: BattleFrame | None,
+    hp_pct: float,
+    mp_pct: float,
+) -> str:
+    """Return the situational dialogue category without selecting a line."""
+    return _select_category(frame=frame, hp_pct=hp_pct, mp_pct=mp_pct)
+
+
 def _select_category(*, frame: BattleFrame | None, hp_pct: float, mp_pct: float) -> str:
     if hp_pct < 0.18:
         return "near_defeat"

@@ -40,6 +40,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - Encounter briefing now opens with a mini-stage: left hero silhouette, right enemy silhouette, threat rail, window rail, director line, and the original brief fields kept for readability.
 - Battle frames now include a `DECISION FOCUS` HUD that gathers action, plan, risk, prompt/build alignment, next step, and counter window status before the detailed action lens.
 - `CINEMATIC BEAT` now starts with a fixed `THREAT -> SELECT -> IMPACT -> JUDGE -> MEANING` turn script chain in English and Chinese, so each battle frame reads as one tactical cause/effect beat instead of scattered fields.
+- `CINEMATIC BEAT` VOX/ENM lines now carry situational cue tags such as `[INTERRUPT]`, `[HIT]`, `[打断]`, and `[受击]`, while the top battle canvas keeps its short bark bubbles.
 - Battle reports now open with an after-action stage: hero silhouette, fallen-enemy silhouette, result rail, damage rail, next lens, and bilingual director readout before the detailed result board.
 - Battle report result, turn-map, and play-next sections now render as pixel HUD panels while preserving the same tactical readout and rematch commands.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
@@ -47,10 +48,10 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 
 ### Validation
 
-- `venv312/bin/python -m pytest` -> `380 passed`
+- `venv312/bin/python -m pytest` -> `387 passed`
 - `venv312/bin/ouro validate-content` -> content OK
 - `git diff --check` -> no whitespace errors
-- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 380 tests collected; 247 release-bound text files.`
+- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 387 tests collected; 247 release-bound text files.`
 - `venv312/bin/python scripts/release_check.py --privacy-scan-only` -> no likely plaintext secrets
 - Clean venv install smoke: `/private/tmp/ouro_install_smoke_20260601/bin/python -m pip install .`
 - Installed CLI smoke from `/private/tmp`: `ouro --version`, `ouro doctor`, `ouro demo --seed 1`, `ouro play --mock --seed 1 --no-animation --no-trace`, `ouro codex`, `ouro runs --limit 1`, `ouro run-report`, `ouro history --limit 1`, and `ouro status`

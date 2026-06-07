@@ -4,7 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from ouro_agent.art.battle_dialogue import DIALOGUE_CATEGORIES, HERO_DIALOGUE, select_dialogue_line
+from ouro_agent.art.battle_dialogue import (
+    DIALOGUE_CATEGORIES,
+    HERO_DIALOGUE,
+    select_dialogue_category,
+    select_dialogue_line,
+)
 from ouro_agent.content import load_content_bundle
 from ouro_agent.tui.frame_builder import BattleFrame
 
@@ -90,6 +95,46 @@ def test_dialogue_selector_responds_to_distinct_battle_situations():
     assert "pattern" in samples["build_trigger"].lower()
     assert "second wick" in samples["boss_phase"].lower()
     assert "last candle" in samples["near_defeat"].lower()
+
+
+def test_dialogue_category_selector_exposes_same_situational_logic():
+    """REQ-CINEVOICECUE-001: renderers can tag dialogue without duplicating logic."""
+    assert select_dialogue_category(frame=None, hp_pct=1.0, mp_pct=1.0) == "intro"
+    assert select_dialogue_category(frame=None, hp_pct=0.25, mp_pct=1.0) == "low_hp"
+    assert select_dialogue_category(frame=None, hp_pct=0.1, mp_pct=1.0) == "near_defeat"
+    assert select_dialogue_category(frame=None, hp_pct=1.0, mp_pct=0.1) == "mp_low"
+    assert (
+        select_dialogue_category(
+            frame=_frame(event_banner="SEAL PLACED"),
+            hp_pct=1.0,
+            mp_pct=1.0,
+        )
+        == "interrupt_success"
+    )
+    assert (
+        select_dialogue_category(
+            frame=_frame(event_banner="BUILD ONLINE"),
+            hp_pct=1.0,
+            mp_pct=1.0,
+        )
+        == "build_trigger"
+    )
+    assert (
+        select_dialogue_category(
+            frame=_frame(event_banner="BOSS PHASE II"),
+            hp_pct=1.0,
+            mp_pct=1.0,
+        )
+        == "boss_phase"
+    )
+    assert (
+        select_dialogue_category(
+            frame=_frame(risk="MP below interrupt cost"),
+            hp_pct=1.0,
+            mp_pct=1.0,
+        )
+        == "mp_low"
+    )
 
 
 def test_dialogue_selector_uses_localized_lines():

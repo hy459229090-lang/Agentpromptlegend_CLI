@@ -303,12 +303,12 @@ ouro history --lang zh --limit 5
 | 批量试跑与数值报告 | 可用 | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-380%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-387%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`380 测试通过`。任何测试都不联网。
+`387 测试通过`。任何测试都不联网。
 
 ---
 

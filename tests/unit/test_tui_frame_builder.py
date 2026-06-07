@@ -1563,6 +1563,44 @@ def test_cinematic_beat_reports_turn_script_chain(bundle, language, width):
         assert visual_width(line) <= width
 
 
+@pytest.mark.parametrize("language", ["en", "zh"])
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_cinematic_beat_marks_vox_enm_with_context_cues(bundle, language, width):
+    """REQ-CINEVOICECUE-001: VOX/ENM lines explain why their barks appeared."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language=language), seed=1, language=language)
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language=language,
+        width=width,
+        unicode_mode=True,
+    )
+    panel = _cinematic_panel(screen, language=language)
+
+    if language == "zh":
+        assert "声   [打断]" in panel
+        assert "敌   [受击] 护甲开裂" in panel
+        assert "声 封住咏唱" in screen
+        assert "敌 护甲开裂" in screen
+        assert "VOX" not in panel
+        assert "ENM" not in panel
+    else:
+        assert "VOX   [INTERRUPT]" in panel
+        assert "ENM   [HIT] armor cracking" in panel
+        assert "VOX seal the chant" in screen
+        assert "ENM armor cracking" in screen
+        assert "VOX [INTERRUPT] seal the chant" not in screen
+
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
 def test_turn_script_chain_covers_wait_and_enemy_frames(bundle):
     """REQ-TURNSCRIPT-001: wait/enemy frames also keep the same script chain."""
     from ouro_agent.tui.screens import render_battle_screen
