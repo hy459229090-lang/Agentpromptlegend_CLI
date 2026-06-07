@@ -308,6 +308,12 @@ def test_battle_report_summarizes_action_mix(bundle):
     report = render_battle_report(state, records, language="en")
     assert report.isascii()
     assert "BATTLE REPORT" in report
+    assert "AFTER-ACTION STAGE" in report
+    assert "HERO Astia" in report
+    assert "FALLEN ENEMY" in report
+    assert "RESULT RAIL" in report
+    assert "DAMAGE RAIL" in report
+    assert "NEXT LENS" in report
     assert "BATTLE RESULT BOARD" in report
     assert "BATTLE TURN MAP" in report
     assert "[FLOW] H" in report
@@ -342,6 +348,12 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
     state, records = _run(bundle, seed=1)
     report = render_battle_report(state, records, language="zh")
 
+    assert "战后结算镜头" in report
+    assert "英雄 " in report
+    assert "倒下敌方" in report
+    assert "结果轨道" in report
+    assert "伤害轨道" in report
+    assert "下一镜头" in report
     assert "战斗结果板" in report
     assert "[结果]" in report
     assert "[结果] 胜利" in report
@@ -365,6 +377,20 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
     assert "[读法]" in report
 
     report_lines = report.splitlines()
+    stage_start = next(
+        index
+        for index, line in enumerate(report_lines)
+        if "英雄 " in line and "战后结算镜头" in line
+    )
+    stage_end = report_lines.index("战斗结果板")
+    stage_text = "\n".join(report_lines[stage_start:stage_end])
+    assert "AFTER-ACTION STAGE" not in stage_text
+    assert "FALLEN ENEMY" not in stage_text
+    assert "RESULT RAIL" not in stage_text
+    assert "DAMAGE RAIL" not in stage_text
+    assert "NEXT LENS" not in stage_text
+    assert "wick ash" not in stage_text
+
     start = report_lines.index("战斗结果板")
     end = report_lines.index("回合轨道", start)
     board_text = "\n".join(report_lines[start : end + 6])
@@ -540,6 +566,10 @@ def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, cap
     assert "Next Build Pick:" in out
     assert "BATTLE COMPLETE" in out
     assert "BATTLE REPORT" in out
+    assert "AFTER-ACTION STAGE" in out
+    assert "RESULT RAIL" in out
+    assert "DAMAGE RAIL" in out
+    assert "NEXT LENS" in out
     assert "PLAY NEXT BOARD" in out
     assert (
         "  [REMATCH] ouro play --mock --hero hero_shadow_apprentice "

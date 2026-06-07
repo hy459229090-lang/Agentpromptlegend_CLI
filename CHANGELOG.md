@@ -35,6 +35,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - README and README.zh now add a Steam-style screenshot wall that shows main menu, encounter briefing, battle canvas, and after-action report before the engineering notes.
 - Canvas battle sprites now render distinct block-art variants for shadow, fire, poison, holy, physical, observe, and cast poses; center effect lanes use stronger low-pixel tracks, and README battle media reflects the new visual grammar.
 - Encounter briefing now opens with a mini-stage: left hero silhouette, right enemy silhouette, threat rail, window rail, director line, and the original brief fields kept for readability.
+- Battle reports now open with an after-action stage: hero silhouette, fallen-enemy silhouette, result rail, damage rail, next lens, and bilingual director readout before the detailed result board.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
 - `ouro menu` now opens as a framed main menu console with a recommended next command, status HUD, player journey board, and grouped entry commands instead of a plain text index.
 

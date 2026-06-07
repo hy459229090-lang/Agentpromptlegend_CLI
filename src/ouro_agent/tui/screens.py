@@ -4977,6 +4977,17 @@ def render_battle_report(
 
     lines = [label("battle_report_title", lang), ""]
     lines.extend(
+        _render_after_action_stage(
+            state,
+            records,
+            damage_dealt=damage_dealt,
+            damage_taken=damage_taken,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
+    lines.extend(
         _render_battle_result_board(
             state,
             hero_turns=len(hero_records),
@@ -5032,6 +5043,137 @@ def render_battle_report(
         lines.extend(status_details)
     lines.extend(["", *_render_play_next_board(state, records, lang=lang)])
     return "\n".join(_wrap_screen_lines(lines, width))
+
+
+def _render_after_action_stage(
+    state: BattleState,
+    records: list[TurnRecord],
+    *,
+    damage_dealt: int,
+    damage_taken: int,
+    lang: str,
+    width: int,
+) -> list[str]:
+    target = _battle_report_focus_enemy(state, records)
+    left_width = 18 if width < 92 else 22
+    right_width = 18 if width < 92 else 22
+    center_width = max(18, width - 4 - left_width - right_width - 6)
+    hero_art = _hero_sprite(state.hero, None)[:3]
+    enemy_art = _enemy_sprite(target, None)[:3] if target is not None else ["", "", ""]
+    if lang == "zh" and target is not None and target.hp <= 0 and len(enemy_art) >= 3:
+        enemy_art[2] = "灰烬"
+    while len(hero_art) < 3:
+        hero_art.append("")
+    while len(enemy_art) < 3:
+        enemy_art.append("")
+
+    hero_turns = sum(1 for record in records if record.side == "hero")
+    enemy_turns = sum(1 for record in records if record.side == "enemy")
+    result_value = _battle_report_result_value(state.result, lang=lang)
+    result_current = {
+        "victory": 10,
+        "defeat": 2,
+        "timeout": 5,
+        "ongoing": 5,
+    }.get(state.result or "ongoing", 5)
+    damage_total = max(1, damage_dealt + damage_taken)
+    next_lens = _battle_report_next_lens(state, lang=lang)
+    enemy_name = (
+        f"[{target.short_glyph}] {target.name}" if target is not None else "-"
+    )
+    if lang == "zh":
+        title = "战后结算镜头"
+        hero_name = f"英雄 {state.hero.name}"
+        enemy_label = f"倒下敌方 {enemy_name}"
+        center_rows = [
+            f"结果轨道 {bar(result_current, 10, width=10)} {result_value}",
+            f"伤害轨道 {bar(damage_dealt, damage_total, width=10)} 造成 {damage_dealt} / 承受 {damage_taken}",
+            f"下一镜头 {next_lens}",
+        ]
+        director = f"导演 回合 {hero_turns}+{enemy_turns} / tick {state.tick}"
+    else:
+        title = "AFTER-ACTION STAGE"
+        hero_name = f"HERO {state.hero.name}"
+        enemy_label = f"FALLEN ENEMY {enemy_name}"
+        center_rows = [
+            f"RESULT RAIL {bar(result_current, 10, width=10)} {result_value}",
+            f"DAMAGE RAIL {bar(damage_dealt, damage_total, width=10)} dealt {damage_dealt} / taken {damage_taken}",
+            f"NEXT LENS {next_lens}",
+        ]
+        director = f"DIRECTOR turns {hero_turns}+{enemy_turns} / tick {state.tick}"
+
+    return [
+        _report_stage_row(hero_name, title, enemy_label, left_width, center_width, right_width),
+        _report_stage_row(hero_art[0], center_rows[0], enemy_art[0], left_width, center_width, right_width),
+        _report_stage_row(hero_art[1], center_rows[1], enemy_art[1], left_width, center_width, right_width),
+        _report_stage_row(hero_art[2], center_rows[2], enemy_art[2], left_width, center_width, right_width),
+        fit_text(director, max(16, width - 2)),
+    ]
+
+
+def _report_stage_row(
+    left: str,
+    center: str,
+    right: str,
+    left_width: int,
+    center_width: int,
+    right_width: int,
+) -> str:
+    return (
+        f"{pad_right(fit_text(left, left_width), left_width)} | "
+        f"{pad_right(fit_text(center, center_width), center_width)} | "
+        f"{pad_right(fit_text(right, right_width), right_width)}"
+    )
+
+
+def _battle_report_focus_enemy(
+    state: BattleState,
+    records: list[TurnRecord],
+) -> Enemy | None:
+    target_ids: list[str] = []
+    for record in reversed(records):
+        if record.judge is not None:
+            target_ids.extend(record.judge.target_ids)
+        if record.action is not None:
+            target_ids.extend(record.action.targets)
+    for target_id in target_ids:
+        enemy = next((enemy for enemy in state.enemies if enemy.id == target_id), None)
+        if enemy is not None:
+            return enemy
+    defeated = [enemy for enemy in state.enemies if enemy.hp <= 0]
+    if defeated:
+        return max(defeated, key=lambda enemy: enemy.max_hp)
+    return max(state.enemies, key=lambda enemy: enemy.max_hp, default=None)
+
+
+def _battle_report_result_value(result: str | None, *, lang: str) -> str:
+    key = result or "ongoing"
+    if lang == "zh":
+        return {
+            "victory": "胜利",
+            "defeat": "失败",
+            "timeout": "超时",
+            "ongoing": "进行中",
+        }.get(key, "进行中")
+    return key
+
+
+def _battle_report_next_lens(state: BattleState, *, lang: str) -> str:
+    if lang == "zh":
+        if state.result == "victory":
+            return "保留构筑，推进压力样本"
+        if state.result == "defeat":
+            return "复盘最后两回合，切 control"
+        if state.result == "timeout":
+            return "补输出，减少防御循环"
+        return "继续观察行动帧"
+    if state.result == "victory":
+        return "keep build, raise pressure sample"
+    if state.result == "defeat":
+        return "review last two turns, switch control"
+    if state.result == "timeout":
+        return "add damage, reduce defense loops"
+    return "continue watching turn frames"
 
 
 def _battle_report_prompt_style(state: BattleState, records: list[TurnRecord]) -> str:

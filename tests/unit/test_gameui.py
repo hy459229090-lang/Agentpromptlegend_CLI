@@ -678,6 +678,9 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                 ("LOG",),
             ),
             "report": (
+                ("AFTER-ACTION STAGE",),
+                ("RESULT RAIL",),
+                ("DAMAGE RAIL",),
                 ("Result:",),
                 ("Tactical Diagnosis:",),
                 ("Build note:",),
@@ -707,6 +710,9 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
                 ("日志",),
             ),
             "report": (
+                ("战后结算镜头",),
+                ("结果轨道",),
+                ("伤害轨道",),
                 ("结果:",),
                 ("战术诊断:",),
                 ("Build 备注:",),
