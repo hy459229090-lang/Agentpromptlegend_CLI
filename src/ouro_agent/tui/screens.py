@@ -444,7 +444,10 @@ def _render_canvas_duel_panel(
     if target is not None:
         enemy_pose = _actor_pose(target.id, last_record)
         if not target.is_alive:
-            enemy_pose = "death"
+            if frame.event_banner in {"KILL CONFIRMED", "BOSS DOWN"}:
+                enemy_pose = "codex_reveal"
+            else:
+                enemy_pose = "death"
         elif target.hp / max(1, target.max_hp) < 0.3 and enemy_pose not in ("hit", "death"):
             enemy_pose = "low"
         enemy_art = enemy_block_sprite(target.short_glyph, enemy_pose)

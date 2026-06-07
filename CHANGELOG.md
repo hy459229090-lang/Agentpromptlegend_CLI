@@ -48,6 +48,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - Unicode battle Canvas now shows a `WINDOW PRESSURE` / `窗口压力` HUD rail for chant/counter timing, covering ready, cooldown, MP-blocked, answered, stable, and cleared states without changing combat rules.
 - Unicode battle Canvas now shows a readable `SCENE` / `场景` layer for candle/ash/arch, gate/shield, mire/fog, archive/pages, and grave/engine stage textures without changing combat rules.
 - Monster art now includes a `codex_reveal` pose in ASCII and Unicode block assets, so Codex cards and defeated-enemy after-action stages can show a card-like `[CDX]` reveal without changing combat rules.
+- Unicode battle Canvas now uses the `codex_reveal` monster pose on `KILL CONFIRMED` and `BOSS DOWN` frames, so the kill moment itself shows the card-like Codex reveal before the after-action report.
 - Battle reports now open with an after-action stage: hero silhouette, fallen-enemy silhouette, result rail, damage rail, next lens, and bilingual director readout before the detailed result board.
 - Battle report result, turn-map, and play-next sections now render as pixel HUD panels while preserving the same tactical readout and rematch commands.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
@@ -55,10 +56,10 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 
 ### Validation
 
-- `venv312/bin/python -m pytest` -> `397 passed`
+- `venv312/bin/python -m pytest` -> `400 passed`
 - `venv312/bin/ouro validate-content` -> content OK
 - `git diff --check` -> no whitespace errors
-- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 397 tests collected; 247 release-bound text files.`
+- `venv312/bin/python scripts/release_check.py --evidence-only` -> `Evidence counts OK: 400 tests collected; 247 release-bound text files.`
 - `venv312/bin/python scripts/release_check.py --privacy-scan-only` -> no likely plaintext secrets
 - Clean venv install smoke: `/private/tmp/ouro_install_smoke_20260601/bin/python -m pip install .`
 - Installed CLI smoke from `/private/tmp`: `ouro --version`, `ouro doctor`, `ouro demo --seed 1`, `ouro play --mock --seed 1 --no-animation --no-trace`, `ouro codex`, `ouro runs --limit 1`, `ouro run-report`, `ouro history --limit 1`, and `ouro status`

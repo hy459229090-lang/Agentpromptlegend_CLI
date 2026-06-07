@@ -612,13 +612,126 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "0/60" in down
+    assert "KILL CONFIRMED" in down
+    assert "WOUND" in down
     assert "DOWN" in down
+    assert "ACTION" in down
+    assert "JUDGE" in down
+    assert "▐CDX▌" in down
+
+    ascii_down = render_battle_screen(
+        state,
+        hit_record(12),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=False,
+    )
+    assert ascii_down.isascii()
+    assert "▐CDX▌" not in ascii_down
+    assert "DOWN" in ascii_down
+
+    zh_down = render_battle_screen(
+        state,
+        hit_record(12),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "▐CDX▌" in zh_down
+    assert "击杀确认" in zh_down
+    assert "KILL CONFIRMED" not in zh_down
 
     for screen in (hold, execute, down):
         assert "PLAN" in screen
         assert "ACTION" in screen
         assert "JUDGE" in screen
         for line in screen.splitlines():
+            assert visual_width(line) <= width
+    for line in zh_down.splitlines():
+        assert visual_width(line) <= width
+
+
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_codex_reveal_on_boss_down(bundle, width):
+    """REQ-KILLCODEXFRAME-001: Boss kill frames reuse the Codex reveal pose."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_ash_guardian", ["enemy_black_candle_high_priest_archive"])
+    boss = state.enemies[0]
+    boss.hp = 0
+    record = TurnRecord(
+        tick=420,
+        actor_id=state.hero.id,
+        side="hero",
+        raw_text="analysis: finish the archive-bound candle before the enrage loop",
+        validation=None,
+        action=HeroAction(
+            type="basic_attack",
+            targets=(boss.id,),
+        ),
+        judge=JudgeOutcome(
+            valid=True,
+            reason="basic_attack resolved",
+            summary=f"basic_attack -> {boss.id} | 50 dmg",
+            damage=50,
+            target_ids=(boss.id,),
+            action_kind="basic_attack",
+        ),
+        battle_session_id="be_boss_down_codex",
+        static_context_hash="ctx_boss_down_codex",
+    )
+
+    frame = build_battle_frame(state, record)
+    assert frame.event_banner == "BOSS DOWN"
+
+    screen = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "BOSS DOWN" in screen
+    assert "WOUND" in screen
+    assert "DOWN" in screen
+    assert "ACTION" in screen
+    assert "JUDGE" in screen
+    assert "▐CDX▌" in screen
+
+    zh_screen = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=width,
+        unicode_mode=True,
+    )
+    assert "首领击破" in zh_screen
+    assert "▐CDX▌" in zh_screen
+    assert "BOSS DOWN" not in zh_screen
+
+    ascii_screen = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=False,
+    )
+    assert ascii_screen.isascii()
+    assert "▐CDX▌" not in ascii_screen
+
+    for rendered in (screen, zh_screen, ascii_screen):
+        for line in rendered.splitlines():
             assert visual_width(line) <= width
 
 
