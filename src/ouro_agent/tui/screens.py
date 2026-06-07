@@ -4419,23 +4419,210 @@ def render_encounter_briefing(
     max_text = max(24, width - 4)
     if lang == "zh":
         body = [
+            *_render_encounter_mini_stage(
+                state,
+                enemies,
+                threat=threat,
+                window=window,
+                plan=plan,
+                lang=lang,
+                width=width,
+            ),
+            "",
+            "简报字段:",
+        ]
+        body.extend(
+            _encounter_briefing_legacy_body(
+                roster,
+                threat,
+                build_line,
+                window,
+                plan,
+                lang=lang,
+            )
+        )
+        return "\n".join(
+            pixel_panel(
+                "遭遇简报",
+                [fit_text(line, max_text) for line in body],
+                width,
+                tone="counter",
+            ).lines
+        )
+    body = [
+        *_render_encounter_mini_stage(
+            state,
+            enemies,
+            threat=threat,
+            window=window,
+            plan=plan,
+            lang=lang,
+            width=width,
+        ),
+        "",
+        "BRIEF FIELDS:",
+        *_encounter_briefing_legacy_body(
+            roster,
+            threat,
+            build_line,
+            window,
+            plan,
+            lang=lang,
+        ),
+    ]
+    return "\n".join(
+        pixel_panel(
+            "ENCOUNTER BRIEFING",
+            [fit_text(line, max_text) for line in body],
+            width,
+            tone="counter",
+        ).lines
+    )
+
+
+def _render_encounter_mini_stage(
+    state: BattleState,
+    enemies: list[Enemy],
+    *,
+    threat: str,
+    window: str,
+    plan: str,
+    lang: str,
+    width: int,
+) -> list[str]:
+    target = _encounter_focus_enemy(enemies)
+    left_width = 18 if width < 92 else 22
+    right_width = 18 if width < 92 else 22
+    center_width = max(18, width - 4 - left_width - right_width - 6)
+    hero_art = _hero_sprite(state.hero, None)[:3]
+    enemy_art = _enemy_sprite(target, None)[:3] if target is not None else ["", "", ""]
+    while len(hero_art) < 3:
+        hero_art.append("")
+    while len(enemy_art) < 3:
+        enemy_art.append("")
+
+    if lang == "zh":
+        title = "入场镜头"
+        hero_name = f"英雄 {state.hero.name}"
+        enemy_name = (
+            f"敌方 [{target.short_glyph}] {target.name}" if target is not None else "敌方 -"
+        )
+        center_rows = [
+            f"威胁轨道 {_encounter_threat_rail(enemies, lang=lang)}",
+            f"窗口轨道 {_encounter_window_rail(enemies, state.hero, lang=lang)}",
+            f"开局 {plan}",
+        ]
+    else:
+        title = "MINI STAGE"
+        hero_name = f"HERO {state.hero.name}"
+        enemy_name = (
+            f"ENEMY [{target.short_glyph}] {target.name}" if target is not None else "ENEMY -"
+        )
+        center_rows = [
+            f"THREAT RAIL {_encounter_threat_rail(enemies, lang=lang)}",
+            f"WINDOW RAIL {_encounter_window_rail(enemies, state.hero, lang=lang)}",
+            f"OPEN {plan}",
+        ]
+
+    rows = [
+        _encounter_stage_row(hero_name, title, enemy_name, left_width, center_width, right_width),
+        _encounter_stage_row(hero_art[0], center_rows[0], enemy_art[0], left_width, center_width, right_width),
+        _encounter_stage_row(hero_art[1], center_rows[1], enemy_art[1], left_width, center_width, right_width),
+        _encounter_stage_row(hero_art[2], center_rows[2], enemy_art[2], left_width, center_width, right_width),
+    ]
+    if threat:
+        label_text = "导演" if lang == "zh" else "DIRECTOR"
+        rows.append(f"{label_text} {fit_text(threat, max(16, width - 14))}")
+    return rows
+
+
+def _encounter_stage_row(
+    left: str,
+    center: str,
+    right: str,
+    left_width: int,
+    center_width: int,
+    right_width: int,
+) -> str:
+    return (
+        f"{pad_right(fit_text(left, left_width), left_width)} | "
+        f"{pad_right(fit_text(center, center_width), center_width)} | "
+        f"{pad_right(fit_text(right, right_width), right_width)}"
+    )
+
+
+def _encounter_focus_enemy(enemies: list[Enemy]) -> Enemy | None:
+    if not enemies:
+        return None
+    chant = [enemy for enemy in enemies if enemy.chant_charge_turns]
+    if chant:
+        return max(chant, key=lambda enemy: (enemy.chant_progress, enemy.atb))
+    high_atb = max(enemies, key=lambda enemy: enemy.atb)
+    if high_atb.atb >= 80:
+        return high_atb
+    return max(enemies, key=lambda enemy: enemy.max_hp)
+
+
+def _encounter_threat_rail(enemies: list[Enemy], *, lang: str) -> str:
+    if not enemies:
+        return "[----------] clear" if lang == "en" else "[----------] 已清"
+    focus = _encounter_focus_enemy(enemies)
+    if focus is None:
+        return "[----------] clear" if lang == "en" else "[----------] 已清"
+    if focus.chant_charge_turns:
+        current = max(focus.chant_progress, 1 if focus.atb >= 80 else 0)
+        maximum = max(1, focus.chant_charge_turns)
+        suffix = (
+            f"chant {focus.chant_progress}/{maximum}"
+            if lang == "en"
+            else f"吟唱 {focus.chant_progress}/{maximum}"
+        )
+        return f"{bar(current, maximum, width=10)} {suffix}"
+    suffix = f"ATB {focus.atb}" if lang == "en" else f"ATB {focus.atb}"
+    return f"{bar(focus.atb, 100, width=10)} {suffix}"
+
+
+def _encounter_window_rail(enemies: list[Enemy], hero: Hero, *, lang: str) -> str:
+    interrupt = _first_interrupt_skill(hero)
+    chant = [enemy for enemy in enemies if enemy.chant_charge_turns]
+    if not chant:
+        return "[----------] watch ATB" if lang == "en" else "[----------] 观察 ATB"
+    focus = max(chant, key=lambda enemy: (enemy.chant_progress, enemy.atb))
+    current = focus.chant_progress
+    maximum = max(1, focus.chant_charge_turns)
+    funded = interrupt is not None and interrupt.is_ready(hero.mp)
+    if lang == "zh":
+        state = "可打断" if funded else "未就绪"
+        return f"{bar(current, maximum, width=10)} {state}"
+    state = "READY" if funded else "NOT READY"
+    return f"{bar(current, maximum, width=10)} {state}"
+
+
+def _encounter_briefing_legacy_body(
+    roster: str,
+    threat: str,
+    build_line: str,
+    window: str,
+    plan: str,
+    *,
+    lang: str,
+) -> list[str]:
+    if lang == "zh":
+        body = [
             f"[敌人] {roster}",
             f"[威胁] {threat}",
             f"[构筑] {build_line}",
             f"[窗口] {window}",
             f"[计划] {plan}",
         ]
-        return "\n".join(
-            pixel_panel("遭遇简报", [fit_text(line, max_text) for line in body], width, tone="counter").lines
-        )
-    body = [
+        return body
+    return [
         f"[ENEMY] {roster}",
         f"[THREAT] {threat}",
         f"[BUILD] {build_line}",
         f"[WINDOW] {window}",
         f"[PLAN] {plan}",
     ]
-    return "\n".join(pixel_panel("ENCOUNTER BRIEFING", [fit_text(line, max_text) for line in body], width, tone="counter").lines)
 
 
 def _encounter_roster_line(enemies: list[Enemy], *, lang: str) -> str:

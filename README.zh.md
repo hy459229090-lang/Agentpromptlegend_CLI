@@ -1,9 +1,11 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
-<p align="right">
-  <strong>语言切换 / Language:</strong>
-  <a href="README.zh.md">中文</a> |
-  <a href="README.md#english-store-page">English</a> |
+<p align="center">
+  <strong>语言切换 / Language: 中文 / English</strong><br>
+  <a href="README.zh.md"><strong>中文介绍页</strong></a>
+  &nbsp;|&nbsp;
+  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
+  &nbsp;|&nbsp;
   CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
@@ -15,17 +17,18 @@
   <strong>先构筑 Agent，再放进地牢，看你的 Prompt 是否扛得住压力。</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
-  <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
+  <sub>商店页式介绍：训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
 </p>
 
 <table>
   <tr>
-    <th colspan="4">选择介绍页 / Choose Your Page</th>
+    <th colspan="5">选择介绍页 / Choose Your Page</th>
   </tr>
   <tr>
     <td align="center"><strong>中文</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
     <td align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong><br><sub>中英入口</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看游戏画面 / Media Gallery</strong><br><sub>商店式截图墙</sub></a></td>
     <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
 </table>
@@ -34,6 +37,12 @@
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
   <br><strong>首屏胶囊图 / Hero Capsule</strong><br>
   <sub>一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。</sub>
+</p>
+
+<p align="center">
+  <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
+  <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
+  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT。先看到四个真实 UI 时刻，再读工程说明。</sub>
 </p>
 
 | 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |

@@ -19,11 +19,15 @@ def test_readme_covers_install_mock_provider_and_privacy():
     examples_readme = (ROOT / "examples/README.md").read_text(encoding="utf-8")
     media_files = (
         "examples/ouro-readme-storefront.svg",
+        "examples/ouro-readme-screenshot-wall.svg",
         "examples/ouro-weapon-gallery.svg",
         "examples/ouro-battle-canvas.svg",
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    screenshot_wall = (ROOT / "examples/ouro-readme-screenshot-wall.svg").read_text(
+        encoding="utf-8"
+    )
     english_intro = text.split("## Quickstart", 1)[0]
     zh_intro = zh_text.split("## 快速开始", 1)[0]
 
@@ -31,6 +35,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "商店页封面 / Storefront Hero" in zh_text
     assert "Language Switch / 语言切换" in text
     assert "语言切换 / Language" in zh_text
+    assert "中文 / English" in text
+    assert "中文 / English" in zh_text
     assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
     assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
     assert "Model chooses. Local Judge decides." in text
@@ -47,6 +53,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in zh_text
     assert text.count('src="examples/ouro-readme-storefront.svg"') == 1
     assert zh_text.count('src="examples/ouro-readme-storefront.svg"') == 1
+    assert text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
+    assert zh_text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
     assert text.index("Storefront Hero / 商店页封面") < text.index("Screenshots: Build, Fight, Learn")
     assert text.index("Screenshots: Build, Fight, Learn") < text.index("## Core Loop")
     assert text.index("## Core Loop") < text.index("## Play Now")
@@ -65,6 +73,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "选择介绍页 / Choose Your Page" in zh_text
     assert "Hero Capsule" in text
     assert "首屏胶囊图" in zh_text
+    assert "Steam-style screenshot wall" in text
+    assert "商店式截图墙" in zh_text
+    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in text
+    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in zh_text
     assert "Build / Weapon Gallery / 武器图鉴" in text
     assert "Build / 武器图鉴 / Weapon Gallery" in zh_text
     assert 'src="examples/ouro-weapon-gallery.svg"' in text
@@ -136,6 +148,14 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "░▒▓▓██==&gt;" in battle_media
     assert "░░▓▓XX▓▓░" in battle_media
     assert "▓▓ SLN ▓▓" not in battle_media
+    assert "MAIN MENU CONSOLE" in screenshot_wall
+    assert "ENCOUNTER BRIEFING" in screenshot_wall
+    assert "MINI STAGE" in screenshot_wall
+    assert "THREAT RAIL" in screenshot_wall
+    assert "WINDOW RAIL" in screenshot_wall
+    assert "THE ECHO ALTAR" in screenshot_wall
+    assert "AFTER-ACTION REPORT" in screenshot_wall
+    assert "Model chooses. Local Judge decides." in screenshot_wall
     assert "STRIP [WIND]" in text
     assert "STRIP [WIND]" in zh_text
     assert "STRIP [WIND]" in battle_media
@@ -146,6 +166,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "windup ->" not in zh_text
     assert "windup -&gt;" not in battle_media
     assert "README media captures" in examples_readme
+    assert "screenshot wall" in examples_readme
     assert "storefront-friendly" in examples_readme
     assert "RUN READY BOARD" in text
     assert "THE ECHO ALTAR / COUNTER WINDOW" in text

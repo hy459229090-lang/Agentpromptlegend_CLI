@@ -1076,6 +1076,7 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
         render_start_screen,
     )
     from ouro_agent.config import OuroConfig
+    from ouro_agent.i18n import visual_width
 
     config = OuroConfig(provider="mock", model="mock-smart", language="en")
     hero = bundle.get_hero("hero_shadow_apprentice")
@@ -1106,12 +1107,27 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     )
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
-    encounter_state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    encounter_state = loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
     encounter = render_encounter_briefing(
         encounter_state,
         bundle,
         build,
         language="zh",
+        width=100,
+    )
+    loop_en = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    encounter_state_en = loop_en.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    encounter_en = render_encounter_briefing(
+        encounter_state_en,
+        bundle,
+        build,
+        language="en",
         width=100,
     )
 
@@ -1162,6 +1178,12 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "Online / 黑烛打断" not in setup_zh
     assert "[第一规则]" in setup_zh
     assert "遭遇简报" in encounter
+    assert "入场镜头" in encounter
+    assert "英雄 阿斯缇娅" in encounter
+    assert "敌方 [" in encounter
+    assert "威胁轨道" in encounter
+    assert "窗口轨道" in encounter
+    assert "简报字段:" in encounter
     assert "[敌人]" in encounter
     assert "[威胁]" in encounter
     assert "[构筑]" in encounter
@@ -1169,6 +1191,38 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "下次 guard" not in encounter
     assert "[窗口]" in encounter
     assert "[计划]" in encounter
+    assert encounter_en.isascii()
+    assert "ENCOUNTER BRIEFING" in encounter_en
+    assert "MINI STAGE" in encounter_en
+    assert "HERO Astia" in encounter_en
+    assert "ENEMY [" in encounter_en
+    assert "THREAT RAIL" in encounter_en
+    assert "WINDOW RAIL" in encounter_en
+    assert "BRIEF FIELDS:" in encounter_en
+    assert "[ENEMY]" in encounter_en
+    assert "[THREAT]" in encounter_en
+    assert "[BUILD]" in encounter_en
+    assert "[WINDOW]" in encounter_en
+    assert "[PLAN]" in encounter_en
+
+    for language, state_for_width in (
+        ("en", encounter_state_en),
+        ("zh", encounter_state),
+    ):
+        for width in (80, 100, 120):
+            compact = render_encounter_briefing(
+                state_for_width,
+                bundle,
+                build,
+                language=language,
+                width=width,
+            )
+            overflow = [
+                (line_number, visual_width(line), line)
+                for line_number, line in enumerate(compact.splitlines(), start=1)
+                if visual_width(line) > width
+            ]
+            assert not overflow, f"encounter/{language}/{width} overflow: {overflow[:3]}"
 
     for chrome in (
         "Provider:",

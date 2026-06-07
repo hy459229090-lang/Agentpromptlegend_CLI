@@ -32,7 +32,9 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - `docs/engineering/LICENSE_DECISION_20260601.md` gives the project owner a pending License/private-policy decision template without selecting a License automatically.
 - `ouro list-heroes` now uses each hero's own ASCII/Unicode low-pixel silhouette and expands the weapon gallery into 3-line weapon card art; `ouro list-heroes --unicode` previews the block-art roster before opening a hero card.
 - README and README.zh now open like a game storefront: bilingual switch, strong playable hook, hero capsule art, 30-second mock CTA, Build/Fight/Learn media gallery with weapon gallery art, visual combat language, and engineering/provider details moved behind the player-facing pitch.
+- README and README.zh now add a Steam-style screenshot wall that shows main menu, encounter briefing, battle canvas, and after-action report before the engineering notes.
 - Canvas battle sprites now render distinct block-art variants for shadow, fire, poison, holy, physical, observe, and cast poses; center effect lanes use stronger low-pixel tracks, and README battle media reflects the new visual grammar.
+- Encounter briefing now opens with a mini-stage: left hero silhouette, right enemy silhouette, threat rail, window rail, director line, and the original brief fields kept for readability.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
 - `ouro menu` now opens as a framed main menu console with a recommended next command, status HUD, player journey board, and grouped entry commands instead of a plain text index.
 

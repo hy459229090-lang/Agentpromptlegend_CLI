@@ -515,6 +515,10 @@ def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, cap
     assert "RUN SETUP" in out
     assert "Equipment Loadout" in out
     assert "ENCOUNTER BRIEFING" in out
+    assert "MINI STAGE" in out
+    assert "THREAT RAIL" in out
+    assert "WINDOW RAIL" in out
+    assert "BRIEF FIELDS:" in out
     assert "[ENEMY]" in out
     assert "[THREAT]" in out
     assert "[WINDOW]" in out

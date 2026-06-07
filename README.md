@@ -1,10 +1,12 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
-<p align="right">
-  <strong>Language Switch / 语言切换:</strong>
-  <a href="README.md#english-store-page">English</a> |
-  <a href="README.zh.md">中文</a> |
-  CLI: <code>ouro --lang en</code> / <code>ouro --lang zh</code>
+<p align="center">
+  <strong>Language Switch / 语言切换: 中文 / English</strong><br>
+  <a href="README.zh.md"><strong>中文介绍页</strong></a>
+  &nbsp;|&nbsp;
+  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
+  &nbsp;|&nbsp;
+  CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
 <a id="storefront-hero"></a>
@@ -15,7 +17,7 @@
   <strong>Build the Agent. Release the run. Watch the dungeon answer your Prompt.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
-  <sub>Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
+  <sub>Steam-style pitch: Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
 </p>
 
 <table>
@@ -25,7 +27,7 @@
   <tr>
     <td align="center"><a href="README.zh.md"><strong>中文</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery / 先看游戏画面</strong><br><sub>Real TUI Captures</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery / 先看游戏画面</strong><br><sub>Steam-style screenshot wall / Real TUI Captures</sub></a></td>
     <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
 </table>
@@ -34,6 +36,12 @@
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
   <br><strong>Hero Capsule / 首屏胶囊图</strong><br>
   <sub>One trained Agent, one local judge, and a dungeon that answers the Prompt.</sub>
+</p>
+
+<p align="center">
+  <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
+  <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
+  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT. Four real UI moments before the engineering notes begin.</sub>
 </p>
 
 | Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
