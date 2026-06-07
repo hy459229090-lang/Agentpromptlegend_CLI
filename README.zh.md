@@ -3,7 +3,7 @@
 <p align="center">
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
-  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩</sub>
+  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI</sub>
 </p>
 
 <p align="center">
@@ -18,16 +18,49 @@
   <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
+<table>
+  <tr>
+    <th>中文入口</th>
+    <th>English Entry</th>
+    <th>立即试玩</th>
+    <th>先看画面</th>
+  </tr>
+  <tr>
+    <td align="center"><strong>当前中文介绍页</strong><br><sub>不是工程日志开场</sub></td>
+    <td align="center"><a href="README.md#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub>离线、可复现、无需 API key</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery</strong><br><sub>Build / Fight / Learn</sub></a></td>
+  </tr>
+</table>
+
 <a id="storefront-hero"></a>
 
 ## 商店页封面 / Storefront Hero
 
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
+  <br><strong>选择语言，先看地牢动起来。</strong><br>
   <br><strong>你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
+</p>
+
+| Steam 商店页式卖点 | 在游玩里意味着什么 |
+|--------------------|--------------------|
+| **Prompt 就是你的 Build。** | 你在战前调校一个 Agent，开战后看这套策略在压力里成立还是崩盘。 |
+| **终端不是日志，而是竞技场。** | TUI 同屏展示左英雄 vs 右敌人、弹道、HP / MP / ATB、VOX / ENM 台词、命中浮字和本地裁判结果。 |
+| **AI 能选择，但不能作弊。** | 模型只输出结构化行动；合法性、伤害、奖励、失败和胜利都由确定性本地规则结算。 |
+| **每次失败都服务下一局。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
+
+<p align="center">
+  <strong>游戏标签：</strong>
+  <code>单人</code>
+  <code>AI 肉鸽</code>
+  <code>自动战斗</code>
+  <code>Prompt 构筑</code>
+  <code>Mock 离线</code>
+  <code>中文 / English</code>
 </p>
 
 <table>
@@ -51,6 +84,12 @@
 | 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |
 |----------------|-------------------------|----------------|
 | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+
+| 第一眼会看到什么 | 为什么它不是普通 CLI demo |
+|------------------|----------------------------|
+| **Build** | 武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前可见。 |
+| **Fight** | 屏幕是左右对战舞台，而不是原始日志滚动。 |
+| **Learn** | 战后复盘会解释节奏、失误、Codex 线索和下一次 Build 方向。 |
 
 <p align="center">
   <strong>首屏胶囊图 / Hero Capsule</strong><br>

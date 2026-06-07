@@ -40,6 +40,18 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "语言切换 / Language" in zh_text
     assert "中文 / English" in text
     assert "中文 / English" in zh_text
+    assert "切到中文介绍" in text
+    assert "当前中文介绍页" in zh_text
+    assert "Choose a language, then watch the dungeon move." in text
+    assert "选择语言，先看地牢动起来。" in zh_text
+    assert "The terminal is not a log. It is the arena." in text
+    assert "终端不是日志，而是竞技场。" in zh_text
+    assert "The AI can choose, but it cannot cheat." in text
+    assert "AI 能选择，但不能作弊。" in zh_text
+    assert "Game tags:" in text
+    assert "游戏标签：" in zh_text
+    assert "What you see first" in text
+    assert "第一眼会看到什么" in zh_text
     assert "Watch the run before reading the docs." in text
     assert "先看画面，再看工程说明。" in zh_text
     assert "Steam-Style Front Page / Steam 风格首页" in text

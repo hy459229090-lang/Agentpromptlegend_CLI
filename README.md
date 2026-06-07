@@ -3,7 +3,7 @@
 <p align="center">
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
-  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable</sub>
+  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI</sub>
 </p>
 
 <p align="center">
@@ -16,16 +16,49 @@
   <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
+<table>
+  <tr>
+    <th>中文入口</th>
+    <th>English Entry</th>
+    <th>Playable Now</th>
+    <th>First Screenshot</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>完整中文页，不只是翻译片段</sub></a></td>
+    <td align="center"><a href="#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub>offline, deterministic, no API key</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery</strong><br><sub>Build / Fight / Learn</sub></a></td>
+  </tr>
+</table>
+
 <a id="storefront-hero"></a>
 
 ## Storefront Hero / 商店页封面
 
 <p align="center">
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
+  <br><strong>Choose a language, then watch the dungeon move.</strong><br>
   <br><strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <sub>Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
+</p>
+
+| Steam Page Pitch | Why It Matters In Play |
+|------------------|------------------------|
+| **The Prompt is your build.** | You tune one Agent before combat, then watch that strategy hold or collapse under pressure. |
+| **The terminal is not a log. It is the arena.** | The TUI shows left hero vs right enemy, projectile lanes, HP / MP / ATB, VOX / ENM barks, floating hits, and local judge results. |
+| **The AI can choose, but it cannot cheat.** | The model picks a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
+| **Every loss teaches the next run.** | Reports, Codex progress, death history, and replayable traces turn failure into build advice. |
+
+<p align="center">
+  <strong>Game tags:</strong>
+  <code>Single-player</code>
+  <code>AI Roguelike</code>
+  <code>Auto Battler</code>
+  <code>Prompt Build</code>
+  <code>Offline Mock</code>
+  <code>Chinese / English</code>
 </p>
 
 <table>
@@ -49,6 +82,12 @@
 | Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
 |--------------------|----------------|-------------------------|
 | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+
+| What you see first | Why this is not a normal CLI demo |
+|--------------------|------------------------------------|
+| **Build** | Weapon cards, hero roles, AI behavior tags, and next-run commands are visible before combat. |
+| **Fight** | The screen presents a real battle stage instead of dumping raw logs. |
+| **Learn** | The after-action screen explains tempo, errors, Codex clues, and the next build path. |
 
 <p align="center">
   <strong>Hero Capsule / 首屏胶囊图</strong><br>
