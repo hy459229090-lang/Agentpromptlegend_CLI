@@ -2801,6 +2801,99 @@ def _decision_focus_counter_clock(counter_clock: str, *, lang: str) -> str:
     )
 
 
+def _turn_script_lines(
+    state: BattleState,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    width: int,
+    lang: str,
+) -> list[str]:
+    target = _screen_target(state, record)
+    action = _canvas_action_label(frame, record, target, hero=state.hero, lang=lang)
+    impact = _turn_script_impact(frame, lang=lang)
+    judge = _canvas_judge_label(frame.judge_label, lang=lang)
+    meaning = _turn_script_meaning(state, target, record, frame, lang=lang)
+    if lang == "zh":
+        entries = (
+            ("威胁", _battle_threat_clock(state, target, lang=lang)),
+            ("选定", action),
+            ("影响", impact),
+            ("裁判", judge),
+            ("意义", meaning),
+        )
+    else:
+        entries = (
+            ("THREAT", _battle_threat_clock(state, target, lang=lang)),
+            ("SELECT", action),
+            ("IMPACT", impact),
+            ("JUDGE", judge),
+            ("MEANING", meaning),
+        )
+    return [_turn_script_line(label, text, width) for label, text in entries]
+
+
+def _turn_script_line(label_text: str, text: str, width: int) -> str:
+    prefix = pad_right(label_text, 7)
+    remaining = max(8, width - visual_width(prefix) - 1)
+    return f"{prefix} {fit_text(text, remaining)}"
+
+
+def _turn_script_impact(frame: BattleFrame, *, lang: str) -> str:
+    if frame.impact_line:
+        return _canvas_impact_label(frame.impact_line, lang=lang)
+    if frame.floating_numbers:
+        values = [
+            _display_floating_number(value, lang=lang)
+            for value in frame.floating_numbers
+            if value
+        ]
+        if values:
+            return " | ".join(values)
+    return "等待结算" if lang == "zh" else "waiting for impact"
+
+
+def _turn_script_meaning(
+    state: BattleState,
+    target: Enemy | None,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    lang: str,
+) -> str:
+    if record is None:
+        return "先读 ATB 与反制窗口，再让模型选招" if lang == "zh" else "read ATB and windows before the first choice"
+    if frame.event_banner == "CHARGE BROKEN":
+        return "窗口已回应；爆发被取消" if lang == "zh" else "window answered; incoming burst canceled"
+    if frame.event_banner == "BREAK WINDOW OPEN":
+        return "窗口开启；下一次选择必须回应" if lang == "zh" else "window opened; next choice must answer it"
+    if frame.event_banner in {"KILL CONFIRMED", "BOSS DOWN"}:
+        return "击杀线成立；进入结算或保留资源" if lang == "zh" else "kill line resolved; resolve or preserve resources"
+    if frame.event_banner in {"BOSS PHASE II", "BOSS PHASE III"}:
+        return "首领节奏重置；重新读取威胁时钟" if lang == "zh" else "boss phase shifted; reset the threat clock"
+    if frame.event_banner == "CLIMAX HIT":
+        return "爆发已命中；检查下一波资源" if lang == "zh" else "tempo spike landed; check the next resource line"
+    if record.side == "enemy":
+        kind = str((record.enemy_action or {}).get("type", "attack"))
+        damage = (record.enemy_action or {}).get("damage", 0)
+        if kind == "chant_charge":
+            return "蓄力推进；下次英雄回合优先打断" if lang == "zh" else "chant advanced; next hero turn should interrupt"
+        if kind == "chant_release":
+            return "窗口已释放；先稳住血线再反击" if lang == "zh" else "window released; stabilize HP before answering"
+        if kind == "silenced":
+            return "控制成立；把安全回合转为输出" if lang == "zh" else "control held; convert the safe beat into pressure"
+        if isinstance(damage, int) and damage > 0:
+            return "血线承压；下一步优先稳住或击杀" if lang == "zh" else "HP pressure rose; next choice must stabilize or kill"
+        return "敌方行动已结算；更新下一步计划" if lang == "zh" else "enemy action resolved; update the next plan"
+    if record.judge is not None and not record.judge.valid:
+        return "本地裁判兜底；节奏可能下滑" if lang == "zh" else "local judge kept the run legal; tempo may fall"
+    if frame.impact_line and "next interrupt: no" in frame.impact_line:
+        return "命中有效，但下次打断资源不足" if lang == "zh" else "hit landed, but the next interrupt is unfunded"
+    if target is not None and not target.is_alive:
+        return "目标倒下；读取胜利或下一目标" if lang == "zh" else "target is down; read victory or the next target"
+    return _battle_next_step(state, target, frame, lang=lang)
+
+
 def _render_cinematic_beat_panel(
     state: BattleState,
     last_record: TurnRecord | None,
@@ -2828,10 +2921,12 @@ def _render_cinematic_beat_panel(
     float_raw = _build_cinematic_float(frame, width=max_text, lang=lang)
     strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text, unicode_mode=unicode_mode)
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
+    script_lines = _turn_script_lines(state, last_record, frame, width=max_text, lang=lang)
 
     vox_label = "VOX" if lang == "en" else "声"
     enm_label = "ENM" if lang == "en" else "敌"
     body = [
+        *script_lines,
         f"{vox_label}   {fit_text(_director_text(vox_raw, lang), max_text)}",
         f"{enm_label}   {fit_text(_director_text(enm_raw, lang), max_text)}",
         f"{'FLOAT' if lang == 'en' else '浮字'} {fit_text(float_raw, max_text)}",

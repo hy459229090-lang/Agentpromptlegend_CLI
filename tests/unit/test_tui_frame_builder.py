@@ -76,6 +76,14 @@ def _focus_record(hero_id: str = "hero_shadow_apprentice") -> TurnRecord:
     )
 
 
+def _cinematic_panel(screen: str, *, language: str) -> str:
+    title = "CINEMATIC BEAT" if language == "en" else "战斗分镜"
+    next_title = "BATTLE THESIS" if language == "en" else "战斗命题"
+    start = screen.index(title)
+    end = screen.find(next_title, start)
+    return screen[start : end if end != -1 else len(screen)]
+
+
 def test_battle_frame_exposes_director_fields(bundle):
     loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
     state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
@@ -1515,6 +1523,95 @@ def test_battle_readout_uses_beat_film_instead_of_loose_log_dump(bundle, languag
     assert all("..." not in line for line in log_lines)
     for line in screen.splitlines():
         assert visual_width(line) <= width
+
+
+@pytest.mark.parametrize("language", ["en", "zh"])
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_cinematic_beat_reports_turn_script_chain(bundle, language, width):
+    """REQ-TURNSCRIPT-001: Cinematic Beat exposes one turn-level cause/effect chain."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language=language), seed=1, language=language)
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    screen = render_battle_screen(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language=language,
+        width=width,
+    )
+    panel = _cinematic_panel(screen, language=language)
+
+    if language == "zh":
+        markers = ("威胁", "选定", "影响", "裁判", "意义")
+        assert "行动 HEX -> c" in panel
+        assert "命中-16" in panel
+        assert "建立击杀线" in panel
+    else:
+        markers = ("THREAT", "SELECT", "IMPACT", "JUDGE", "MEANING")
+        assert "ACTION HEX -> c" in panel
+        assert "HIT-16 MP72>72 INT:Y" in panel
+        assert "use Shadow Sting to create a kill line" in panel
+
+    positions = [panel.index(marker) for marker in markers]
+    assert positions == sorted(positions)
+    assert "[01 MODEL]" not in panel
+    assert "analysis:" not in panel
+    for line in screen.splitlines():
+        assert visual_width(line) <= width
+
+
+def test_turn_script_chain_covers_wait_and_enemy_frames(bundle):
+    """REQ-TURNSCRIPT-001: wait/enemy frames also keep the same script chain."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    wait_screen = render_battle_screen(
+        state,
+        None,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=100,
+    )
+    wait_panel = _cinematic_panel(wait_screen, language="en")
+    assert "SELECT  ACTION WAIT" in wait_panel
+    assert "IMPACT  waiting for impact" in wait_panel
+    assert "MEANING read ATB and windows before the first choice" in wait_panel
+
+    enemy = state.enemies[0]
+    enemy.chant_charge_turns = 2
+    enemy.chant_progress = 1
+    enemy_record = TurnRecord(
+        tick=10,
+        actor_id=enemy.id,
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_turnscript",
+        static_context_hash="ctx_turnscript",
+    )
+    enemy_screen = render_battle_screen(
+        state,
+        enemy_record,
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=100,
+    )
+    enemy_panel = _cinematic_panel(enemy_screen, language="en")
+    assert "THREAT" in enemy_panel
+    assert "SELECT  ACTION ENEMY CHARGE" in enemy_panel
+    assert "IMPACT  CHARGE WIN:OPEN" in enemy_panel
+    assert "JUDGE   LOCAL" in enemy_panel
+    assert "MEANING window opened; next choice must answer it" in enemy_panel
 
 
 @pytest.mark.parametrize("language", ["en", "zh"])
