@@ -94,6 +94,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": ["  (x)", "  /|>!", "  / \\", " broken"],
         "low": ["  (c)", "  /|>", "  / \\", " blade low"],
         "death": ["   .", "  /_\\", "  ash", ""],
+        "codex_reveal": [" +---+", " |c| ", " |CDX|", " +---+"],
     },
     "k": {
         "idle": [" ~(k)~", " /|w|\\", "  / \\", " candle ring"],
@@ -103,6 +104,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": [" ~(k)~", " /|x|!", "  / \\", " chant broken"],
         "low": [" ~(k)~", " /|w|\\", "  / \\", " flame dim"],
         "death": ["   .", "  /_\\", " wick ash", ""],
+        "codex_reveal": [" +---+", " |k| ", " |CDX|", " +---+"],
     },
     "C": {
         "idle": ["  [C]", " /|>|", " /|\\", " torn banner"],
@@ -112,6 +114,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": ["  [X]!", " /|>", " /|", " rite broken"],
         "low": ["  [C]", " /|>", " /", " banner low"],
         "death": ["  .", " /_\\", " torn cloth", ""],
+        "codex_reveal": [" +---+", " |C| ", " |CDX|", " +---+"],
     },
     "K": {
         "idle": [" ((K))", " /|w|\\", " / ^ \\", " rite ring"],
@@ -121,6 +124,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": [" ((X))", " /|x|!", " /", " rite cut"],
         "low": [" ((K))", " /|w|", " /", " ring dim"],
         "death": ["  . .", "  /_\\", " ring ash", ""],
+        "codex_reveal": [" +---+", " |K| ", " |CDX|", " +---+"],
     },
     "B": {
         "idle": [" <BOSS>", " /|W|\\", " /###\\", " archive flame"],
@@ -130,6 +134,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": [" <BRK>", " /|x|!", " /#", " archive break"],
         "low": [" <BOSS>", " /|W|", " /#", " phase gutter"],
         "death": ["  .#.", " /___\\", " archive ash", ""],
+        "codex_reveal": [" +---+", " |B| ", " |CDX|", " +---+"],
     },
     "r": {
         "idle": ["  ,r,", " <\\_/", "  ^^", " mire teeth"],
@@ -139,6 +144,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": ["  ,x!", " <\\_", "  ^", " spine break"],
         "low": ["  ,r", " <\\_", "  ^", " belly low"],
         "death": ["  ..", " _/ ", " mire still", ""],
+        "codex_reveal": [" +---+", " |r| ", " |CDX|", " +---+"],
     },
     "S": {
         "idle": ["  <S>", " /\\_/\\", "  /\\", " stinger high"],
@@ -148,6 +154,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": ["  <X!", " /\\_", "  /", " sting cut"],
         "low": ["  <S", " /\\_", "  /", " stinger low"],
         "death": ["  .", " /__\\", " venom dry", ""],
+        "codex_reveal": [" +---+", " |S| ", " |CDX|", " +---+"],
     },
     "w": {
         "idle": ["  {w}", " ~| |~", "  / \\", " ash drift"],
@@ -157,6 +164,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": ["  {x}!", " ~|", "  /", " veil broken"],
         "low": ["  {w}", " ~|", "  /", " smoke thin"],
         "death": ["  .", " ~ ~", " ash fall", ""],
+        "codex_reveal": [" +---+", " |w| ", " |CDX|", " +---+"],
     },
     "G": {
         "idle": [" [GOL]", " /[#]\\", " _/ \\_", " ash plates"],
@@ -166,6 +174,7 @@ ENEMY_SPRITES: dict[str, dict[str, list[str]]] = {
         "break": [" [BRK]", " /[x]!", " _/", " core open"],
         "low": [" [GOL]", " /[#]", " _/", " plates low"],
         "death": [" [___]", "  /_\\", " ash rubble", ""],
+        "codex_reveal": [" +---+", " |G| ", " |CDX|", " +---+"],
     },
 }
 

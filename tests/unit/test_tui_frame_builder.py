@@ -2887,15 +2887,17 @@ def test_reusable_art_assets_cover_mvp_heroes_enemies_and_weapons(bundle):
             if pose == "observe":
                 assert tuple(block_sprite) != generic_idle
 
+    required_enemy_poses = ("idle", "attack", "skill", "hit", "break", "low", "death", "codex_reveal")
     for enemy in bundle.enemies.values():
         assert enemy.short_glyph in ENEMY_SPRITES
         assert enemy.short_glyph in ENEMY_BLOCK_SPRITES
-        ascii_sprite = enemy_sprite(enemy.short_glyph, "idle")
-        block_sprite = enemy_block_sprite(enemy.short_glyph, "idle")
-        assert len(ascii_sprite) >= 4
-        assert len(block_sprite) >= 4
-        assert "\n".join(ascii_sprite).isascii()
-        assert all(visual_width(line) <= 8 for line in block_sprite)
+        for pose in required_enemy_poses:
+            ascii_sprite = enemy_sprite(enemy.short_glyph, pose)
+            block_sprite = enemy_block_sprite(enemy.short_glyph, pose)
+            assert len(ascii_sprite) >= 4
+            assert len(block_sprite) >= 4
+            assert "\n".join(ascii_sprite).isascii()
+            assert all(visual_width(line) <= 8 for line in block_sprite)
 
     from ouro_agent.tui.screens import _enemy_sprite, _hero_sprite
 
@@ -2913,7 +2915,7 @@ def test_mvp_enemy_silhouettes_are_family_and_tier_distinct(bundle):
     from ouro_agent.art.battle_assets import ENEMY_SPRITES, enemy_sprite
     from ouro_agent.art.block_sprites import ENEMY_BLOCK_SPRITES, enemy_block_sprite
 
-    required_poses = ("idle", "attack", "skill", "hit", "break", "low", "death")
+    required_poses = ("idle", "attack", "skill", "hit", "break", "low", "death", "codex_reveal")
     glyphs = [enemy.short_glyph for enemy in bundle.enemies.values()]
 
     assert glyphs == ["c", "C", "k", "K", "B", "r", "S", "w", "G"]
@@ -2986,6 +2988,7 @@ def test_monster_variant_silhouettes_render_in_canvas_and_codex(bundle):
     assert "▐S▒▒▌" in scorpion_screen
     assert "▐█G█▌" in golem_screen
     assert "▐S▒▒▌" in scorpion_card
+    assert "▐CDX▌" in scorpion_card
     assert "▐▒c▒▌" not in scorpion_screen
     assert "▐▓k▓▌" not in golem_screen
     for output in (scorpion_screen, golem_screen, scorpion_card):

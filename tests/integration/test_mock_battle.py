@@ -349,6 +349,7 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "AFTER-ACTION STAGE" in report
     assert "HERO Astia" in report
     assert "FALLEN ENEMY" in report
+    assert "|CDX|" in report
     assert "RESULT RAIL" in report
     assert "DAMAGE RAIL" in report
     assert "NEXT LENS" in report
@@ -435,6 +436,7 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
     assert "DAMAGE RAIL" not in stage_text
     assert "NEXT LENS" not in stage_text
     assert "wick ash" not in stage_text
+    assert "|CDX|" in stage_text
 
     start = stage_end
     end = next(

@@ -395,7 +395,9 @@ def test_codex_card_observed(bundle):
     assert "[OB]" in card
     assert "EVENT: CODEX REVEAL [OB]" in card
     assert "BLOCK SILHOUETTE" in card
+    assert "BLOCK SILHOUETTE / CODEX REVEAL" in card
     assert "▐▓k▓▌" in card
+    assert "▐CDX▌" in card
     assert "Black Candle Acolyte" in card
     assert "Observed" in card
     assert "COUNTER PLAN BOARD" in card

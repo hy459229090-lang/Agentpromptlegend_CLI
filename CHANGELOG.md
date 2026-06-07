@@ -46,6 +46,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - `CINEMATIC BEAT` VOX/ENM lines now carry situational cue tags such as `[INTERRUPT]`, `[HIT]`, `[打断]`, and `[受击]`, while the top battle canvas keeps its short bark bubbles.
 - Unicode battle Canvas now shows a `WINDOW PRESSURE` / `窗口压力` HUD rail for chant/counter timing, covering ready, cooldown, MP-blocked, answered, stable, and cleared states without changing combat rules.
 - Unicode battle Canvas now shows a readable `SCENE` / `场景` layer for candle/ash/arch, gate/shield, mire/fog, archive/pages, and grave/engine stage textures without changing combat rules.
+- Monster art now includes a `codex_reveal` pose in ASCII and Unicode block assets, so Codex cards and defeated-enemy after-action stages can show a card-like `[CDX]` reveal without changing combat rules.
 - Battle reports now open with an after-action stage: hero silhouette, fallen-enemy silhouette, result rail, damage rail, next lens, and bilingual director readout before the detailed result board.
 - Battle report result, turn-map, and play-next sections now render as pixel HUD panels while preserving the same tactical readout and rematch commands.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.

@@ -5538,9 +5538,10 @@ def _render_after_action_stage(
     right_width = 18 if width < 92 else 22
     center_width = max(18, width - 4 - left_width - right_width - 6)
     hero_art = _hero_sprite(state.hero, None)[:3]
-    enemy_art = _enemy_sprite(target, None)[:3] if target is not None else ["", "", ""]
-    if lang == "zh" and target is not None and target.hp <= 0 and len(enemy_art) >= 3:
-        enemy_art[2] = "灰烬"
+    if target is not None and target.hp <= 0:
+        enemy_art = asset_enemy_sprite(target.short_glyph, "codex_reveal")[:3]
+    else:
+        enemy_art = _enemy_sprite(target, None)[:3] if target is not None else ["", "", ""]
     while len(hero_art) < 3:
         hero_art.append("")
     while len(enemy_art) < 3:
@@ -9381,9 +9382,8 @@ def _codex_sprite_lines(glyph: str, stage: CodexStage, *, width: int) -> list[st
         title = "FOG SILHOUETTE"
         art = _fog_sprite(enemy_block_sprite(glyph, "idle"))
     else:
-        title = "BLOCK SILHOUETTE"
-        pose = "break" if stage >= CodexStage.MASTERED else "idle"
-        art = enemy_block_sprite(glyph, pose)
+        title = "BLOCK SILHOUETTE / CODEX REVEAL"
+        art = enemy_block_sprite(glyph, "codex_reveal")
     lines = [_codex_line(title, width)]
     for row in art[:5]:
         lines.append(_codex_line("  " + row, width))
