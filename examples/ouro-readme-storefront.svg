@@ -33,7 +33,7 @@
   <rect width="1280" height="720" fill="url(#bg)"/>
   <rect x="42" y="38" width="1196" height="644" rx="24" fill="#0b1016" stroke="#33414a" stroke-width="2" filter="url(#soft)"/>
   <text x="76" y="102" class="mono title">OURO AGENT</text>
-  <text x="79" y="140" class="mono subtitle">Prompt Legend / train one hero Agent, then watch the dungeon answer back</text>
+  <text x="79" y="140" class="mono subtitle">Prompt Legend / build the mind, release the run, read the scars</text>
   <text x="79" y="177" class="mono small">CLI roguelike  |  auto-battler  |  prompt-building game  |  mock playable offline</text>
   <rect x="76" y="206" width="218" height="42" rx="8" fill="#26343b" stroke="#5c7077"/>
   <text x="97" y="234" class="mono label">MODEL CHOOSES</text>
@@ -47,7 +47,7 @@
   <text x="100" y="318" class="mono label">HERO [CNDL] ASTIA</text>
   <text x="462" y="318" class="mono label">THE ECHO ALTAR / COUNTER WINDOW</text>
   <text x="866" y="318" class="mono label">ENEMY [k] ACOLYTE</text>
-  <text x="100" y="356" class="mono line">VOX seal the chant</text>
+  <text x="100" y="356" class="mono line">VOX [INTERRUPT] seal</text>
   <text x="100" y="392" class="mono line">   .^.</text>
   <text x="100" y="424" class="mono line">  /|c|==*</text>
   <text x="100" y="456" class="mono line">   / \</text>
@@ -58,9 +58,9 @@
   <text x="462" y="404" class="mono accent">        SEAL -16 HP</text>
   <text x="462" y="448" class="mono line">░░░▒▒▓▓████▓▓▒▒░░░</text>
   <text x="462" y="502" class="mono line">DECISION FOCUS  ACTION HEX -&gt; k</text>
-  <text x="462" y="534" class="mono line">RISK tempo | WINDOW answered | VALID</text>
+  <text x="462" y="534" class="mono line">RISK tempo | JUDGE VALID | Echo Cost 0</text>
   <text x="462" y="566" class="mono small">Echo Cost 0 tokens / Ritual Time 12ms</text>
-  <text x="866" y="356" class="mono line">ENM the wick counts down</text>
+  <text x="866" y="356" class="mono line">ENM [HIT] armor cracking</text>
   <text x="866" y="392" class="mono line">    ~(k*)~</text>
   <text x="866" y="424" class="mono line">     /|w|\</text>
   <text x="866" y="456" class="mono line">     / \</text>

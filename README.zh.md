@@ -12,6 +12,10 @@
   &nbsp;|&nbsp;
   <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
   &nbsp;|&nbsp;
+  <a href="#screenshots-build-fight-learn"><strong>先看游戏画面 / Gameplay Screens</strong></a>
+  &nbsp;|&nbsp;
+  <a href="#play-now"><strong>立即试玩 / Play Now</strong></a>
+  &nbsp;|&nbsp;
   <a href="README.md"><strong>双语首页 / Bilingual README</strong></a>
   &nbsp;|&nbsp;
   <strong>CLI 语言切换 / CLI Language Toggle:</strong>
@@ -22,14 +26,14 @@
   <tr>
     <th>中文入口</th>
     <th>English Entry</th>
-    <th>立即试玩</th>
-    <th>先看画面</th>
+    <th>30 秒试玩</th>
+    <th>最佳第一屏</th>
   </tr>
   <tr>
     <td align="center"><strong>当前中文介绍页</strong><br><sub>不是工程日志开场</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub>离线、可复现、无需 API key</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery</strong><br><sub>Build / Fight / Learn</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub><code>ouro demo --lang zh --seed 1</code></sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看最佳画面</strong><br><sub>Gameplay Screens · Build / Fight / Learn</sub></a></td>
   </tr>
 </table>
 
@@ -46,13 +50,6 @@
   <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
 </p>
 
-| Steam 商店页式卖点 | 在游玩里意味着什么 |
-|--------------------|--------------------|
-| **Prompt 就是你的 Build。** | 你在战前调校一个 Agent，开战后看这套策略在压力里成立还是崩盘。 |
-| **终端不是日志，而是竞技场。** | TUI 同屏展示左英雄 vs 右敌人、弹道、HP / MP / ATB、VOX / ENM 台词、命中浮字和本地裁判结果。 |
-| **AI 能选择，但不能作弊。** | 模型只输出结构化行动；合法性、伤害、奖励、失败和胜利都由确定性本地规则结算。 |
-| **每次失败都服务下一局。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
-
 <p align="center">
   <strong>游戏标签：</strong>
   <code>单人</code>
@@ -65,12 +62,11 @@
 
 <table>
   <tr>
-    <th colspan="4">Steam 风格首页 / Steam-Style Front Page · 选择介绍页 / Choose Your Page</th>
+    <th colspan="3">Steam 风格首页 / Steam-Style Front Page · 选择介绍页 / Choose Your Page</th>
   </tr>
   <tr>
     <td align="center"><strong>中文 / Chinese</strong><br><sub>当前页面</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看最佳画面</strong><br><sub>先看游戏画面 / Media Gallery</sub></a></td>
     <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
 </table>
@@ -85,29 +81,38 @@
 |----------------|-------------------------|----------------|
 | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
 
-| 第一眼会看到什么 | 为什么它不是普通 CLI demo |
-|------------------|----------------------------|
-| **Build** | 武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前可见。 |
-| **Fight** | 屏幕是左右对战舞台，而不是原始日志滚动。 |
-| **Learn** | 战后复盘会解释节奏、失误、Codex 线索和下一次 Build 方向。 |
+<table>
+  <tr>
+    <td width="64%">
+      <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
+      <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。先看到真实 TUI 媒体，再读工程说明。</sub>
+    </td>
+    <td width="36%">
+      <strong>第一眼会看到什么</strong><br><br>
+      <strong>Build</strong><br>
+      武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前可见。<br><br>
+      <strong>Fight</strong><br>
+      屏幕是左右对战舞台，而不是原始日志滚动：左英雄、右敌人、中轴弹道、HP / MP / ATB、VOX / ENM、命中浮字和本地裁判同屏。<br><br>
+      <strong>Learn</strong><br>
+      战后复盘会解释节奏、失误、Codex 线索和下一次 Build 方向。
+    </td>
+  </tr>
+</table>
 
-<p align="center">
-  <strong>首屏胶囊图 / Hero Capsule</strong><br>
-  <sub>一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。</sub>
-</p>
-
-<p align="center">
-  <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
-  <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
-  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。先看到真实 TUI 媒体，再读工程说明。</sub>
-</p>
+| Steam 商店页式卖点 | 在游玩里意味着什么 |
+|--------------------|--------------------|
+| **Prompt 就是你的 Build。** | 你在战前调校一个 Agent，开战后看这套策略在压力里成立还是崩盘。 |
+| **终端不是日志，而是竞技场。** | TUI 是可读的左右对战舞台，不是滚动日志。 |
+| **AI 能选择，但不能作弊。** | 模型只输出结构化行动；合法性、伤害、奖励、失败和胜利都由确定性本地规则结算。 |
+| **每次失败都服务下一局。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
 
 <details>
-<summary>好的 Steam 页面会先展示什么 / What a Steam page would show first</summary>
+<summary>商店页信息结构 / 好的 Steam 页面会先展示什么 / What a Steam page would show first</summary>
 
 | 好的 Steam 页面会先展示什么 | 这个 README 现在怎么处理 |
 |-----------------------------|--------------------------|
-| **胶囊图和截图墙** | 首屏先给胶囊主视觉、四格截图墙和 Build/Fight/Learn 画廊，再进入架构与 Provider 文档。 |
+| **胶囊图和截图墙** | 首屏先给主视觉、四格截图墙和 Build/Fight/Learn 画廊，再进入架构与 Provider 文档。 |
 | **一句话玩家幻想** | 构筑一个 Agent，把它放进压力局，看你的 Prompt 能不能活下来。 |
 | **可玩状态和行动按钮** | `ouro demo --lang zh --seed 1` 与 `ouro demo --lang en --seed 1` 放在工程说明之前。 |
 | **用画面证明，不只写承诺** | 每张媒体图都标出可复现 CLI 命令，并展示 mock 可跑通的游戏界面。 |
@@ -115,6 +120,8 @@
 </details>
 
 ## 游戏胶囊 / Game Capsule
+
+首屏胶囊图 / Hero Capsule：一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。
 
 | 这是什么 | 你做什么 | 你会看到什么 | 为什么再开一局 |
 |----------|----------|--------------|----------------|
@@ -183,7 +190,8 @@ VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
 HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
 
 CINEMATIC BEAT
-  VOX There. The wick forgets its prayer.
+  VOX [INTERRUPT] There. The wick forgets its prayer.
+  ENM [HIT] armor cracking
   FLOAT -16 HP | SLN
   STRIP [WIND] ░SEAL LANE░ ▓HIT -16▓ █VALID█
 

@@ -25,6 +25,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    storefront_media = (ROOT / "examples/ouro-readme-storefront.svg").read_text(
+        encoding="utf-8"
+    )
     after_action_media = (ROOT / "examples/ouro-after-action.svg").read_text(
         encoding="utf-8"
     )
@@ -38,6 +41,12 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "商店页封面 / Storefront Hero" in zh_text
     assert "Language Switch / 语言切换" in text
     assert "语言切换 / Language" in zh_text
+    assert "Gameplay Screens / 先看游戏画面" in text
+    assert "先看游戏画面 / Gameplay Screens" in zh_text
+    assert "Play Now / 立即试玩" in text
+    assert "立即试玩 / Play Now" in zh_text
+    assert "30-Second Demo" in text
+    assert "30 秒试玩" in zh_text
     assert "中文 / English" in text
     assert "中文 / English" in zh_text
     assert "切到中文介绍" in text
@@ -52,6 +61,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "游戏标签：" in zh_text
     assert "What you see first" in text
     assert "第一眼会看到什么" in zh_text
+    assert "Store Page Pitch" in text
+    assert "Steam 商店页式卖点" in zh_text
     assert "Watch the run before reading the docs." in text
     assert "先看画面，再看工程说明。" in zh_text
     assert "Steam-Style Front Page / Steam 风格首页" in text
@@ -99,8 +110,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert text.index("## Core Loop") < text.index("## Play Now")
     assert text.index("## Play Now") < text.index("## Current Playable Content")
     assert text.index("## Current Playable Content") < text.index("## Languages")
-    assert zh_text.index("商店页封面 / Storefront Hero") < zh_text.index("先看游戏画面")
-    assert zh_text.index("先看游戏画面") < zh_text.index("## 每局你会做什么")
+    assert zh_text.index("商店页封面 / Storefront Hero") < zh_text.index(
+        "## 先看游戏画面"
+    )
+    assert zh_text.index("## 先看游戏画面") < zh_text.index("## 每局你会做什么")
     assert zh_text.index("## 每局你会做什么") < zh_text.index("## 立即试玩")
     assert zh_text.index("## 立即试玩") < zh_text.index("## 当前可玩内容")
     assert zh_text.index("## 当前可玩内容") < zh_text.index("## 双语机制")
@@ -206,6 +219,11 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "DECISION FOCUS" in screenshot_wall
     assert "AFTER-ACTION REPORT" in screenshot_wall
     assert "Model chooses. Local Judge decides." in screenshot_wall
+    assert "VOX [INTERRUPT]" in storefront_media
+    assert "ENM [HIT]" in storefront_media
+    assert "VOX [INTERRUPT]" in screenshot_wall
+    assert "ENM [HIT]" in screenshot_wall
+    assert "Build, Fight, Learn before the engineering notes begin" in screenshot_wall
     assert "DECISION FOCUS" in battle_media
     assert "WINDOW answered | JUDGE VALID | Echo Cost 0" in battle_media
     assert "STRIP [WIND]" in text

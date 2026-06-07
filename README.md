@@ -12,6 +12,10 @@
   &nbsp;|&nbsp;
   <a href="#english-store-page"><strong>English Store Page</strong></a>
   &nbsp;|&nbsp;
+  <a href="#screenshots-build-fight-learn"><strong>Gameplay Screens / 先看游戏画面</strong></a>
+  &nbsp;|&nbsp;
+  <a href="#play-now"><strong>Play Now / 立即试玩</strong></a>
+  &nbsp;|&nbsp;
   <strong>CLI Language Toggle / CLI 语言切换:</strong>
   <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
@@ -20,14 +24,14 @@
   <tr>
     <th>中文入口</th>
     <th>English Entry</th>
-    <th>Playable Now</th>
-    <th>First Screenshot</th>
+    <th>30-Second Demo</th>
+    <th>Best First Screen</th>
   </tr>
   <tr>
     <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>完整中文页，不只是翻译片段</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub>offline, deterministic, no API key</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery</strong><br><sub>Build / Fight / Learn</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub><code>ouro demo --lang en --seed 1</code></sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Gameplay Screens</strong><br><sub>Build / Fight / Learn</sub></a></td>
   </tr>
 </table>
 
@@ -44,13 +48,6 @@
   <sub>Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
 </p>
 
-| Steam Page Pitch | Why It Matters In Play |
-|------------------|------------------------|
-| **The Prompt is your build.** | You tune one Agent before combat, then watch that strategy hold or collapse under pressure. |
-| **The terminal is not a log. It is the arena.** | The TUI shows left hero vs right enemy, projectile lanes, HP / MP / ATB, VOX / ENM barks, floating hits, and local judge results. |
-| **The AI can choose, but it cannot cheat.** | The model picks a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
-| **Every loss teaches the next run.** | Reports, Codex progress, death history, and replayable traces turn failure into build advice. |
-
 <p align="center">
   <strong>Game tags:</strong>
   <code>Single-player</code>
@@ -63,12 +60,11 @@
 
 <table>
   <tr>
-    <th colspan="4">Steam-Style Front Page / Steam 风格首页 · Choose Your Page / 选择介绍页</th>
+    <th colspan="3">Steam-Style Front Page / Steam 风格首页 · Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
     <td align="center"><a href="README.zh.md"><strong>中文 / Chinese</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Best First Screen</strong><br><sub>Media Gallery / 先看游戏画面</sub></a></td>
     <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
 </table>
@@ -83,29 +79,38 @@
 |--------------------|----------------|-------------------------|
 | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
 
-| What you see first | Why this is not a normal CLI demo |
-|--------------------|------------------------------------|
-| **Build** | Weapon cards, hero roles, AI behavior tags, and next-run commands are visible before combat. |
-| **Fight** | The screen presents a real battle stage instead of dumping raw logs. |
-| **Learn** | The after-action screen explains tempo, errors, Codex clues, and the next build path. |
+<table>
+  <tr>
+    <td width="64%">
+      <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
+      <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub>
+    </td>
+    <td width="36%">
+      <strong>What you see first</strong><br><br>
+      <strong>Build</strong><br>
+      Weapon cards, hero roles, AI behavior tags, and next-run commands are visible before combat.<br><br>
+      <strong>Fight</strong><br>
+      The screen presents a real battle stage instead of dumping raw logs: left hero, right enemy, projectile lane, HP / MP / ATB, VOX / ENM, floating hits, and local judge result.<br><br>
+      <strong>Learn</strong><br>
+      The after-action screen explains tempo, errors, Codex clues, and the next build path.
+    </td>
+  </tr>
+</table>
 
-<p align="center">
-  <strong>Hero Capsule / 首屏胶囊图</strong><br>
-  <sub>One trained Agent, one local judge, and a dungeon that answers the Prompt.</sub>
-</p>
-
-<p align="center">
-  <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
-  <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
-  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub>
-</p>
+| Store Page Pitch | Why It Matters In Play |
+|------------------|------------------------|
+| **The Prompt is your build.** | You tune one Agent before combat, then watch that strategy hold or collapse under pressure. |
+| **The terminal is not a log. It is the arena.** | The TUI shows a readable duel screen instead of a scrollback dump. |
+| **The AI can choose, but it cannot cheat.** | The model picks a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
+| **Every loss teaches the next run.** | Reports, Codex progress, death history, and replayable traces turn failure into build advice. |
 
 <details>
-<summary>What a Steam page would show first / 好的 Steam 页面会先展示什么</summary>
+<summary>Store page framing / What a Steam page would show first / 好的 Steam 页面会先展示什么</summary>
 
 | What a Steam page would show first | How this README now handles it |
 |------------------------------------|--------------------------------|
-| **Capsule art and screenshots** | Hero capsule, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
+| **Capsule art and screenshots** | Storefront hero, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
 | **A one-sentence fantasy** | Build one Agent, release it, and watch whether your Prompt survives pressure. |
 | **Playable status and CTA** | `ouro demo --lang en --seed 1` and `ouro demo --lang zh --seed 1` are above the engineering sections. |
 | **Feature proof, not promises** | Every media panel names a reproducible CLI command and uses mock-friendly game screens. |
@@ -113,6 +118,8 @@
 </details>
 
 ## Game Capsule / 游戏胶囊
+
+Hero Capsule / 首屏胶囊图: one trained Agent, one local judge, and a dungeon that answers the Prompt.
 
 | What this is | What you do | What you watch | Why one more run |
 |--------------|-------------|----------------|------------------|
@@ -180,7 +187,8 @@ VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
 HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
 
 CINEMATIC BEAT
-  VOX There. The wick forgets its prayer.
+  VOX [INTERRUPT] There. The wick forgets its prayer.
+  ENM [HIT] armor cracking
   FLOAT -16 HP | SLN
   STRIP [WIND] ░SEAL LANE░ ▓HIT -16▓ █VALID█
 

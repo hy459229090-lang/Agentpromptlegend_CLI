@@ -36,6 +36,7 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - README and README.zh now add a Game Capsule section and "watch the run first" intro so GitHub opens more like a player-facing game page than a project index.
 - README and README.zh now add a Steam-style front-page switch with Chinese/English player paths, mock demo CTAs, media-first positioning, and README media updated to show the current `DECISION FOCUS` battle HUD.
 - README and README.zh now push the storefront visual into the first hero section, put the 30-second mock CTA before the screenshot wall, and fold the Steam-page rationale so the default read feels like a game intro instead of a project index.
+- README and README.zh now sharpen the player-storefront first screen with visible Gameplay Screens / Play Now navigation, a larger Build/Fight/Learn screenshot wall, and README media that mirrors the current `VOX [INTERRUPT]` / `ENM [HIT]` battle cue tags.
 - Canvas battle sprites now render distinct block-art variants for shadow, fire, poison, holy, physical, observe, and cast poses; center effect lanes use stronger low-pixel tracks, and README battle media reflects the new visual grammar.
 - Encounter briefing now opens with a mini-stage: left hero silhouette, right enemy silhouette, threat rail, window rail, director line, and the original brief fields kept for readability.
 - Battle frames now include a `DECISION FOCUS` HUD that gathers action, plan, risk, prompt/build alignment, next step, and counter window status before the detailed action lens.
