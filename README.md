@@ -1,20 +1,23 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
 <p align="center">
+  <strong>Build the mind. Release the run. Read the scars.</strong><br>
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
   <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI · Store page first, engineering later</sub>
 </p>
 
+## Player Start Panel / 玩家入口面板
+
 <table>
   <tr>
-    <th colspan="4">Language Switch / 语言切换 · 中文 / English</th>
+    <th colspan="4">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
     <td align="center"><strong>English (current)</strong><br><sub>game introduction first</sub></td>
     <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>中文入口 · 完整中文文档 / Full Chinese README</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn before docs</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
+    <td align="center"><a href="#play-now"><strong>ENTER THE RUN</strong><br><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH THE GAME</strong><br><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn before docs</sub></a></td>
   </tr>
   <tr>
     <td colspan="4" align="center">
@@ -24,6 +27,12 @@
     </td>
   </tr>
 </table>
+
+<p align="center">
+  <strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
+  <strong>玩家承诺：</strong>你设计 Agent 的战斗脑子，地牢负责验证它能不能活下来。<br>
+  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
+</p>
 
 <a id="storefront-hero"></a>
 
@@ -66,7 +75,7 @@
 <p align="center">
   <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
   <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
-  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
+  <sub>Pick a language, run one command, then look at the battle screen before the engineering notes.</sub>
 </p>
 
 | Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
@@ -93,10 +102,10 @@
   </tr>
 </table>
 
-| Store Page Pitch | Why It Matters In Play |
-|------------------|------------------------|
-| **The Prompt is your build.** | You tune one Agent before combat, then watch that strategy hold or collapse under pressure. |
-| **The terminal is not a log. It is the arena.** | The TUI shows a readable duel screen instead of a scrollback dump. |
+| Store Page Pitch | What The Screenshot Proves |
+|------------------|----------------------------|
+| **The Prompt is your build.** | Weapon cards, hero roles, Build badges, and prompt bias appear before combat. |
+| **The terminal is not a log. It is the arena.** | The TUI shows left hero, right enemy, effect lane, HP / MP / ATB, VOX / ENM, floating hits, and judge result in one frame. |
 | **The AI can choose, but it cannot cheat.** | The model picks a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
 | **Every loss teaches the next run.** | Reports, Codex progress, death history, and replayable traces turn failure into build advice. |
 

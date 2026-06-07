@@ -39,11 +39,19 @@ def test_readme_covers_install_mock_provider_and_privacy():
 
     assert "Storefront Hero / 商店页封面" in text
     assert "商店页封面 / Storefront Hero" in zh_text
+    assert "Player Start Panel / 玩家入口面板" in text
+    assert "玩家入口面板 / Player Start Panel" in zh_text
     assert "Language Switch / 语言切换" in text
     assert "语言切换 / Language" in zh_text
     assert "English (current)" in text
     assert "Store page first, engineering later" in text
     assert "先像游戏页，再像工程文档" in zh_text
+    assert "ENTER THE RUN" in text
+    assert "WATCH THE GAME" in text
+    assert "进入地牢" in zh_text
+    assert "先看画面" in zh_text
+    assert "Steam-style promise:" in text
+    assert "Steam 式玩家承诺：" in zh_text
     assert "Gameplay Screens / 先看游戏画面" in text
     assert "先看游戏画面 / Gameplay Screens" in zh_text
     assert "Play Now / 立即试玩" in text
@@ -104,6 +112,12 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert zh_text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
     assert text.index("Train one AI hero. Watch it survive your Prompt.") < text.index("Storefront Hero / 商店页封面")
     assert zh_text.index("训练一个 AI 英雄，让它带着你的 Prompt 下地牢。") < zh_text.index("商店页封面 / Storefront Hero")
+    assert text.index("Player Start Panel / 玩家入口面板") < text.index("Storefront Hero / 商店页封面")
+    assert zh_text.index("玩家入口面板 / Player Start Panel") < zh_text.index("商店页封面 / Storefront Hero")
+    assert text.index("ENTER THE RUN") < text.index('src="examples/ouro-readme-storefront.svg"')
+    assert zh_text.index("进入地牢") < zh_text.index('src="examples/ouro-readme-storefront.svg"')
+    assert text.index("WATCH THE GAME") < text.index('src="examples/ouro-readme-storefront.svg"')
+    assert zh_text.index("先看画面") < zh_text.index('src="examples/ouro-readme-storefront.svg"')
     assert text.index('src="examples/ouro-readme-storefront.svg"') < text.index("Steam-Style Front Page / Steam 风格首页")
     assert zh_text.index('src="examples/ouro-readme-storefront.svg"') < zh_text.index("Steam 风格首页 / Steam-Style Front Page")
     assert text.index("Play in 30 seconds") < text.index('src="examples/ouro-readme-screenshot-wall.svg"')

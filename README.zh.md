@@ -1,20 +1,23 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
 <p align="center">
+  <strong>构筑它的脑子，放它进地牢，读懂它留下的伤痕。</strong><br>
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
   <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI · 先像游戏页，再像工程文档</sub>
 </p>
 
+## 玩家入口面板 / Player Start Panel
+
 <table>
   <tr>
-    <th colspan="4">语言切换 / Language · 中文 / English</th>
+    <th colspan="4">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
   </tr>
   <tr>
     <td align="center"><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>Read in English · game first, docs later</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn 优先</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
+    <td align="center"><a href="#play-now"><strong>进入地牢</strong><br><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn 优先</sub></a></td>
   </tr>
   <tr>
     <td colspan="4" align="center">
@@ -27,6 +30,12 @@
     <td colspan="4" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
   </tr>
 </table>
+
+<p align="center">
+  <strong>Steam 式玩家承诺：</strong>你设计它带进地牢的战斗脑子；一局运行会证明这套 Prompt 能不能承受压力。<br>
+  <strong>Steam-style promise:</strong> build the mind, release the run, then read the scars.<br>
+  <sub>先看画面，再看工程说明。Media first. Rules second. Engineering third.</sub>
+</p>
 
 <a id="storefront-hero"></a>
 
@@ -69,7 +78,7 @@
 <p align="center">
   <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
   <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
-  <sub>先看画面，再看工程说明。Media first. Rules second. Engineering third.</sub>
+  <sub>先选语言，跑一条命令，看战斗画面，再继续读工程说明。</sub>
 </p>
 
 | 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |
@@ -96,10 +105,10 @@
   </tr>
 </table>
 
-| Steam 商店页式卖点 | 在游玩里意味着什么 |
+| Steam 商店页式卖点 | 画面里能证明什么 |
 |--------------------|--------------------|
-| **Prompt 就是你的 Build。** | 你在战前调校一个 Agent，开战后看这套策略在压力里成立还是崩盘。 |
-| **终端不是日志，而是竞技场。** | TUI 是可读的左右对战舞台，不是滚动日志。 |
+| **Prompt 就是你的 Build。** | 武器卡、英雄定位、Build 徽章和 Prompt 倾向在战斗前就可见。 |
+| **终端不是日志，而是竞技场。** | TUI 在一帧里展示左英雄、右敌人、弹道、HP / MP / ATB、VOX / ENM、浮字和裁判结果。 |
 | **AI 能选择，但不能作弊。** | 模型只输出结构化行动；合法性、伤害、奖励、失败和胜利都由确定性本地规则结算。 |
 | **每次失败都服务下一局。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
 
