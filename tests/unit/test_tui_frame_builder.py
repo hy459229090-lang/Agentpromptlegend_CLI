@@ -218,6 +218,12 @@ def test_unicode_battle_screen_uses_canvas_block_stage(bundle):
     )
 
     assert "THE ECHO ALTAR" in screen
+    assert "DECISION FOCUS" in screen
+    assert "ACTION HEX -> c" in screen
+    assert "PLAN CONTROL | PROMPT HIT" in screen
+    assert "RISK" in screen
+    assert "ALIGN Prompt: Control hit | Build: shadow/control" in screen
+    assert "WINDOW" in screen
     assert "STAGE [ALTAR]" in screen
     assert "GRAPHICAL TUI" not in screen
     assert "ASCII fallback" not in screen
@@ -344,6 +350,8 @@ def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "PLAN READ | PENDING" in waiting
+    assert "DECISION FOCUS" in waiting
+    assert "WINDOW none; follow plan" in waiting
 
     action = render_battle_screen(
         state,
@@ -355,6 +363,9 @@ def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "PLAN CONTROL | PROMPT HIT" in action
+    assert "DECISION FOCUS" in action
+    assert "RISK spends tempo resource" in action
+    assert "ALIGN Prompt: Control hit | Build: shadow/control" in action
     assert "ACTION HEX -> c" in action
     assert "Hex Seal -> Hungry Cultist" in action
     assert "JUDGE  VALID | -16 HP" in action
@@ -384,6 +395,8 @@ def test_unicode_battle_screen_draws_plan_ribbon_inside_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "PLAN ANSWER | COUNTER" in counter
+    assert "DECISION FOCUS" in counter
+    assert "WINDOW [#####] FULL" in counter
     assert "ACTION ENEMY CHARGE" in counter
     assert "Hungry Cultist chant_charge" in counter
     assert "JUDGE  LOCAL" in counter

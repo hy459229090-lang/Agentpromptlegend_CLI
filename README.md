@@ -12,16 +12,29 @@
 </p>
 
 <p align="center">
-  <strong>Watch the run before reading the docs.</strong><br>
-  <strong>先看画面，再看工程说明。</strong><br>
-  <sub>Build -> Fight -> Learn. One Agent enters the dungeon; the model chooses intent, and the local judge keeps every hit honest.</sub>
+  <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
+  <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
+  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
 </p>
+
+<table>
+  <tr>
+    <th colspan="4">Steam-Style Front Page / Steam 风格首页</th>
+  </tr>
+  <tr>
+    <td align="center"><strong>中文玩家</strong><br><a href="README.zh.md">进入中文介绍</a><br><sub>CLI: <code>ouro demo --lang zh --seed 1</code></sub></td>
+    <td align="center"><strong>English Players</strong><br><a href="#english-store-page">Read the English intro</a><br><sub>CLI: <code>ouro demo --lang en --seed 1</code></sub></td>
+    <td align="center"><strong>Best First Screen</strong><br><a href="#screenshots-build-fight-learn">Open the media gallery</a><br><sub>Build / Fight / Learn captures</sub></td>
+    <td align="center"><strong>Play Now</strong><br><a href="#play-now">Run the mock demo</a><br><sub>Mock, offline, no API key</sub></td>
+  </tr>
+</table>
 
 <a id="storefront-hero"></a>
 
 ## Storefront Hero / 商店页封面
 
 <p align="center">
+  <strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
   <strong>Train one Agent. Release it into the dungeon. Read the scars, rebuild, run again.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
@@ -30,11 +43,12 @@
 
 <table>
   <tr>
-    <th colspan="4">Choose Your Page / 选择介绍页</th>
+    <th colspan="5">Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
     <td align="center"><a href="README.zh.md"><strong>中文</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
+    <td align="center"><strong>CLI Language Toggle</strong><br><code>ouro --lang zh</code><br><code>ouro --lang en</code></td>
     <td align="center"><a href="#screenshots-build-fight-learn"><strong>Media Gallery / 先看游戏画面</strong><br><sub>Steam-style screenshot wall / Real TUI Captures</sub></a></td>
     <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
@@ -49,8 +63,15 @@
 <p align="center">
   <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
   <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
-  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT. Four real UI moments before the engineering notes begin.</sub>
+  <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI media before the engineering notes begin.</sub>
 </p>
+
+| What a Steam page would show first | How this README now handles it |
+|------------------------------------|--------------------------------|
+| **Capsule art and screenshots** | Hero capsule, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
+| **A one-sentence fantasy** | Build one Agent, release it, and watch whether your Prompt survives pressure. |
+| **Playable status and CTA** | `ouro demo --lang en --seed 1` and `ouro demo --lang zh --seed 1` are above the engineering sections. |
+| **Feature proof, not promises** | Every media panel names a reproducible CLI command and uses mock-friendly game screens. |
 
 ## Game Capsule / 游戏胶囊
 

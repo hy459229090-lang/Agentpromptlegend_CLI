@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">Ouro Agent graphical TUI battle canvas</title>
-  <desc id="desc">A stylized terminal screenshot of the left hero versus right enemy battle stage with resource bars and a center effect lane.</desc>
+  <desc id="desc">A stylized terminal screenshot of the left hero versus right enemy battle stage with resource bars, decision focus, and a center effect lane.</desc>
   <defs>
     <linearGradient id="terminal" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#101820"/>
@@ -45,10 +45,10 @@
   <text x="480" y="286" class="mono gold">        ░▒▓▓██==&gt;</text>
   <text x="480" y="326" class="mono gold">        SEAL -16 HP</text>
   <text x="480" y="366" class="mono text">        ░░▓▓XX▓▓░░░░░░░</text>
-  <text x="480" y="420" class="mono text">PLAN CONTROL | PROMPT HIT</text>
-  <text x="480" y="454" class="mono text">ACTION HEX -&gt; k</text>
-  <text x="480" y="488" class="mono text">JUDGE  VALID | -16 HP</text>
-  <text x="480" y="522" class="mono small">DELTA MP72&gt;54 I:N ATB:H*</text>
+  <text x="480" y="420" class="mono text">DECISION FOCUS</text>
+  <text x="480" y="454" class="mono text">ACTION HEX -&gt; k | PLAN CONTROL</text>
+  <text x="480" y="488" class="mono text">RISK tempo | ALIGN prompt/build hit</text>
+  <text x="480" y="522" class="mono small">WINDOW answered | JUDGE VALID | Echo Cost 0</text>
   <text x="868" y="190" class="mono text">ENM armor cracking</text>
   <text x="868" y="236" class="mono text">     ░▄▒▄░       &lt;TGT</text>
   <text x="868" y="270" class="mono text">      ▐▒k▒</text>

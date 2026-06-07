@@ -42,6 +42,18 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "中文 / English" in zh_text
     assert "Watch the run before reading the docs." in text
     assert "先看画面，再看工程说明。" in zh_text
+    assert "Steam-Style Front Page / Steam 风格首页" in text
+    assert "Steam 风格首页 / Steam-Style Front Page" in zh_text
+    assert "Playable now in mock mode: no network, no API key, deterministic seeds." in text
+    assert "现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。" in zh_text
+    assert "Media first. Rules second. Engineering third." in text
+    assert "Media first. Rules second. Engineering third." in zh_text
+    assert "You do not pilot the hero turn by turn. You design the mind it carries into the dungeon." in text
+    assert "你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。" in zh_text
+    assert "CLI Language Toggle" in text
+    assert "CLI 语言切换" in zh_text
+    assert "Best First Screen" in text
+    assert "先看最佳画面" in zh_text
     assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
     assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
     assert "Model chooses. Local Judge decides." in text
@@ -86,8 +98,12 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "一款命令行 AI 肉鸽，胜负由本地裁判结算。" in zh_text
     assert "Why one more run" in text
     assert "为什么再开一局" in zh_text
-    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in text
-    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in zh_text
+    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT" in text
+    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT" in zh_text
+    assert "What a Steam page would show first" in text
+    assert "好的 Steam 页面会先展示什么" in zh_text
+    assert "Feature proof, not promises" in text
+    assert "用画面证明，不只写承诺" in zh_text
     assert "Build / Weapon Gallery / 武器图鉴" in text
     assert "Build / 武器图鉴 / Weapon Gallery" in zh_text
     assert 'src="examples/ouro-weapon-gallery.svg"' in text
@@ -165,8 +181,11 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "THREAT RAIL" in screenshot_wall
     assert "WINDOW RAIL" in screenshot_wall
     assert "THE ECHO ALTAR" in screenshot_wall
+    assert "DECISION FOCUS" in screenshot_wall
     assert "AFTER-ACTION REPORT" in screenshot_wall
     assert "Model chooses. Local Judge decides." in screenshot_wall
+    assert "DECISION FOCUS" in battle_media
+    assert "WINDOW answered | JUDGE VALID | Echo Cost 0" in battle_media
     assert "STRIP [WIND]" in text
     assert "STRIP [WIND]" in zh_text
     assert "STRIP [WIND]" in battle_media
@@ -181,6 +200,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "windup -&gt;" not in battle_media
     assert "README media captures" in examples_readme
     assert "screenshot wall" in examples_readme
+    assert "decision focus HUD" in examples_readme
     assert "storefront-friendly" in examples_readme
     assert "RUN READY BOARD" in text
     assert "THE ECHO ALTAR / COUNTER WINDOW" in text

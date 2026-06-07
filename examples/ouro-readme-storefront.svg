@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">Ouro Agent Prompt Legend storefront capture</title>
-  <desc id="desc">A dark terminal roguelike hero image showing one AI hero, a local judge, and a graphical TUI battle stage.</desc>
+  <desc id="desc">A dark terminal roguelike hero image showing one AI hero, a decision focus HUD, a local judge, and a graphical TUI battle stage.</desc>
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#090d12"/>
@@ -57,8 +57,8 @@
   <text x="462" y="360" class="mono blue">SELECT  &gt;  WINDOW  &gt;  JUDGE</text>
   <text x="462" y="404" class="mono accent">        SEAL -16 HP</text>
   <text x="462" y="448" class="mono line">░░░▒▒▓▓████▓▓▒▒░░░</text>
-  <text x="462" y="502" class="mono line">ACTION HEX -&gt; k</text>
-  <text x="462" y="534" class="mono line">JUDGE  VALID | -16 HP</text>
+  <text x="462" y="502" class="mono line">DECISION FOCUS  ACTION HEX -&gt; k</text>
+  <text x="462" y="534" class="mono line">RISK tempo | WINDOW answered | VALID</text>
   <text x="462" y="566" class="mono small">Echo Cost 0 tokens / Ritual Time 12ms</text>
   <text x="866" y="356" class="mono line">ENM the wick counts down</text>
   <text x="866" y="392" class="mono line">    ~(k*)~</text>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">Ouro Agent Steam-style screenshot wall</title>
-  <desc id="desc">A storefront-style wall of four terminal UI screenshots: main menu, encounter briefing, battle canvas, and after-action report.</desc>
+  <desc id="desc">A storefront-style wall of four terminal UI screenshots: main menu, encounter briefing, decision-focused battle canvas, and after-action report.</desc>
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#080c11"/>
@@ -69,8 +69,8 @@
   <text x="94" y="496" class="mono line">HERO [CNDL] Astia        SELECT &gt; WINDOW &gt; JUDGE</text>
   <text x="94" y="530" class="mono line">VOX seal the chant       ░▒▓▓██==&gt;    SEAL -16 HP</text>
   <text x="94" y="563" class="mono green">HP ████████████ 100/100  BUILD [ONLINE] shadow/control</text>
-  <text x="94" y="596" class="mono gold">CINEMATIC BEAT  FLOAT -16 HP | SLN</text>
-  <text x="94" y="628" class="mono small">Echo Cost 0 / Read Echo 0 / Spoken Echo 0 / Ritual Time 12ms</text>
+  <text x="94" y="596" class="mono gold">DECISION FOCUS  ACTION HEX | RISK tempo | WINDOW answered</text>
+  <text x="94" y="628" class="mono small">CINEMATIC BEAT  FLOAT -16 HP | SLN  |  Echo Cost 0 / Ritual Time 12ms</text>
 
   <rect x="664" y="426" width="570" height="244" class="card"/>
   <text x="692" y="464" class="mono panel-title">AFTER-ACTION REPORT</text>

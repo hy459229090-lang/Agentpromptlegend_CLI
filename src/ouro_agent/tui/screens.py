@@ -78,6 +78,10 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
     "action": {"en": "ACTION", "zh": "行动"},
     "judge": {"en": "JUDGE", "zh": "裁判"},
     "intent": {"en": "INTENT", "zh": "意图"},
+    "risk": {"en": "RISK", "zh": "风险"},
+    "align": {"en": "ALIGN", "zh": "对齐"},
+    "next": {"en": "NEXT", "zh": "下一步"},
+    "window": {"en": "WINDOW", "zh": "窗口"},
     "stack": {"en": "STACK", "zh": "队列"},
     "skill": {"en": "SKILL", "zh": "技能"},
     "wound": {"en": "WOUND", "zh": "伤口"},
@@ -171,6 +175,7 @@ def render_battle_screen(
     else:
         lines.append("")
     lines.extend(_render_battle_momentum_panel(state, frame, last_record, width=width, lang=lang))
+    lines.extend(_render_decision_focus_panel(state, frame, last_record, width=width, lang=lang))
     lines.extend(_render_action_focus_panel(frame, width=width, lang=lang))
     lines.extend(
         _render_cinematic_beat_panel(
@@ -2706,6 +2711,94 @@ def _render_action_focus_panel(
     if frame.counter_hint:
         lines.append(f"{counter_title} {fit_text(_director_text(frame.counter_hint, lang), max_text)}")
     return list(pixel_panel(action_title, [fit_text(line, max_text) for line in lines], width, tone=_frame_tone(frame)).lines)
+
+
+def _render_decision_focus_panel(
+    state: BattleState,
+    frame: BattleFrame,
+    record: TurnRecord | None,
+    *,
+    width: int,
+    lang: str,
+) -> list[str]:
+    target = _screen_target(state, record)
+    title = "DECISION FOCUS" if lang == "en" else "决策焦点"
+    max_text = max(24, width - 10)
+    action = _canvas_action_label(frame, record, target, hero=state.hero, lang=lang)
+    plan = _canvas_plan_label(frame, lang=lang)
+    risk = _decision_focus_risk(frame, lang=lang)
+    align = _decision_focus_align(frame, lang=lang)
+    next_step = _battle_next_step(state, target, frame, lang=lang)
+    window = _decision_focus_window(frame, lang=lang)
+    body = [
+        fit_text(action, max_text),
+        fit_text(plan, max_text),
+        f"{_canvas_label('risk', lang)} {fit_text(risk, max_text)}",
+        f"{_canvas_label('align', lang)} {fit_text(align, max_text)}",
+        f"{_canvas_label('next', lang)} {fit_text(next_step, max_text)}",
+        f"{_canvas_label('window', lang)} {fit_text(window, max_text)}",
+    ]
+    return list(pixel_panel(title, [fit_text(line, max_text) for line in body], width, tone=_frame_tone(frame)).lines)
+
+
+def _decision_focus_risk(frame: BattleFrame, *, lang: str) -> str:
+    text = frame.risk
+    if lang != "zh":
+        return text
+    replacements = {
+        "unknown until an action is selected": "等待行动选择",
+        "release grows closer": "释放正在逼近",
+        "HP loss may open lethal range": "失血可能进入斩杀线",
+        "fallback may lose tempo": "降级可能丢失节奏",
+        "MP below repeat cost": "MP 低于复用成本",
+        "MP empty after this action": "行动后 MP 见底",
+        "spends tempo resource": "消耗节奏资源",
+        "low impact if enemy survives": "敌方存活则收益偏低",
+        "unusual action": "非常规行动",
+    }
+    for source, target in replacements.items():
+        if text.startswith(source):
+            return text.replace(source, target, 1)
+    return _director_text(text, lang)
+
+
+def _decision_focus_align(frame: BattleFrame, *, lang: str) -> str:
+    if lang != "zh":
+        return frame.align
+    replacements = {
+        "Prompt pending": "Prompt 待机",
+        "Counter window": "反制窗口",
+        "Local AI": "本地敌方 AI",
+        "Prompt missed": "Prompt 失手",
+        "Prompt: Control hit | Build: shadow/control": "Prompt 控制命中 | Build 暗影/控制",
+        "Prompt: Guarded hit | Build: survival": "Prompt 防守命中 | Build 生存",
+        "Prompt: damage tempo | Build skill": "Prompt 伤害节奏 | Build 技能",
+        "Prompt: fallback/basic": "Prompt 降级/普攻",
+        "Prompt alignment unknown": "Prompt 对齐未知",
+    }
+    return replacements.get(frame.align, _director_text(frame.align, lang))
+
+
+def _decision_focus_window(frame: BattleFrame, *, lang: str) -> str:
+    if frame.counter_clock:
+        return _decision_focus_counter_clock(frame.counter_clock, lang=lang)
+    if frame.counter_hint:
+        return _director_text(frame.counter_hint, lang)
+    if lang == "zh":
+        return "无窗口；按计划推进"
+    return "none; follow plan"
+
+
+def _decision_focus_counter_clock(counter_clock: str, *, lang: str) -> str:
+    if lang != "zh":
+        return counter_clock.removeprefix("COUNTER CLOCK ").strip()
+    return (
+        counter_clock.replace("COUNTER CLOCK", "反制时钟")
+        .replace("NEXT HERO CAN INTERRUPT:", "下次英雄可打断:")
+        .replace("not ready:", "未就绪:")
+        .replace("no interrupt skill", "无打断技能")
+        .replace("ready", "就绪")
+    )
 
 
 def _render_cinematic_beat_panel(

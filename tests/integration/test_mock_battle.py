@@ -171,12 +171,46 @@ def test_battle_screen_is_ascii_safe(bundle):
     assert "ENEMIES" in screen
     assert "MODEL TURN" in screen
     assert "Echo Cost" in screen
+    assert "DECISION FOCUS" in screen
+    assert "ACTION" in screen
+    assert "PLAN" in screen
+    assert "RISK" in screen
+    assert "ALIGN" in screen
+    assert "NEXT" in screen
+    assert "WINDOW" in screen
     assert "CINEMATIC BEAT" in screen
     assert "VOX" in screen
     assert "ENM" in screen
     assert "FLOAT" in screen
     assert "STRIP" in screen
     assert "LOG" in screen
+
+    state.enemies[0].chant_charge_turns = 1
+    state.enemies[0].chant_progress = 1
+    counter_record = TurnRecord(
+        tick=10,
+        actor_id="enemy_hungry_cultist",
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_snapshot",
+        static_context_hash=loop.battle_llm_session.static_context_hash,
+        delta_context_id="be_snapshot_d0002",
+    )
+    counter_screen = render_battle_screen(
+        state,
+        counter_record,
+        provider_label="mock",
+        seed=2,
+        unicode_mode=False,
+        language="en",
+    )
+    assert counter_screen.isascii()
+    assert "DECISION FOCUS" in counter_screen
+    assert "WINDOW [#####] FULL" in counter_screen
 
 
 def test_battle_screen_uses_duel_layout_build_and_session(bundle):
@@ -226,6 +260,10 @@ def test_battle_screen_uses_duel_layout_build_and_session(bundle):
         language="en",
     )
     assert "THE ECHO ALTAR" in screen
+    assert "[ DECISION FOCUS ]" in screen
+    assert "PLAN CONTROL" in screen
+    assert "ALIGN" in screen
+    assert "WINDOW" in screen
     assert "[ ACTION LENS ]" in screen
     assert "[ BATTLE THESIS ]" in screen
     assert "[ ECHO READOUT ]" in screen
