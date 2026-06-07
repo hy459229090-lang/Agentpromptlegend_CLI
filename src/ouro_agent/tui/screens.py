@@ -82,6 +82,7 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
     "align": {"en": "ALIGN", "zh": "对齐"},
     "next": {"en": "NEXT", "zh": "下一步"},
     "window": {"en": "WINDOW", "zh": "窗口"},
+    "window_pressure": {"en": "WINDOW PRESSURE", "zh": "窗口压力"},
     "stack": {"en": "STACK", "zh": "队列"},
     "skill": {"en": "SKILL", "zh": "技能"},
     "wound": {"en": "WOUND", "zh": "伤口"},
@@ -608,18 +609,18 @@ def _render_canvas_duel_panel(
     judge = fit_text(f"{_canvas_label('judge', lang)}  {_canvas_judge_label(frame.judge_label, lang=lang)}", center_w - 2)
     surface.draw_text(center_x + 1, 12, action)
     surface.draw_text(center_x + 1, 13, judge)
-    if frame.counter_clock:
-        surface.draw_text(
-            center_x + 1,
-            14,
-            fit_text(_canvas_counter_rail_label(frame.counter_clock, lang=lang), center_w - 2),
-        )
-    elif frame.impact_line:
-        surface.draw_text(
-            center_x + 1,
-            14,
-            fit_text(_canvas_impact_label(frame.impact_line, lang=lang), center_w - 2),
-        )
+    surface.draw_text(
+        center_x + 1,
+        14,
+        _canvas_window_pressure_line(
+            frame,
+            state,
+            target,
+            last_record,
+            lang=lang,
+            width=center_w - 2,
+        ),
+    )
     _draw_canvas_delta_ribbon(
         surface,
         center_x + 1,
@@ -1154,6 +1155,153 @@ def _canvas_counter_ready_label(text: str) -> str:
     if lower.endswith("ready"):
         return "READY"
     return "CHECK"
+
+
+def _canvas_window_pressure_line(
+    frame: BattleFrame,
+    state: BattleState,
+    target: Enemy | None,
+    record: TurnRecord | None,
+    *,
+    lang: str,
+    width: int,
+) -> str:
+    phase, level, state_text = _canvas_window_pressure_parts(
+        frame,
+        state,
+        target,
+        record,
+        lang=lang,
+    )
+    bar_text = _canvas_window_pressure_bar(level)
+    full_label = _canvas_label("window_pressure", lang)
+    compact_label = "WINDOW PRESS" if lang == "en" else full_label
+    short_label = "WIN PRESS" if lang == "en" else "窗压"
+    candidates = [
+        f"{full_label} {phase} {bar_text} {state_text}",
+        f"{full_label} {phase} {state_text}",
+        f"{compact_label} {phase} {bar_text} {state_text}",
+        f"{compact_label} {phase} {state_text}",
+        f"{short_label} {phase} {bar_text} {state_text}",
+        f"{short_label} {phase} {state_text}",
+    ]
+    for candidate in candidates:
+        if visual_width(candidate) <= width:
+            return candidate
+    return fit_text(candidates[-1], width)
+
+
+def _canvas_window_pressure_parts(
+    frame: BattleFrame,
+    state: BattleState,
+    target: Enemy | None,
+    record: TurnRecord | None,
+    *,
+    lang: str,
+) -> tuple[str, int, str]:
+    event = (frame.event_banner or "").upper()
+    hint = (frame.counter_hint or "").upper()
+    impact = (frame.impact_line or "").lower()
+    if target is not None and not target.is_alive:
+        return _window_pressure_text("CLEAR", lang), 0, _window_pressure_text("DONE", lang)
+    if "CHANT RELEASED" in event or "chant released" in impact or "[MISSED]" in hint:
+        return _window_pressure_text("MISSED", lang), 5, _window_pressure_text("REVIEW", lang)
+    if frame.counter_clock:
+        phase = _canvas_counter_clock_phase(frame.counter_clock, lang=lang)
+        ready = _canvas_counter_clock_ready(frame.counter_clock, lang=lang)
+        level = 5 if _canvas_pressure_ready_is_good(ready, lang=lang) else 4
+        return phase, level, ready
+    if "[ANSWER]" in hint:
+        return _window_pressure_text("ANSWERED", lang), 1, _canvas_next_interrupt_state(state.hero, lang=lang)
+    chant_enemy = _canvas_focus_chant_enemy(state, target)
+    if chant_enemy is not None and chant_enemy.chant_progress > 0:
+        total = max(1, chant_enemy.chant_charge_turns)
+        phase = "满" if lang == "zh" and chant_enemy.chant_progress >= total else (
+            "FULL" if chant_enemy.chant_progress >= total else f"{chant_enemy.chant_progress}/{total}"
+        )
+        ready = _canvas_next_interrupt_state(state.hero, lang=lang)
+        level = 5 if _canvas_pressure_ready_is_good(ready, lang=lang) else 4
+        return phase, level, ready
+    if "next interrupt: no" in impact:
+        return _window_pressure_text("DRAINED", lang), 3, _canvas_next_interrupt_state(state.hero, lang=lang)
+    if "next interrupt: yes" in impact:
+        return _window_pressure_text("ARMED", lang), 2, _window_pressure_text("READY", lang)
+    if target is not None and target.atb >= 95:
+        return "ATB", 4, _window_pressure_text("READY", lang)
+    if state.hero.hp / max(1, state.hero.max_hp) <= 0.3:
+        return "HP", 4, _window_pressure_text("CRIT", lang)
+    return _window_pressure_text("STABLE", lang), 1, _window_pressure_text("PUSH", lang)
+
+
+def _canvas_focus_chant_enemy(state: BattleState, target: Enemy | None) -> Enemy | None:
+    if target is not None and target.is_alive and target.chant_charge_turns:
+        return target
+    charging = [enemy for enemy in state.alive_enemies() if enemy.chant_charge_turns]
+    if not charging:
+        return None
+    return max(charging, key=lambda enemy: enemy.chant_progress)
+
+
+def _canvas_counter_clock_phase(counter_clock: str, *, lang: str) -> str:
+    status = counter_clock
+    if "]" in counter_clock:
+        status = counter_clock.split("]", 1)[1]
+    status = status.split("|", 1)[0].strip()
+    if not status:
+        return _window_pressure_text("OPEN", lang)
+    if status.upper() == "FULL":
+        return "满" if lang == "zh" else "FULL"
+    return status
+
+
+def _canvas_counter_clock_ready(counter_clock: str, *, lang: str) -> str:
+    marker = "NEXT HERO CAN INTERRUPT:"
+    if marker not in counter_clock:
+        return _window_pressure_text("CHECK", lang)
+    ready = _canvas_counter_ready_label(counter_clock.split(marker, 1)[1].strip())
+    return _canvas_counter_ready_zh(ready) if lang == "zh" else ready
+
+
+def _canvas_next_interrupt_state(hero: Hero, *, lang: str) -> str:
+    interrupt = _first_interrupt_skill(hero)
+    if interrupt is None:
+        return "无技能" if lang == "zh" else "NO SKILL"
+    if hero.mp < interrupt.mp_cost:
+        return f"MP{hero.mp}/{interrupt.mp_cost}"
+    if interrupt.cooldown_remaining > 0:
+        return f"冷却{interrupt.cooldown_remaining}" if lang == "zh" else f"CD{interrupt.cooldown_remaining}"
+    return _window_pressure_text("READY", lang)
+
+
+def _canvas_pressure_ready_is_good(text: str, *, lang: str) -> bool:
+    return text in (("就绪", "READY") if lang == "zh" else ("READY", "就绪"))
+
+
+def _window_pressure_text(key: str, lang: str) -> str:
+    values = {
+        "ARMED": {"en": "ARMED", "zh": "武装"},
+        "ANSWERED": {"en": "ANSWERED", "zh": "已回应"},
+        "CHECK": {"en": "CHECK", "zh": "检查"},
+        "CLEAR": {"en": "CLEAR", "zh": "清除"},
+        "CRIT": {"en": "CRIT", "zh": "危险"},
+        "DONE": {"en": "DONE", "zh": "完成"},
+        "DRAINED": {"en": "DRAINED", "zh": "低余量"},
+        "MISSED": {"en": "MISSED", "zh": "错过"},
+        "OPEN": {"en": "OPEN", "zh": "开启"},
+        "PUSH": {"en": "PUSH", "zh": "推进"},
+        "READY": {"en": "READY", "zh": "就绪"},
+        "REVIEW": {"en": "REVIEW", "zh": "复盘"},
+        "STABLE": {"en": "STABLE", "zh": "稳定"},
+    }
+    entry = values.get(key, {"en": key, "zh": key})
+    return entry.get(lang, entry["en"])
+
+
+def _canvas_window_pressure_bar(level: int) -> str:
+    glyphs = get_glyph_set("unicode")
+    width = 5
+    filled = max(0, min(width, level))
+    return glyphs.solid * filled + glyphs.light * (width - filled)
 
 
 def _canvas_impact_label(impact_line: str, *, lang: str = "en") -> str:

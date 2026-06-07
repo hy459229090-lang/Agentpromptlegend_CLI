@@ -3,35 +3,25 @@
 <p align="center">
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
-  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI</sub>
-</p>
-
-<p align="center">
-  <strong>Language Switch / 语言切换: 中文 / English</strong><br>
-  <a href="README.zh.md"><strong>中文介绍页 / Full Chinese README</strong></a>
-  &nbsp;|&nbsp;
-  <a href="#english-store-page"><strong>English Store Page</strong></a>
-  &nbsp;|&nbsp;
-  <a href="#screenshots-build-fight-learn"><strong>Gameplay Screens / 先看游戏画面</strong></a>
-  &nbsp;|&nbsp;
-  <a href="#play-now"><strong>Play Now / 立即试玩</strong></a>
-  &nbsp;|&nbsp;
-  <strong>CLI Language Toggle / CLI 语言切换:</strong>
-  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI · Store page first, engineering later</sub>
 </p>
 
 <table>
   <tr>
-    <th>中文入口</th>
-    <th>English Entry</th>
-    <th>30-Second Demo</th>
-    <th>Best First Screen</th>
+    <th colspan="4">Language Switch / 语言切换 · 中文 / English</th>
   </tr>
   <tr>
-    <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>完整中文页，不只是翻译片段</sub></a></td>
-    <td align="center"><a href="#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub><code>ouro demo --lang en --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Gameplay Screens</strong><br><sub>Build / Fight / Learn</sub></a></td>
+    <td align="center"><strong>English (current)</strong><br><sub>game introduction first</sub></td>
+    <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>中文入口 · 完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn before docs</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">
+      <strong>CLI Language Toggle / CLI 语言切换:</strong>
+      <code>ouro --lang en</code> / <code>ouro --lang zh</code>
+      <br><sub>English is ASCII-safe. 中文界面建议 UTF-8 终端。</sub>
+    </td>
   </tr>
 </table>
 
@@ -42,6 +32,7 @@
 <p align="center">
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
   <br><strong>Choose a language, then watch the dungeon move.</strong><br>
+  <strong>Steam-style game capsule: build the Agent, release the run, read the scars, rebuild smarter.</strong><br>
   <br><strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
@@ -67,6 +58,9 @@
     <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
     <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
+  <tr>
+    <td colspan="3" align="center"><strong>Store Page Capsule:</strong> language first, media first, playable proof first.</td>
+  </tr>
 </table>
 
 <p align="center">
@@ -84,7 +78,8 @@
     <td width="64%">
       <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
       <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
-      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub><br>
+      <sub>Media proof: main menu, battle briefing, graphical duel, cinematic beat, and after-action learning loop.</sub>
     </td>
     <td width="36%">
       <strong>What you see first</strong><br><br>
@@ -331,12 +326,12 @@ Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后�
 | Balance and batch reports | yes | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-387%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-393%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`387 tests passing`. No real network calls in any test.
+`393 tests passing`. No real network calls in any test.
 
 ---
 

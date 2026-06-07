@@ -232,6 +232,7 @@ def test_unicode_battle_screen_uses_canvas_block_stage(bundle):
     assert "RISK" in screen
     assert "ALIGN Prompt: Control hit | Build: shadow/control" in screen
     assert "WINDOW" in screen
+    assert "WINDOW PRESSURE ANSWERED" in screen
     assert "STAGE [ALTAR]" in screen
     assert "GRAPHICAL TUI" not in screen
     assert "ASCII fallback" not in screen
@@ -775,6 +776,7 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
     )
 
     assert "WINDOW" in screen
+    assert "WINDOW PRESSURE FULL" in screen
     assert "CUT " in screen
     assert "FULL" in screen
     assert "CD3" in screen
@@ -799,6 +801,10 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "CUT " in mp_blocked
+    if width <= 88:
+        assert "PRESS FULL" in mp_blocked
+    else:
+        assert "WINDOW PRESSURE FULL" in mp_blocked
     assert "MP12/18" in mp_blocked
 
     state.hero.mp = 54
@@ -812,10 +818,102 @@ def test_unicode_battle_screen_marks_counter_window_in_canvas(bundle, width):
         unicode_mode=True,
     )
     assert "CUT " in ready
+    if width <= 88:
+        assert "FULL READY" in ready
+    else:
+        assert "WINDOW PRESSURE FULL" in ready
     assert "READY" in ready
 
     for candidate in (screen, mp_blocked, ready):
         for line in candidate.splitlines():
+            assert visual_width(line) <= width
+
+
+@pytest.mark.parametrize("language", ["en", "zh"])
+@pytest.mark.parametrize("width", [80, 100, 120])
+def test_unicode_battle_screen_draws_window_pressure_rail_for_counter_readiness(
+    bundle,
+    language,
+    width,
+):
+    """REQ-WINDOWPRESS-001: Canvas should show counter-window pressure as a HUD rail."""
+    from ouro_agent.tui.screens import render_battle_screen
+
+    loop = BattleLoop(
+        bundle,
+        MockProvider(seed=1, language=language),
+        seed=1,
+        language=language,
+    )
+    state = loop.setup("hero_shadow_apprentice", ["enemy_black_candle_acolyte"])
+    target = state.enemies[0]
+    target.chant_charge_turns = 1
+    target.chant_progress = 1
+    target.atb = 96
+    hex_seal = state.hero.find_skill("skill_hex_seal")
+    assert hex_seal is not None
+    record = TurnRecord(
+        tick=10,
+        actor_id="enemy_black_candle_acolyte",
+        side="enemy",
+        raw_text=None,
+        validation=None,
+        action=None,
+        judge=None,
+        enemy_action={"type": "chant_charge"},
+        battle_session_id="be_window_pressure",
+        static_context_hash="ctx_window_pressure",
+    )
+
+    hex_seal.cooldown_remaining = 3
+    cd_blocked = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language=language,
+        width=width,
+        unicode_mode=True,
+    )
+    if language == "zh":
+        assert "窗口压力 满" in cd_blocked
+        assert "冷却3" in cd_blocked
+    else:
+        assert "WINDOW PRESSURE FULL" in cd_blocked
+        assert "CD3" in cd_blocked
+
+    hex_seal.cooldown_remaining = 0
+    state.hero.mp = 12
+    mp_blocked = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language=language,
+        width=width,
+        unicode_mode=True,
+    )
+    assert "MP12/18" in mp_blocked
+
+    state.hero.mp = 54
+    ready = render_battle_screen(
+        state,
+        record,
+        provider_label="mock",
+        seed=1,
+        language=language,
+        width=width,
+        unicode_mode=True,
+    )
+    if language == "zh":
+        assert "窗口压力 满" in ready
+        assert "就绪" in ready
+    else:
+        assert "WINDOW PRESSURE FULL" in ready
+        assert "READY" in ready
+
+    for screen in (cd_blocked, mp_blocked, ready):
+        for line in screen.splitlines():
             assert visual_width(line) <= width
 
 

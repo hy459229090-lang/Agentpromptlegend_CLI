@@ -3,37 +3,28 @@
 <p align="center">
   <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
   <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
-  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI</sub>
-</p>
-
-<p align="center">
-  <strong>语言切换 / Language: 中文 / English</strong><br>
-  <strong>中文介绍页</strong>
-  &nbsp;|&nbsp;
-  <a href="README.md#english-store-page"><strong>English Store Page</strong></a>
-  &nbsp;|&nbsp;
-  <a href="#screenshots-build-fight-learn"><strong>先看游戏画面 / Gameplay Screens</strong></a>
-  &nbsp;|&nbsp;
-  <a href="#play-now"><strong>立即试玩 / Play Now</strong></a>
-  &nbsp;|&nbsp;
-  <a href="README.md"><strong>双语首页 / Bilingual README</strong></a>
-  &nbsp;|&nbsp;
-  <strong>CLI 语言切换 / CLI Language Toggle:</strong>
-  <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI · 先像游戏页，再像工程文档</sub>
 </p>
 
 <table>
   <tr>
-    <th>中文入口</th>
-    <th>English Entry</th>
-    <th>30 秒试玩</th>
-    <th>最佳第一屏</th>
+    <th colspan="4">语言切换 / Language · 中文 / English</th>
   </tr>
   <tr>
-    <td align="center"><strong>当前中文介绍页</strong><br><sub>不是工程日志开场</sub></td>
-    <td align="center"><a href="README.md#english-store-page"><strong>Read in English</strong><br><sub>game pitch first, engineering later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Mock Demo</strong><br><sub><code>ouro demo --lang zh --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看最佳画面</strong><br><sub>Gameplay Screens · Build / Fight / Learn</sub></a></td>
+    <td align="center"><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub></td>
+    <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>Read in English · game first, docs later</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn 优先</sub></a></td>
+    <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center">
+      <strong>CLI 语言切换 / CLI Language Toggle:</strong>
+      <code>ouro --lang zh</code> / <code>ouro --lang en</code>
+      <br><sub>中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
   </tr>
 </table>
 
@@ -44,6 +35,7 @@
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
   <br><strong>选择语言，先看地牢动起来。</strong><br>
+  <strong>Steam 式游戏胶囊：构筑 Agent，放进地牢，读懂伤痕，再重做下一局。</strong><br>
   <br><strong>你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
@@ -69,6 +61,9 @@
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
     <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
+  <tr>
+    <td colspan="3" align="center"><strong>商店页胶囊：</strong>先语言、先画面、先可玩证明。</td>
+  </tr>
 </table>
 
 <p align="center">
@@ -86,7 +81,8 @@
     <td width="64%">
       <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
       <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
-      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。先看到真实 TUI 媒体，再读工程说明。</sub>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。先看到真实 TUI 媒体，再读工程说明。</sub><br>
+      <sub>画面证据：主菜单、遭遇简报、图形化对战、战斗分镜和战后学习闭环。</sub>
     </td>
     <td width="36%">
       <strong>第一眼会看到什么</strong><br><br>
@@ -311,12 +307,12 @@ ouro history --lang zh --limit 5
 | 批量试跑与数值报告 | 可用 | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-387%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-393%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`387 测试通过`。任何测试都不联网。
+`393 测试通过`。任何测试都不联网。
 
 ---
 

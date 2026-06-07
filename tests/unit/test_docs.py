@@ -41,6 +41,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "商店页封面 / Storefront Hero" in zh_text
     assert "Language Switch / 语言切换" in text
     assert "语言切换 / Language" in zh_text
+    assert "English (current)" in text
+    assert "Store page first, engineering later" in text
+    assert "先像游戏页，再像工程文档" in zh_text
     assert "Gameplay Screens / 先看游戏画面" in text
     assert "先看游戏画面 / Gameplay Screens" in zh_text
     assert "Play Now / 立即试玩" in text
@@ -53,6 +56,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "当前中文介绍页" in zh_text
     assert "Choose a language, then watch the dungeon move." in text
     assert "选择语言，先看地牢动起来。" in zh_text
+    assert "Steam-style game capsule: build the Agent, release the run, read the scars, rebuild smarter." in text
+    assert "Steam 式游戏胶囊：构筑 Agent，放进地牢，读懂伤痕，再重做下一局。" in zh_text
     assert "The terminal is not a log. It is the arena." in text
     assert "终端不是日志，而是竞技场。" in zh_text
     assert "The AI can choose, but it cannot cheat." in text
@@ -61,6 +66,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "游戏标签：" in zh_text
     assert "What you see first" in text
     assert "第一眼会看到什么" in zh_text
+    assert "Store Page Capsule:" in text
+    assert "商店页胶囊：" in zh_text
     assert "Store Page Pitch" in text
     assert "Steam 商店页式卖点" in zh_text
     assert "Watch the run before reading the docs." in text
@@ -217,8 +224,11 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "WINDOW RAIL" in screenshot_wall
     assert "THE ECHO ALTAR" in screenshot_wall
     assert "DECISION FOCUS" in screenshot_wall
+    assert "WINDOW PRESSURE" in screenshot_wall
     assert "AFTER-ACTION REPORT" in screenshot_wall
     assert "Model chooses. Local Judge decides." in screenshot_wall
+    assert "Reproduce: ouro demo --lang en --seed 1." in screenshot_wall
+    assert "PLAY NOW  ouro demo --lang en" in storefront_media
     assert "VOX [INTERRUPT]" in storefront_media
     assert "ENM [HIT]" in storefront_media
     assert "VOX [INTERRUPT]" in screenshot_wall
@@ -300,7 +310,7 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "387 passed" in changelog
+    assert "393 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
@@ -358,7 +368,7 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "387 passed" in audit
+    assert "393 passed" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
     assert "License 仍待决策" in audit
@@ -897,7 +907,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 387 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 393 tests collected; 247 release-bound text files." in (
         evidence_result.stdout
     )
 

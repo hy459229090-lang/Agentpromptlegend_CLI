@@ -35,12 +35,16 @@
   <text x="76" y="102" class="mono title">OURO AGENT</text>
   <text x="79" y="140" class="mono subtitle">Prompt Legend / build the mind, release the run, read the scars</text>
   <text x="79" y="177" class="mono small">CLI roguelike  |  auto-battler  |  prompt-building game  |  mock playable offline</text>
+  <rect x="828" y="72" width="330" height="44" rx="9" fill="#1d2b33" stroke="#536a72"/>
+  <text x="852" y="100" class="mono label">中文 / English  |  README.zh.md</text>
   <rect x="76" y="206" width="218" height="42" rx="8" fill="#26343b" stroke="#5c7077"/>
   <text x="97" y="234" class="mono label">MODEL CHOOSES</text>
   <rect x="314" y="206" width="218" height="42" rx="8" fill="#31242a" stroke="#7a5653"/>
   <text x="339" y="234" class="mono label">LOCAL JUDGE</text>
   <rect x="552" y="206" width="228" height="42" rx="8" fill="#223229" stroke="#537057"/>
   <text x="576" y="234" class="mono label">DAMAGE IS RULED</text>
+  <rect x="812" y="206" width="306" height="42" rx="8" fill="#32291b" stroke="#80613b"/>
+  <text x="835" y="234" class="mono label">PLAY NOW  ouro demo --lang en</text>
   <rect x="76" y="278" width="1114" height="390" class="box"/>
   <line x1="430" y1="278" x2="430" y2="668" class="thin"/>
   <line x1="835" y1="278" x2="835" y2="668" class="thin"/>

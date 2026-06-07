@@ -69,7 +69,7 @@
   <text x="94" y="496" class="mono line">HERO [CNDL] Astia        SELECT &gt; WINDOW &gt; JUDGE</text>
   <text x="94" y="530" class="mono line">VOX seal the chant       ░▒▓▓██==&gt;    SEAL -16 HP</text>
   <text x="94" y="563" class="mono green">HP ████████████ 100/100  BUILD [ONLINE] shadow/control</text>
-  <text x="94" y="596" class="mono gold">DECISION FOCUS  ACTION HEX | RISK tempo | WINDOW answered</text>
+  <text x="94" y="596" class="mono gold">DECISION FOCUS  ACTION HEX | RISK tempo | WINDOW PRESSURE</text>
   <text x="94" y="628" class="mono small">CINEMATIC BEAT  VOX [INTERRUPT] | ENM [HIT] | FLOAT -16 HP</text>
 
   <rect x="664" y="426" width="570" height="244" class="card"/>
@@ -78,5 +78,5 @@
   <text x="692" y="530" class="mono line">BATTLE TURN MAP      [FIRST HERO] Hex Seal</text>
   <text x="692" y="563" class="mono cyan">CODEX PROGRESS       Black Candle: observed &gt; studied</text>
   <text x="692" y="596" class="mono line">PLAY NEXT BOARD      ouro run --mock --prompt-style control</text>
-  <text x="692" y="628" class="mono small">Model chooses. Local Judge decides. Damage, drops, victory stay local.</text>
+  <text x="692" y="628" class="mono small">Model chooses. Local Judge decides. Reproduce: ouro demo --lang en --seed 1.</text>
 </svg>
