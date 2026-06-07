@@ -11,25 +11,27 @@
 
 <table>
   <tr>
-    <th colspan="4">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
+    <th colspan="5">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
   </tr>
   <tr>
-    <td align="center"><strong>English (current)</strong><br><sub>game introduction first</sub></td>
-    <td align="center"><a href="README.zh.md"><strong>切到中文介绍</strong><br><sub>中文入口 · 完整中文文档 / Full Chinese README</sub></a></td>
+    <td align="center"><strong>ENGLISH</strong><br><strong>English (current)</strong><br><sub>game first, docs later</sub></td>
+    <td align="center"><a href="README.zh.md"><strong>中文</strong><br><strong>切到中文介绍</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
     <td align="center"><a href="#play-now"><strong>ENTER THE RUN</strong><br><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH THE GAME</strong><br><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn before docs</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH THE GAME</strong><br><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn</sub></a></td>
+    <td align="center"><a href="#game-capsule"><strong>BROWSE BUILD</strong><br><strong>Hero Capsule</strong><br><sub>weapons, roles, Codex</sub></a></td>
   </tr>
   <tr>
-    <td colspan="4" align="center">
+    <td colspan="5" align="center">
       <strong>CLI Language Toggle / CLI 语言切换:</strong>
       <code>ouro --lang en</code> / <code>ouro --lang zh</code>
-      <br><sub>English is ASCII-safe. 中文界面建议 UTF-8 终端。</sub>
+      <br><sub>Mock, offline, no API key. English is ASCII-safe. 中文界面建议 UTF-8 终端。</sub>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
+  <img alt="Ouro Agent storefront showcase with language switch, play CTA, and graphical TUI battle" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
+  <br><strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
   <strong>玩家承诺：</strong>你设计 Agent 的战斗脑子，地牢负责验证它能不能活下来。<br>
   <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
 </p>
@@ -40,10 +42,8 @@
 
 <p align="center">
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
-  <br><strong>Choose a language, then watch the dungeon move.</strong><br>
-  <strong>Steam-style game capsule: build the Agent, release the run, read the scars, rebuild smarter.</strong><br>
-  <br><strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
-  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
+  <br><strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
+  <strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <sub>Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
 </p>
@@ -60,12 +60,12 @@
 
 <table>
   <tr>
-    <th colspan="3">Steam-Style Front Page / Steam 风格首页 · Choose Your Page / 选择介绍页</th>
+    <th colspan="3">Steam-Style Front Page / Steam 风格首页 · three clear actions</th>
   </tr>
   <tr>
+    <td align="center"><a href="#play-now"><strong>PLAY DEMO</strong><br><sub>one command, offline mock</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH BATTLE</strong><br><sub>real TUI captures</sub></a></td>
     <td align="center"><a href="README.zh.md"><strong>中文 / Chinese</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
-    <td align="center"><a href="#english-store-page"><strong>English Store Page</strong><br><sub>game first, docs later</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>Play Now</strong><br><sub>Mock, offline, no API key</sub></a></td>
   </tr>
   <tr>
     <td colspan="3" align="center"><strong>Store Page Capsule:</strong> language first, media first, playable proof first.</td>
@@ -75,7 +75,7 @@
 <p align="center">
   <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
   <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
-  <sub>Pick a language, run one command, then look at the battle screen before the engineering notes.</sub>
+  <sub>Choose a language, run one command, then look at the battle screen before the engineering notes.</sub>
 </p>
 
 | Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
@@ -93,9 +93,9 @@
     <td width="36%">
       <strong>What you see first</strong><br><br>
       <strong>Build</strong><br>
-      Weapon cards, hero roles, AI behavior tags, and next-run commands are visible before combat.<br><br>
+      Weapon cards, hero roles, AI behavior tags, and next-run commands appear before combat.<br><br>
       <strong>Fight</strong><br>
-      The screen presents a real battle stage instead of dumping raw logs: left hero, right enemy, projectile lane, HP / MP / ATB, VOX / ENM, floating hits, and local judge result.<br><br>
+      The terminal becomes a battle stage: left hero, right enemy, projectile lane, HP / MP / ATB, VOX / ENM, floating hits, and local judge result.<br><br>
       <strong>Learn</strong><br>
       The after-action screen explains tempo, errors, Codex clues, and the next build path.
     </td>
@@ -114,12 +114,14 @@
 
 | What a Steam page would show first | How this README now handles it |
 |------------------------------------|--------------------------------|
-| **Capsule art and screenshots** | Storefront hero, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
+| **Capsule art and screenshots** | Showcase hero, storefront capture, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
 | **A one-sentence fantasy** | Build one Agent, release it, and watch whether your Prompt survives pressure. |
 | **Playable status and CTA** | `ouro demo --lang en --seed 1` and `ouro demo --lang zh --seed 1` are above the engineering sections. |
 | **Feature proof, not promises** | Every media panel names a reproducible CLI command and uses mock-friendly game screens. |
 
 </details>
+
+<a id="game-capsule"></a>
 
 ## Game Capsule / 游戏胶囊
 

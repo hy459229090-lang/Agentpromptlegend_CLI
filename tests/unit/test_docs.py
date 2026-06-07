@@ -18,6 +18,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     zh_text = (ROOT / "README.zh.md").read_text(encoding="utf-8")
     examples_readme = (ROOT / "examples/README.md").read_text(encoding="utf-8")
     media_files = (
+        "examples/ouro-readme-storefront-showcase.svg",
         "examples/ouro-readme-storefront.svg",
         "examples/ouro-readme-screenshot-wall.svg",
         "examples/ouro-weapon-gallery.svg",
@@ -25,6 +26,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    storefront_showcase = (
+        ROOT / "examples/ouro-readme-storefront-showcase.svg"
+    ).read_text(encoding="utf-8")
     storefront_media = (ROOT / "examples/ouro-readme-storefront.svg").read_text(
         encoding="utf-8"
     )
@@ -62,10 +66,13 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "中文 / English" in zh_text
     assert "切到中文介绍" in text
     assert "当前中文介绍页" in zh_text
-    assert "Choose a language, then watch the dungeon move." in text
-    assert "选择语言，先看地牢动起来。" in zh_text
-    assert "Steam-style game capsule: build the Agent, release the run, read the scars, rebuild smarter." in text
-    assert "Steam 式游戏胶囊：构筑 Agent，放进地牢，读懂伤痕，再重做下一局。" in zh_text
+    assert "Ouro Agent storefront showcase with language switch" in text
+    assert "暗影代理首屏主视觉：语言切换、试玩入口和图形化 TUI 战斗" in zh_text
+    assert "PLAY DEMO" in text
+    assert "WATCH BATTLE" in text
+    assert "BROWSE BUILD" in text
+    assert "查看构筑" in zh_text
+    assert "观看战斗" in zh_text
     assert "The terminal is not a log. It is the arena." in text
     assert "终端不是日志，而是竞技场。" in zh_text
     assert "The AI can choose, but it cannot cheat." in text
@@ -106,6 +113,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "HP / MP / ATB / 风险条" in zh_text
     assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in text
     assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in zh_text
+    assert text.count('src="examples/ouro-readme-storefront-showcase.svg"') == 1
+    assert zh_text.count('src="examples/ouro-readme-storefront-showcase.svg"') == 1
     assert text.count('src="examples/ouro-readme-storefront.svg"') == 1
     assert zh_text.count('src="examples/ouro-readme-storefront.svg"') == 1
     assert text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
@@ -248,6 +257,14 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "VOX [INTERRUPT]" in screenshot_wall
     assert "ENM [HIT]" in screenshot_wall
     assert "Build, Fight, Learn before the engineering notes begin" in screenshot_wall
+    assert "HERO SHOWCASE" not in storefront_showcase
+    assert "PLAYER FANTASY" in storefront_showcase
+    assert "LANGUAGE  ENGLISH / 中文" in storefront_showcase
+    assert "PLAY DEMO  ouro demo --lang en" in storefront_showcase
+    assert "BUILD &gt; FIGHT &gt; LEARN" in storefront_showcase
+    assert "No network. No API key." in storefront_showcase
+    assert "Model chooses." in storefront_showcase
+    assert "Local Judge decides damage" in storefront_showcase
     assert "DECISION FOCUS" in battle_media
     assert "WINDOW answered | JUDGE VALID | Echo Cost 0" in battle_media
     assert "STRIP [WIND]" in text
@@ -263,6 +280,7 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "windup ->" not in zh_text
     assert "windup -&gt;" not in battle_media
     assert "README media captures" in examples_readme
+    assert "storefront showcase" in examples_readme
     assert "screenshot wall" in examples_readme
     assert "decision focus HUD" in examples_readme
     assert "storefront-friendly" in examples_readme

@@ -11,28 +11,30 @@
 
 <table>
   <tr>
-    <th colspan="4">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
+    <th colspan="5">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
   </tr>
   <tr>
-    <td align="center"><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub></td>
-    <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>Read in English · game first, docs later</sub></a></td>
+    <td align="center"><strong>中文</strong><br><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub></td>
+    <td align="center"><a href="README.md#english-store-page"><strong>ENGLISH</strong><br><strong>English Store Page</strong><br><sub>Read in English · game first, docs later</sub></a></td>
     <td align="center"><a href="#play-now"><strong>进入地牢</strong><br><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn 优先</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn</sub></a></td>
+    <td align="center"><a href="#game-capsule"><strong>查看构筑</strong><br><strong>Hero Capsule</strong><br><sub>武器、角色、Codex</sub></a></td>
   </tr>
   <tr>
-    <td colspan="4" align="center">
+    <td colspan="5" align="center">
       <strong>CLI 语言切换 / CLI Language Toggle:</strong>
       <code>ouro --lang zh</code> / <code>ouro --lang en</code>
-      <br><sub>中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
+      <br><sub>Mock 离线，无需 API key；中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
     </td>
   </tr>
   <tr>
-    <td colspan="4" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
+    <td colspan="5" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
   </tr>
 </table>
 
 <p align="center">
-  <strong>Steam 式玩家承诺：</strong>你设计它带进地牢的战斗脑子；一局运行会证明这套 Prompt 能不能承受压力。<br>
+  <img alt="暗影代理首屏主视觉：语言切换、试玩入口和图形化 TUI 战斗" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
+  <br><strong>Steam 式玩家承诺：</strong>你设计它带进地牢的战斗脑子；一局运行会证明这套 Prompt 能不能承受压力。<br>
   <strong>Steam-style promise:</strong> build the mind, release the run, then read the scars.<br>
   <sub>先看画面，再看工程说明。Media first. Rules second. Engineering third.</sub>
 </p>
@@ -43,10 +45,8 @@
 
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
-  <br><strong>选择语言，先看地牢动起来。</strong><br>
-  <strong>Steam 式游戏胶囊：构筑 Agent，放进地牢，读懂伤痕，再重做下一局。</strong><br>
-  <br><strong>你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。</strong><br>
-  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
+  <br><strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
+  <strong>你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
 </p>
@@ -63,12 +63,12 @@
 
 <table>
   <tr>
-    <th colspan="3">Steam 风格首页 / Steam-Style Front Page · 选择介绍页 / Choose Your Page</th>
+    <th colspan="3">Steam 风格首页 / Steam-Style Front Page · 三个清晰动作</th>
   </tr>
   <tr>
-    <td align="center"><strong>中文 / Chinese</strong><br><sub>当前页面</sub></td>
+    <td align="center"><a href="#play-now"><strong>立即试玩</strong><br><sub>一条命令，Mock 离线</sub></a></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>观看战斗</strong><br><sub>真实 TUI 截图</sub></a></td>
     <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
-    <td align="center"><a href="#play-now"><strong>立即试玩 / Play Now</strong><br><sub>Mock 离线，无需 API key</sub></a></td>
   </tr>
   <tr>
     <td colspan="3" align="center"><strong>商店页胶囊：</strong>先语言、先画面、先可玩证明。</td>
@@ -96,7 +96,7 @@
     <td width="36%">
       <strong>第一眼会看到什么</strong><br><br>
       <strong>Build</strong><br>
-      武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前可见。<br><br>
+      武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前出现。<br><br>
       <strong>Fight</strong><br>
       屏幕是左右对战舞台，而不是原始日志滚动：左英雄、右敌人、中轴弹道、HP / MP / ATB、VOX / ENM、命中浮字和本地裁判同屏。<br><br>
       <strong>Learn</strong><br>
@@ -117,12 +117,14 @@
 
 | 好的 Steam 页面会先展示什么 | 这个 README 现在怎么处理 |
 |-----------------------------|--------------------------|
-| **胶囊图和截图墙** | 首屏先给主视觉、四格截图墙和 Build/Fight/Learn 画廊，再进入架构与 Provider 文档。 |
+| **胶囊图和截图墙** | 首屏先给主推海报、胶囊图、四格截图墙和 Build/Fight/Learn 画廊，再进入架构与 Provider 文档。 |
 | **一句话玩家幻想** | 构筑一个 Agent，把它放进压力局，看你的 Prompt 能不能活下来。 |
 | **可玩状态和行动按钮** | `ouro demo --lang zh --seed 1` 与 `ouro demo --lang en --seed 1` 放在工程说明之前。 |
 | **用画面证明，不只写承诺** | 每张媒体图都标出可复现 CLI 命令，并展示 mock 可跑通的游戏界面。 |
 
 </details>
+
+<a id="game-capsule"></a>
 
 ## 游戏胶囊 / Game Capsule
 
