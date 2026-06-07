@@ -4997,10 +4997,11 @@ def render_battle_report(
             damage_taken=damage_taken,
             fallback_count=fallback_count,
             lang=lang,
+            width=width,
         )
     )
     lines.append("")
-    lines.extend(_render_battle_turn_map(state, records, lang=lang))
+    lines.extend(_render_battle_turn_map(state, records, lang=lang, width=width))
     lines.append("")
     lines.append(f"{label('result', lang)}: {label(result_label_key, lang)}")
     lines.append(
@@ -5041,7 +5042,7 @@ def render_battle_report(
     if status_details:
         lines.append("")
         lines.extend(status_details)
-    lines.extend(["", *_render_play_next_board(state, records, lang=lang)])
+    lines.extend(["", *_render_play_next_board(state, records, lang=lang, width=width)])
     return "\n".join(_wrap_screen_lines(lines, width))
 
 
@@ -5188,6 +5189,7 @@ def _render_play_next_board(
     records: list[TurnRecord],
     *,
     lang: str,
+    width: int,
 ) -> list[str]:
     style = _battle_report_prompt_style(state, records)
     next_seed = state.seed + 1
@@ -5198,40 +5200,38 @@ def _render_play_next_board(
     )
     if lang == "zh":
         title = "PLAY NEXT BOARD :: 下一局闭环面板"
-        lines = [
-            title,
+        body = [
             "  [复盘] ouro status | ouro run-report",
             "  [图鉴] ouro codex",
             f"  [配置] ouro list-heroes | ouro hero-card {hero_id} --prompt-style {style}",
             f"  [重开] {rematch}",
         ]
         if state.result == "defeat":
-            lines.append("  [建议] 先复盘最后回合，再用 control/guarded 重开。")
+            body.append("  [建议] 先复盘最后回合，再用 control/guarded 重开。")
         elif state.result == "victory":
-            lines.append("  [建议] 保持当前打法，再用下一 seed 做压力样本。")
+            body.append("  [建议] 保持当前打法，再用下一 seed 做压力样本。")
         else:
-            lines.append("  [建议] 先回放观察关键窗口，再继续固定种子练习。")
-        return lines
+            body.append("  [建议] 先回放观察关键窗口，再继续固定种子练习。")
+        return list(pixel_panel(title, body, width, tone="counter").lines)
 
     title = "PLAY NEXT BOARD"
-    lines = [
-        f"{title} :: NEXT FIGHT LOOP",
+    body = [
         "  [REVIEW] ouro status | ouro run-report",
         "  [CODEX] ouro codex",
         f"  [LOADOUT] ouro list-heroes | ouro hero-card {hero_id} --prompt-style {style}",
         f"  [REMATCH] {rematch}",
     ]
     if state.result == "defeat":
-        lines.append(
+        body.append(
             "  [GUIDANCE] Review this run first, then retry with control/guarded."
         )
     elif state.result == "victory":
-        lines.append("  [GUIDANCE] Keep the plan, then raise pressure with next seed.")
+        body.append("  [GUIDANCE] Keep the plan, then raise pressure with next seed.")
     else:
-        lines.append(
+        body.append(
             "  [GUIDANCE] Replay one fixed-seed sample to settle intent timing."
         )
-    return lines
+    return list(pixel_panel(f"{title} :: NEXT FIGHT LOOP", body, width, tone="counter").lines)
 
 
 def _battle_report_skill_name(state: BattleState, skill_id: str) -> str:
@@ -5251,6 +5251,7 @@ def _render_battle_result_board(
     damage_taken: int,
     fallback_count: int,
     lang: str,
+    width: int,
 ) -> list[str]:
     hp_ratio = state.hero.hp / max(1, state.hero.max_hp)
     result = state.result or "ongoing"
@@ -5270,14 +5271,14 @@ def _render_battle_result_board(
             "timeout": "超时",
             "ongoing": "进行中",
         }.get(result, "进行中")
-        return [
-            "战斗结果板",
+        body = [
             f"  [结果] {result_text} | HP {state.hero.hp}/{state.hero.max_hp} | MP {state.hero.mp}/{state.hero.max_mp}",
             f"  [节奏] 英雄 {hero_turns} / 敌方 {enemy_turns} / tick {state.tick}",
             f"  [行动] 普攻:技能 {action_ratio} / 降级 {fallback_count}",
             f"  [伤害] 造成 {damage_dealt} / 承受 {damage_taken} / 压力 {pressure}",
             f"  [下一步] {next_step}",
         ]
+        return list(pixel_panel("战斗结果板", body, width, tone="climax").lines)
     if result == "victory":
         next_step = "keep variables, raise pressure" if hp_ratio >= 0.5 else "repair HP before elite/boss"
     elif result == "defeat":
@@ -5287,17 +5288,23 @@ def _render_battle_result_board(
     else:
         next_step = "keep watching turn frames"
     pressure = "high" if damage_taken >= max(20, state.hero.max_hp // 2) else "controlled"
-    return [
-        "BATTLE RESULT BOARD",
+    body = [
         f"  [RESULT] {result} | HP {state.hero.hp}/{state.hero.max_hp} | MP {state.hero.mp}/{state.hero.max_mp}",
         f"  [TEMPO] hero {hero_turns} / enemy {enemy_turns} / tick {state.tick}",
         f"  [ACTION] basic:skill {action_ratio} / fallbacks {fallback_count}",
         f"  [DAMAGE] dealt {damage_dealt} / taken {damage_taken} / pressure {pressure}",
         f"  [NEXT] {next_step}",
     ]
+    return list(pixel_panel("BATTLE RESULT BOARD", body, width, tone="climax").lines)
 
 
-def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, lang: str) -> list[str]:
+def _render_battle_turn_map(
+    state: BattleState,
+    records: list[TurnRecord],
+    *,
+    lang: str,
+    width: int,
+) -> list[str]:
     limit = 14
     visible = records[:limit]
     hidden = max(0, len(records) - limit)
@@ -5312,20 +5319,20 @@ def _render_battle_turn_map(state: BattleState, records: list[TurnRecord], *, la
     first_text = _battle_turn_label(state, first_hero, lang=lang) if first_hero else ("none" if lang == "en" else "无")
     read = _battle_turn_map_read(records, peak_hit=peak_hit, enemy_damage=enemy_damage, lang=lang)
     if lang == "zh":
-        return [
-            "回合轨道",
+        body = [
             f"  [流程] {flow}",
             f"  [先手] {first_text}",
             f"  [影响] 峰值命中 {peak_hit} / 敌方伤害 {enemy_damage}",
             f"  [读法] {read}",
         ]
-    return [
-        "BATTLE TURN MAP",
+        return list(pixel_panel("回合轨道", body, width, tone="quiet").lines)
+    body = [
         f"  [FLOW] {flow}",
         f"  [FIRST HERO] {first_text}",
         f"  [IMPACT] peak hit {peak_hit} / enemy damage {enemy_damage}",
         f"  [READ] {read}",
     ]
+    return list(pixel_panel("BATTLE TURN MAP", body, width, tone="quiet").lines)
 
 
 def _battle_turn_token(record: TurnRecord, *, lang: str = "en") -> str:

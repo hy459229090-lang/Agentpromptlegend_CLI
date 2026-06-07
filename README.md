@@ -1,5 +1,7 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
+**CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable**
+
 <p align="center">
   <strong>Language Switch / 语言切换: 中文 / English</strong><br>
   <a href="README.zh.md"><strong>中文介绍页</strong></a>
@@ -9,15 +11,21 @@
   CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
+<p align="center">
+  <strong>Watch the run before reading the docs.</strong><br>
+  <strong>先看画面，再看工程说明。</strong><br>
+  <sub>Build -> Fight -> Learn. One Agent enters the dungeon; the model chooses intent, and the local judge keeps every hit honest.</sub>
+</p>
+
 <a id="storefront-hero"></a>
 
 ## Storefront Hero / 商店页封面
 
 <p align="center">
-  <strong>Build the Agent. Release the run. Watch the dungeon answer your Prompt.</strong><br>
+  <strong>Train one Agent. Release it into the dungeon. Read the scars, rebuild, run again.</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
-  <sub>Steam-style pitch: Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
+  <sub>Store-page pitch: Train one AI hero. Watch it survive your Prompt. Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
 </p>
 
 <table>
@@ -43,6 +51,16 @@
   <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
   <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT. Four real UI moments before the engineering notes begin.</sub>
 </p>
+
+## Game Capsule / 游戏胶囊
+
+| What this is | What you do | What you watch | Why one more run |
+|--------------|-------------|----------------|------------------|
+| **A CLI AI roguelike with a real local judge.** | Build one Agent: hero, weapon, affixes, Prompt style, and tactical bias. | A low-pixel TUI stage with hero/enemy silhouettes, HP/MP/ATB, effect lanes, VOX/ENM barks, and judge readouts. | The report tells you where the Prompt failed, which Codex clue unlocked, and what Build to try next. |
+
+| 这是什么 | 你做什么 | 你会看到什么 | 为什么再开一局 |
+|----------|----------|--------------|----------------|
+| **一款命令行 AI 肉鸽，胜负由本地裁判结算。** | 战前构筑一个 Agent：英雄、武器、词条、Prompt 风格和战术偏好。 | 低像素 TUI 舞台：英雄/敌人剪影、HP/MP/ATB、弹道、VOX/ENM 台词、浮字和裁判结果同屏。 | 战报会告诉你 Prompt 哪里失手、图鉴解锁了什么、下一局该怎么改 Build。 |
 
 | Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
 |--------------------|----------------|-------------------------|

@@ -1,5 +1,7 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
+**命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩**
+
 <p align="center">
   <strong>语言切换 / Language: 中文 / English</strong><br>
   <a href="README.zh.md"><strong>中文介绍页</strong></a>
@@ -9,12 +11,18 @@
   CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code>
 </p>
 
+<p align="center">
+  <strong>先看画面，再看工程说明。</strong><br>
+  <strong>Watch the run before reading the docs.</strong><br>
+  <sub>构筑 -> 战斗 -> 复盘。一个 Agent 进入地牢；模型选择意图，本地裁判负责每一次命中、状态和胜负。</sub>
+</p>
+
 <a id="storefront-hero"></a>
 
 ## 商店页封面 / Storefront Hero
 
 <p align="center">
-  <strong>先构筑 Agent，再放进地牢，看你的 Prompt 是否扛得住压力。</strong><br>
+  <strong>训练一个 Agent。放进地牢。读懂伤痕，重构下一局。</strong><br>
   <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
   <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
   <sub>商店页式介绍：训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
@@ -44,6 +52,16 @@
   <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
   <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT。先看到四个真实 UI 时刻，再读工程说明。</sub>
 </p>
+
+## 游戏胶囊 / Game Capsule
+
+| 这是什么 | 你做什么 | 你会看到什么 | 为什么再开一局 |
+|----------|----------|--------------|----------------|
+| **一款命令行 AI 肉鸽，胜负由本地裁判结算。** | 战前构筑一个 Agent：英雄、武器、词条、Prompt 风格和战术偏好。 | 低像素 TUI 舞台：英雄/敌人剪影、HP/MP/ATB、弹道、VOX/ENM 台词、浮字和裁判结果同屏。 | 战报会告诉你 Prompt 哪里失手、图鉴解锁了什么、下一局该怎么改 Build。 |
+
+| What this is | What you do | What you watch | Why one more run |
+|--------------|-------------|----------------|------------------|
+| **A CLI AI roguelike with a real local judge.** | Build one Agent: hero, weapon, affixes, Prompt style, and tactical bias. | A low-pixel TUI stage with hero/enemy silhouettes, HP/MP/ATB, effect lanes, VOX/ENM barks, and judge readouts. | The report tells you where the Prompt failed, which Codex clue unlocked, and what Build to try next. |
 
 | 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |
 |----------------|-------------------------|----------------|

@@ -315,7 +315,9 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "DAMAGE RAIL" in report
     assert "NEXT LENS" in report
     assert "BATTLE RESULT BOARD" in report
+    assert "[ BATTLE RESULT BOARD ]" in report
     assert "BATTLE TURN MAP" in report
+    assert "[ BATTLE TURN MAP ]" in report
     assert "[FLOW] H" in report
     assert "[FIRST HERO]" in report
     assert "[FIRST HERO] Hex Seal" in report
@@ -334,6 +336,7 @@ def test_battle_report_summarizes_action_mix(bundle):
     assert "Damage dealt" in report
     assert "Fallbacks" in report
     assert "PLAY NEXT BOARD" in report
+    assert "[ PLAY NEXT BOARD :: NEXT FIGHT LOOP ]" in report
     assert (
         "  [REMATCH] ouro play --mock --hero hero_shadow_apprentice "
         "--prompt-style control --seed 2" in report
@@ -382,7 +385,11 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
         for index, line in enumerate(report_lines)
         if "英雄 " in line and "战后结算镜头" in line
     )
-    stage_end = report_lines.index("战斗结果板")
+    stage_end = next(
+        index
+        for index, line in enumerate(report_lines)
+        if "战斗结果板" in line
+    )
     stage_text = "\n".join(report_lines[stage_start:stage_end])
     assert "AFTER-ACTION STAGE" not in stage_text
     assert "FALLEN ENEMY" not in stage_text
@@ -391,9 +398,17 @@ def test_zh_battle_report_localizes_result_board_and_turn_map(bundle):
     assert "NEXT LENS" not in stage_text
     assert "wick ash" not in stage_text
 
-    start = report_lines.index("战斗结果板")
-    end = report_lines.index("回合轨道", start)
+    start = stage_end
+    end = next(
+        index
+        for index, line in enumerate(report_lines[start:], start=start)
+        if "回合轨道" in line
+    )
     board_text = "\n".join(report_lines[start : end + 6])
+
+    assert any(line.startswith("#") and "[ 战斗结果板 ]" in line for line in report_lines)
+    assert any(line.startswith("+") and "[ 回合轨道 ]" in line for line in report_lines)
+    assert any(line.startswith(">") and "下一局闭环面板" in line for line in report_lines)
 
     assert "BATTLE RESULT BOARD" not in board_text
     assert "BATTLE TURN MAP" not in board_text

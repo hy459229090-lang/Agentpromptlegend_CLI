@@ -33,9 +33,11 @@ All notable player-facing and release-facing changes for Ouro Agent: Prompt Lege
 - `ouro list-heroes` now uses each hero's own ASCII/Unicode low-pixel silhouette and expands the weapon gallery into 3-line weapon card art; `ouro list-heroes --unicode` previews the block-art roster before opening a hero card.
 - README and README.zh now open like a game storefront: bilingual switch, strong playable hook, hero capsule art, 30-second mock CTA, Build/Fight/Learn media gallery with weapon gallery art, visual combat language, and engineering/provider details moved behind the player-facing pitch.
 - README and README.zh now add a Steam-style screenshot wall that shows main menu, encounter briefing, battle canvas, and after-action report before the engineering notes.
+- README and README.zh now add a Game Capsule section and "watch the run first" intro so GitHub opens more like a player-facing game page than a project index.
 - Canvas battle sprites now render distinct block-art variants for shadow, fire, poison, holy, physical, observe, and cast poses; center effect lanes use stronger low-pixel tracks, and README battle media reflects the new visual grammar.
 - Encounter briefing now opens with a mini-stage: left hero silhouette, right enemy silhouette, threat rail, window rail, director line, and the original brief fields kept for readability.
 - Battle reports now open with an after-action stage: hero silhouette, fallen-enemy silhouette, result rail, damage rail, next lens, and bilingual director readout before the detailed result board.
+- Battle report result, turn-map, and play-next sections now render as pixel HUD panels while preserving the same tactical readout and rematch commands.
 - `ouro weapons` adds a standalone weapon gallery with ASCII-safe and Unicode card walls, weapon silhouettes, Build tags, AI behavior, and next-step hero-card/run commands.
 - `ouro menu` now opens as a framed main menu console with a recommended next command, status HUD, player journey board, and grouped entry commands instead of a plain text index.
 

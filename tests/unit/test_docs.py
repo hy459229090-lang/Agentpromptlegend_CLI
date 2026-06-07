@@ -25,6 +25,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    after_action_media = (ROOT / "examples/ouro-after-action.svg").read_text(
+        encoding="utf-8"
+    )
     screenshot_wall = (ROOT / "examples/ouro-readme-screenshot-wall.svg").read_text(
         encoding="utf-8"
     )
@@ -37,6 +40,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "语言切换 / Language" in zh_text
     assert "中文 / English" in text
     assert "中文 / English" in zh_text
+    assert "Watch the run before reading the docs." in text
+    assert "先看画面，再看工程说明。" in zh_text
     assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
     assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
     assert "Model chooses. Local Judge decides." in text
@@ -75,6 +80,12 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "首屏胶囊图" in zh_text
     assert "Steam-style screenshot wall" in text
     assert "商店式截图墙" in zh_text
+    assert "Game Capsule / 游戏胶囊" in text
+    assert "游戏胶囊 / Game Capsule" in zh_text
+    assert "A CLI AI roguelike with a real local judge." in text
+    assert "一款命令行 AI 肉鸽，胜负由本地裁判结算。" in zh_text
+    assert "Why one more run" in text
+    assert "为什么再开一局" in zh_text
     assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in text
     assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> AFTER-ACTION REPORT" in zh_text
     assert "Build / Weapon Gallery / 武器图鉴" in text
@@ -159,6 +170,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "STRIP [WIND]" in text
     assert "STRIP [WIND]" in zh_text
     assert "STRIP [WIND]" in battle_media
+    assert "#====[ BATTLE RESULT BOARD ]====#" in after_action_media
+    assert "+....[ BATTLE TURN MAP ]....+" in after_action_media
+    assert "&gt;==[ PLAY NEXT BOARD ]==&lt;" in after_action_media
     assert "STRIP windup" not in text
     assert "STRIP windup" not in zh_text
     assert "STRIP windup" not in battle_media
