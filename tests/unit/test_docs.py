@@ -49,12 +49,26 @@ def test_readme_covers_install_mock_provider_and_privacy():
     english_intro = text.split("## Quickstart", 1)[0]
     zh_intro = zh_text.split("## 快速开始", 1)[0]
 
-    assert "Start Here / 玩家入口" in text
-    assert "入口 / Start Here" in zh_text
-    assert "The Pitch / 游戏一句话" in text
-    assert "一句话介绍 / The Pitch" in zh_text
-    assert "First Look / 第一眼" in text
-    assert "第一眼 / First Look" in zh_text
+    assert "# Ouro Agent: Prompt Legend" in text
+    assert "# 暗影代理：祷文传说" in zh_text
+    assert "Chinese README" in text
+    assert "英文版 README" in zh_text
+    assert "## Start Here" in text
+    assert "## 入口" in zh_text
+    assert "## The Pitch" in text
+    assert "## 一句话介绍" in zh_text
+    assert "## First Look" in text
+    assert "## 第一眼" in zh_text
+    assert "Start Here / 玩家入口" not in text
+    assert "入口 / Start Here" not in zh_text
+    assert "The Pitch / 游戏一句话" not in text
+    assert "一句话介绍 / The Pitch" not in zh_text
+    assert "First Look / 第一眼" not in text
+    assert "第一眼 / First Look" not in zh_text
+    assert "Game Capsule / 游戏胶囊" not in text
+    assert "游戏胶囊 / Game Capsule" not in zh_text
+    assert "Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘" not in text
+    assert "先看游戏画面：构筑、战斗、复盘 / Screenshots" not in zh_text
     assert "Train one AI hero. Send it into a dark terminal dungeon." in text
     assert "训练一个 AI 英雄，把它放进黑暗终端地牢" in zh_text
     assert "Prompt is part of the build" in text
@@ -65,8 +79,10 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "模型选择行动，本地裁判结算" in zh_text
     assert "Try it in 30 seconds" in text
     assert "中文 30 秒试玩" in zh_text
-    assert "Gameplay wall / 玩法画面墙" in text
-    assert "玩法画面墙 / Gameplay wall" in zh_text
+    assert "Gameplay wall" in text
+    assert "玩法画面墙" in zh_text
+    assert "Gameplay wall / 玩法画面墙" not in text
+    assert "玩法画面墙 / Gameplay wall" not in zh_text
     assert "Player promise" in text
     assert "玩家承诺" in zh_text
     assert "The Prompt is your build." in text
@@ -90,16 +106,20 @@ def test_readme_covers_install_mock_provider_and_privacy():
 
     assert "Screenshots below are captured from reproducible CLI output" in text
     assert "下面的画面来自可复现的 CLI 输出" in zh_text
-    assert "Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘" in text
+    assert "Screenshots: Build, Fight, Learn" in text
     assert "先看游戏画面：构筑、战斗、复盘" in zh_text
     assert "Reproducible CLI Capture" in text
     assert "可复现终端片段" in zh_text
     assert "Graphical Battle Stage" in text
     assert "战后复盘屏" in zh_text
-    assert "Motion Preview / 动画节奏预览" in text
-    assert "Motion Evidence / 动效证据墙" in text
-    assert "Motion Preview / 动画节奏预览" in zh_text
-    assert "Motion Evidence / 动效证据墙" in zh_text
+    assert "Motion Preview" in text
+    assert "Motion Evidence" in text
+    assert "动画节奏预览" in zh_text
+    assert "动效证据墙" in zh_text
+    assert "Motion Preview / 动画节奏预览" not in text
+    assert "Motion Evidence / 动效证据墙" not in text
+    assert "Motion Preview / 动画节奏预览" not in zh_text
+    assert "Motion Evidence / 动效证据墙" not in zh_text
     for media_file in media_files:
         assert media_file in text
         assert media_file in zh_text
@@ -118,6 +138,18 @@ def test_readme_covers_install_mock_provider_and_privacy():
     ascii_static_command = (
         "ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content"
     )
+    zh_live_auto_command = (
+        "ouro --lang zh play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content"
+    )
+    zh_bitmap_command = (
+        "ouro --lang zh play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content"
+    )
+    zh_unicode_command = (
+        "ouro --lang zh play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content"
+    )
+    zh_ascii_static_command = (
+        "ouro --lang zh play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content"
+    )
     probe_command = "ouro doctor graphics --graphics bitmap --probe-image --content-dir content"
     for command in (
         live_auto_command,
@@ -127,6 +159,13 @@ def test_readme_covers_install_mock_provider_and_privacy():
         probe_command,
     ):
         assert command in text
+    for command in (
+        zh_live_auto_command,
+        zh_bitmap_command,
+        zh_unicode_command,
+        zh_ascii_static_command,
+        probe_command,
+    ):
         assert command in zh_text
 
     assert "THE ECHO ALTAR / IMPACT" in battle_media
@@ -151,7 +190,8 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "skill_hex_seal" not in text
     assert "skill_hex_seal" not in zh_text
 
-    assert "Current Playable Content / 当前可玩内容" in text
+    assert "Current Playable Content" in text
+    assert "Current Playable Content / 当前可玩内容" not in text
     assert "当前可玩内容" in zh_text
     assert "Guided first run" in text
     assert "引导式首局试玩" in zh_text

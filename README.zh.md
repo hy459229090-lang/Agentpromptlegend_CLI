@@ -1,9 +1,12 @@
-# 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
+# 暗影代理：祷文传说
 
 <p align="center">
   <strong>训练一个 AI 英雄，把它放进黑暗终端地牢，看看你的 Prompt 到底构筑出了什么。</strong><br>
-  <strong>Train one AI hero. Send it into a dark terminal dungeon. Learn what your Prompt really built.</strong><br>
-  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · 确定性本地裁判 · Mock 离线可玩 · 中文 / English</sub>
+  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · 确定性本地裁判 · Mock 离线可玩</sub>
+</p>
+
+<p align="center">
+  <a href="README.md">英文版 README</a>
 </p>
 
 <p align="center">
@@ -12,7 +15,7 @@
   <sub>模型选择行动，本地裁判结算。第一次试玩不需要网络或 API key。</sub>
 </p>
 
-## 入口 / Start Here
+## 入口
 
 <table>
   <tr>
@@ -22,14 +25,14 @@
     <th>查当前版本</th>
   </tr>
   <tr>
-    <td align="center"><strong>中文当前页</strong><br><a href="README.md"><strong>English README</strong></a><br><sub>CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code></sub></td>
+    <td align="center"><strong>中文 README</strong><br><a href="README.md"><strong>英文版 README</strong></a><br><sub>CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code></sub></td>
     <td align="center"><a href="#play-now"><strong>离线开局</strong></a><br><code>ouro try --lang zh --seed 1</code><br><sub>mock、可复现、无需 API key</sub></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>看 TUI 战斗</strong></a><br><sub>Build / Fight / Learn</sub></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>看 TUI 战斗</strong></a><br><sub>构筑 / 战斗 / 复盘</sub></td>
     <td align="center"><a href="#当前可玩内容"><strong>当前可玩内容</strong></a><br><sub>命令、Provider、安全边界</sub></td>
   </tr>
 </table>
 
-## 一句话介绍 / The Pitch
+## 一句话介绍
 
 **暗影代理：祷文传说** 是一款单人 CLI AI 肉鸽，Prompt 是构筑的一部分。
 战斗前你配置一个英雄 Agent：英雄、武器、词条、Build 方向、Prompt 风格和战术偏好。
@@ -41,42 +44,42 @@ HP、MP、ATB、状态、奖励、失败和胜利。
 
 <a id="storefront-hero"></a>
 
-## 第一眼 / First Look
+## 第一眼
 
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
   <br><strong>战前构筑。战中观战。战后读懂它留下的伤痕。</strong><br>
-  <sub>Prompt 选择、确定性战斗规则、中英双语终端画面、可复现证据，都是同一条循环的一部分。</sub>
+  <sub>Prompt 选择、确定性战斗规则、可切换语言的终端画面、可复现证据，都是同一条循环的一部分。</sub>
 </p>
 
 <p align="center">
-  <strong>游戏标签 / Game tags：</strong>
+  <strong>游戏标签：</strong>
   <code>单人</code>
   <code>AI 肉鸽</code>
   <code>自动战斗</code>
   <code>Prompt 构筑</code>
   <code>Mock 离线</code>
-  <code>中文 / English</code>
+  <code>语言可切换</code>
 </p>
 
-| 中文 30 秒试玩 | English 30-second try | 直接看战斗画面 |
-|----------------|-----------------------|----------------|
-| `pip install -e .`<br>`ouro try --lang zh --seed 1` | `pip install -e .`<br>`ouro try --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content` |
+| 中文 30 秒试玩 | 直接看战斗画面 |
+|----------------|----------------|
+| `pip install -e .`<br>`ouro try --lang zh --seed 1` | `ouro --lang zh play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content` |
 
 <table>
   <tr>
     <td width="64%">
       <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
-      <br><strong>玩法画面墙 / Gameplay wall</strong><br>
-      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。</sub>
+      <br><strong>玩法画面墙</strong><br>
+      <sub>主菜单控制台 -> 遭遇简报 -> 回声祭坛 -> 决策焦点 -> 战后报告。</sub>
     </td>
     <td width="36%">
       <strong>第一局会证明什么</strong><br><br>
-      <strong>Build</strong><br>
+      <strong>构筑</strong><br>
       武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前出现。<br><br>
-      <strong>Fight</strong><br>
+      <strong>战斗</strong><br>
       屏幕是左右对战舞台，而不是原始日志滚动：左英雄、右敌人、中轴弹道、HP / MP / ATB、VOX / ENM、命中浮字和本地裁判同屏。<br><br>
-      <strong>Learn</strong><br>
+      <strong>复盘</strong><br>
       战后复盘会解释节奏、失误、Codex 线索和下一次 Build 方向。
     </td>
   </tr>
@@ -91,17 +94,13 @@ HP、MP、ATB、状态、奖励、失败和胜利。
 
 <a id="game-capsule"></a>
 
-## 游戏胶囊 / Game Capsule
+## 游戏胶囊
 
-首屏胶囊图 / Hero Capsule：一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。
+首屏胶囊图：一个被训练的 Agent，一个本地裁判，以及会反击 Prompt 的地牢。
 
 | 这是什么 | 你做什么 | 你会看到什么 | 为什么再开一局 |
 |----------|----------|--------------|----------------|
 | **一款命令行 AI 肉鸽，胜负由本地裁判结算。** | 战前构筑一个 Agent：英雄、武器、词条、Prompt 风格和战术偏好。 | 低像素 TUI 舞台：英雄/敌人剪影、HP/MP/ATB、弹道、VOX/ENM 台词、浮字和裁判结果同屏。 | 战报会告诉你 Prompt 哪里失手、图鉴解锁了什么、下一局该怎么改 Build。 |
-
-| What this is | What you do | What you watch | Why one more run |
-|--------------|-------------|----------------|------------------|
-| **A CLI AI roguelike with a real local judge.** | Build one Agent: hero, weapon, affixes, Prompt style, and tactical bias. | A low-pixel TUI stage with hero/enemy silhouettes, HP/MP/ATB, effect lanes, VOX/ENM barks, and judge readouts. | The report tells you where the Prompt failed, which Codex clue unlocked, and what Build to try next. |
 
 **现在就能离线试玩。** 默认 mock provider 不需要网络、不需要 API key，
 也不需要真实模型。最好的第一印象是：先构筑一次，把 Agent 放进战斗，
@@ -109,15 +108,15 @@ HP、MP、ATB、状态、奖励、失败和胜利。
 
 <a id="screenshots-build-fight-learn"></a>
 
-## 先看游戏画面：构筑、战斗、复盘 / Screenshots: Build, Fight, Learn
+## 先看游戏画面：构筑、战斗、复盘
 
-Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输出，不是概念图。
+下面的画面来自可复现的 CLI 输出，不是概念图。
 默认动效试玩用
-`ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content`
+`ouro --lang zh play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content`
 感受终端里的实时节奏。支持 bitmap 的终端中，`--graphics auto` 会优先播放本地 QA 通过的 PNG sprite（iTerm2 或 Kitty inline image）；不支持时自动降级到 Unicode cell sprite，再降级到 ASCII-safe 输出。也可以显式选择：
-`ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content`、
-`ouro --lang en play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content`，或
-`ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content`。
+`ouro --lang zh play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content`、
+`ouro --lang zh play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content`，或
+`ouro --lang zh play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content`。
 运行时不生图：ImageGen 只用于开发期资产管线，实机战斗读取 `content/assets/` 里已经 QA 通过的本地资产。只有在截图复现、CI 日志、无障碍或低兼容终端时，才使用 `--no-animation` 得到确定性的静态帧。SVG 资产保存在 `examples/`。
 如果终端报告支持 bitmap 但实战仍像文字界面，先运行
 `ouro doctor graphics --graphics bitmap --probe-image --content-dir content`；它会在终端里打印一张本地 QA 通过的 runtime PNG，用来区分终端图片协议问题和战斗布局问题。
@@ -126,19 +125,19 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
   <tr>
     <td width="33%">
       <img alt="武器图鉴和构筑兵装" src="examples/ouro-weapon-gallery.svg">
-      <br><strong>Build / 武器图鉴 / Weapon Gallery</strong><br>
+      <br><strong>构筑：武器图鉴</strong><br>
       六件武器同时展示轮廓、Build 标签、所属英雄、AI 行为和下一步 hero-card / run 命令，玩家能先比较再开局。<br>
       <sub>复现：<code>ouro weapons --unicode</code></sub>
     </td>
     <td width="33%">
       <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
-      <br><strong>Fight / 图形化战斗舞台 / Graphical Battle Stage</strong><br>
+      <br><strong>战斗：图形化战斗舞台</strong><br>
       左英雄 vs 右敌人，中间场景层、命中闪光、回声脉冲、镜头震动、窗口压力和本地裁判同屏；HP / MP / ATB、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。<br>
-      <sub>自动实时：<code>ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content</code><br>Bitmap 最佳路径：<code>ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content</code><br>静态复现 / ASCII 降级：<code>ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content</code></sub>
+      <sub>自动实时：<code>ouro --lang zh play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content</code><br>Bitmap 最佳路径：<code>ouro --lang zh play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content</code><br>静态复现 / ASCII 降级：<code>ouro --lang zh play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content</code></sub>
     </td>
     <td width="33%">
       <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
-      <br><strong>Learn / 战后复盘屏 / After-Action Report</strong><br>
+      <br><strong>复盘：战后复盘屏</strong><br>
       胜负不是一句结论，而是回合轨道、反制窗口、Codex 研究、死亡历史和下一局操作建议。<br>
       <sub>复现：<code>ouro run-report --lang zh</code> 和 <code>ouro codex --lang zh</code></sub>
     </td>
@@ -147,13 +146,13 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
 
 <p align="center">
   <img alt="模式、锁定与战斗相位的 TUI 动画分镜" src="examples/ouro-animation-filmstrip.svg" width="100%">
-  <br><strong>Motion Preview / 动画节奏预览</strong><br>
+  <br><strong>动画节奏预览</strong><br>
   默认 TTY 试玩现在会把开局、路线、奖励、商店、休整、事件和战斗相位都做成可见动效。这个文件是 animated SVG 分镜，和 PTY 证据日志使用同一条 mock 友好流程。
 </p>
 
 <p align="center">
   <img alt="模式、路线、奖励、战斗命中和死亡停顿的动效证据墙" src="examples/ouro-motion-evidence.svg" width="100%">
-  <br><strong>Motion Evidence / 动效证据墙</strong><br>
+  <br><strong>动效证据墙</strong><br>
   固定 seed 证据把模式选择、路线焦点、奖励焦点、战斗命中和死亡停顿放进一张适合截图审阅的 animated SVG。
 </p>
 
@@ -164,7 +163,7 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
 3. **BATTLE RESULT BOARD**：胜负、节奏、失误、Codex 研究和下一局命令留在屏幕上。
 
 <details>
-<summary>可复现终端片段 / Reproducible CLI Capture</summary>
+<summary>可复现终端片段</summary>
 
 ```text
 RUN READY BOARD
@@ -255,7 +254,7 @@ ouro menu --lang zh
 想看更强画面感：
 
 ```bash
-ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content
+ouro --lang zh play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content
 ```
 
 想看复盘和长期成长：
@@ -333,13 +332,13 @@ ouro play --mock
 
 ---
 
-## 双语机制
+## 语言机制
 
-语言切换 / Language：CLI 语言切换使用 `ouro --lang zh` 或
-`ouro --lang en`，也可以通过 `ouro config set language` 保存默认语言。
+CLI 语言切换使用 `ouro --lang zh` 或 `ouro --lang en`，也可以通过
+`ouro config set language` 保存默认语言。
 
 ID（`hero_shadow_apprentice`、`skill_shadow_sting` 等）始终英文，
-玩家可见文本中英双语。
+玩家可见文本可在中文和英文之间切换。
 
 | 模式 | 用法 |
 |------|------|
@@ -483,7 +482,7 @@ ouro play --->  |  CLI (cli/main.py)  |
 ## 仓库速览
 
 ```text
-README.md / README.zh.md      中英双语首页
+README.md / README.zh.md      英文与中文首页
 AGENTS.md / CLAUDE.md         coding agent 规则（改代码前必读）
 pyproject.toml                可安装包，命令入口 `ouro`
 src/ouro_agent/               运行时代码（按职责拆分）
