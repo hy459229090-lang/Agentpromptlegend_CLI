@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_burial_crank_icon_card
+candidate_id: cand_item_burial_crank_001
+work_order_id: wo_item_burial_crank_icon_card
+source_brief: burial_crank_gear_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 81
+  - 94
+  - 551
+  - 721
+  visible_pixels: 168619
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_burial_crank.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 93
+  - 97
+  - 544
+  - 733
+  visible_pixels: 285307
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_burial_crank.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 592
+  - 887
+  visible_bbox:
+  - 166
+  - 285
+  - 466
+  - 586
+  visible_pixels: 47204
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_burial_crank.hud_mark

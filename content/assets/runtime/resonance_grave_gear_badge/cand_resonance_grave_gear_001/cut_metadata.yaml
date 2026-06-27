@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: resonance_grave_gear_badge
+candidate_id: cand_resonance_grave_gear_001
+work_order_id: wo_resonance_grave_gear_badge
+source_brief: grave_gear_online_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 74
+  - 124
+  - 498
+  - 642
+  visible_pixels: 136986
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_grave_gear.badge
+- frame_id: card_motif
+  path: card_motif.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 63
+  - 62
+  - 513
+  - 649
+  visible_pixels: 262774
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_grave_gear.card_motif
+- frame_id: online_state
+  path: online_state.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 44
+  - 116
+  - 490
+  - 639
+  visible_pixels: 144220
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_grave_gear.online_state
+- frame_id: high_roll_state
+  path: high_roll_state.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 3
+  - 101
+  - 505
+  - 648
+  visible_pixels: 159252
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_grave_gear.high_roll_state

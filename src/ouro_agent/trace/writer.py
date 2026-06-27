@@ -48,6 +48,8 @@ class TraceWriter:
         seed: int,
         provider: str,
         model: str,
+        battle_session_id: str | None = None,
+        static_context_hash: str | None = None,
         config: TraceConfig | None = None,
     ):
         self.run_id = run_id
@@ -55,6 +57,8 @@ class TraceWriter:
         self.seed = seed
         self.provider = provider
         self.model = model
+        self.battle_session_id = battle_session_id
+        self.static_context_hash = static_context_hash
         self.config = config or TraceConfig()
         self._fp = None
         self._path: Path | None = None
@@ -69,6 +73,8 @@ class TraceWriter:
                 seed=self.seed,
                 provider=self.provider,
                 model=self.model,
+                battle_session_id=self.battle_session_id,
+                static_context_hash=self.static_context_hash,
                 schema_version=SCHEMA_VERSION,
                 ruleset_version=RULESET_VERSION,
                 content_version=CONTENT_VERSION,

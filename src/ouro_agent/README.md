@@ -12,7 +12,6 @@ Expected submodules:
 - `content`: content loading and validation.
 - `sessions`: run/battle/turn state.
 - `tui`: terminal rendering.
-- `art`: glyph and ASCII assets.
+- `art`: glyphs, ASCII fallback assets, sprite atlas contracts, and timelines.
 - `trace`: local trace writing.
 - `validation`: doctor and validation helpers.
-

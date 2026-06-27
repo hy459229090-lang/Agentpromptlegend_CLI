@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_black_sun_codex_icon_card
+candidate_id: cand_item_black_sun_codex_001
+work_order_id: wo_item_black_sun_codex_icon_card
+source_brief: black_sun_codex_shadow_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 99
+  - 184
+  - 519
+  - 699
+  visible_pixels: 126822
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_black_sun_codex.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 88
+  - 147
+  - 505
+  - 705
+  visible_pixels: 231693
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_black_sun_codex.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 592
+  - 887
+  visible_bbox:
+  - 141
+  - 299
+  - 422
+  - 582
+  visible_pixels: 40302
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_black_sun_codex.hud_mark

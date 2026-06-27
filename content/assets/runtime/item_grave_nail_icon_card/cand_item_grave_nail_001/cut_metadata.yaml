@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_grave_nail_icon_card
+candidate_id: cand_item_grave_nail_001
+work_order_id: wo_item_grave_nail_icon_card
+source_brief: grave_nail_trap_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 150
+  - 169
+  - 461
+  - 679
+  visible_pixels: 50683
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_grave_nail.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 79
+  - 119
+  - 518
+  - 724
+  visible_pixels: 264554
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_grave_nail.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 592
+  - 887
+  visible_bbox:
+  - 138
+  - 251
+  - 436
+  - 604
+  visible_pixels: 36573
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_grave_nail.hud_mark

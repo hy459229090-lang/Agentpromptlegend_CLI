@@ -1,6 +1,31 @@
 """Deterministic combat engine."""
-from ouro_agent.engine.battle import BattleLoop, run_mock_battle
-from ouro_agent.engine.build import ResolvedBuild, resolve_build
+from ouro_agent.engine.battle import (
+    BattleLoop,
+    BattleReport,
+    TurnRecord,
+    generate_battle_report,
+    run_mock_battle,
+    BatchResult,
+    run_batch,
+)
+from ouro_agent.engine.build import (
+    BuildProgress,
+    BuildStage,
+    HERO_BUILD_ARCHETYPES,
+    HERO_CORE_TAGS,
+    HERO_RISK_LEVELS,
+    HERO_STRATEGIES,
+    ResolvedBuild,
+    resolve_build,
+)
+from ouro_agent.engine.diagnostics import (
+    TacticalDiagnosis,
+    TempoBudget,
+    analyze_battle_tactics,
+    analyze_prompt_impacts,
+    classify_tempo_budget,
+    classify_tempo_outlier,
+)
 from ouro_agent.engine.models import (
     BattleEvent,
     BattleResult,
@@ -25,4 +50,21 @@ __all__ = [
     "run_mock_battle",
     "ResolvedBuild",
     "resolve_build",
+    "BuildProgress",
+    "BuildStage",
+    "HERO_BUILD_ARCHETYPES",
+    "HERO_CORE_TAGS",
+    "HERO_RISK_LEVELS",
+    "HERO_STRATEGIES",
+    "BattleReport",
+    "TurnRecord",
+    "generate_battle_report",
+    "BatchResult",
+    "run_batch",
+    "TacticalDiagnosis",
+    "TempoBudget",
+    "analyze_battle_tactics",
+    "analyze_prompt_impacts",
+    "classify_tempo_budget",
+    "classify_tempo_outlier",
 ]

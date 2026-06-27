@@ -1,0 +1,60 @@
+schema_version: '0.1'
+records:
+- asset_id: enemy_black_candle_acolyte_actor_sheet
+  candidate_id: cand_enemy_black_candle_acolyte_001
+  work_order_id: wo_enemy_black_candle_acolyte_actor_sheet
+  source_brief: black_candle_acolyte_chant_silhouette
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_enemy_black_candle_acolyte_001
+  reviewer: codex-art-pipeline-smoke
+  reviewed_at: '2026-06-18T01:05:00Z'
+  runtime_target_path: runtime/enemy_black_candle_acolyte_actor_sheet/cand_enemy_black_candle_acolyte_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    silhouette_readable: true
+    tier_variant: true
+    pose_delta: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: idle
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.idle
+  - frame_id: telegraph
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.telegraph
+  - frame_id: cast
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.cast
+  - frame_id: hit
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.hit
+  - frame_id: break
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.break
+  - frame_id: death
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.death
+  - frame_id: codex_reveal
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.enemy_black_candle_acolyte.codex_reveal

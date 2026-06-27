@@ -1,0 +1,84 @@
+schema_version: '0.1'
+records:
+- asset_id: hero_shadow_apprentice_battle_sheet
+  candidate_id: cand_hero_shadow_apprentice_001
+  work_order_id: wo_hero_shadow_apprentice_battle_sheet
+  source_brief: astia_black_candle_shadow_apprentice
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_hero_shadow_apprentice_001
+  reviewer: codex-art-pipeline-smoke
+  reviewed_at: '2026-06-18T01:00:00Z'
+  runtime_target_path: runtime/hero_shadow_apprentice_battle_sheet/cand_hero_shadow_apprentice_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    stable_anchor: true
+    pose_delta: true
+    terminal_legible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: portrait
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.portrait
+  - frame_id: idle
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.idle
+  - frame_id: ready
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.ready
+  - frame_id: attack
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.attack
+  - frame_id: skill
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.skill
+  - frame_id: guard
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.guard
+  - frame_id: hit
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.hit
+  - frame_id: low_hp
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.low_hp
+  - frame_id: victory
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.victory
+  - frame_id: defeat
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.defeat
+  - frame_id: signature
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_shadow_apprentice.signature

@@ -1,0 +1,35 @@
+schema_version: '0.1'
+records:
+- asset_id: node_boss_stage_plate
+  candidate_id: cand_node_boss_001
+  work_order_id: wo_node_boss_stage_plate
+  source_brief: black_chapel_boss_stage
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_node_boss_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:18:42Z'
+  runtime_target_path: runtime/node_boss_stage_plate/cand_node_boss_001/cut_metadata.yaml
+  checks:
+    low_density: true
+    stage_readable: true
+    actor_space_clear: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: background
+    anchor:
+    - 160
+    - 80
+    duration_ms: 80
+    fallback_cell_id: cell.node.boss.background
+  - frame_id: chapel_doors
+    anchor:
+    - 160
+    - 80
+    duration_ms: 80
+    fallback_cell_id: cell.node.boss.chapel_doors
+  - frame_id: boss_intro
+    anchor:
+    - 160
+    - 80
+    duration_ms: 80
+    fallback_cell_id: cell.node.boss.boss_intro

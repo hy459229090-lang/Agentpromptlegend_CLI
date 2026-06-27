@@ -1,0 +1,90 @@
+schema_version: '0.1'
+records:
+- asset_id: skill_hex_seal_effect_sheet
+  candidate_id: cand_skill_hex_seal_001
+  work_order_id: wo_skill_hex_seal_effect_sheet
+  source_brief: hex_seal_black_candle_sigil
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_skill_hex_seal_001
+  reviewer: codex-art-pipeline-smoke
+  reviewed_at: '2026-06-18T00:00:00Z'
+  runtime_target_path: runtime/skill_hex_seal_effect_sheet/cand_skill_hex_seal_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    frame_delta: true
+    lane_readable: true
+    hit_stop_visible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: idle
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.idle
+  - frame_id: windup
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.windup
+  - frame_id: seal_spawn
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.seal_spawn
+  - frame_id: travel_mid
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.travel_mid
+  - frame_id: travel_near
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.travel_near
+  - frame_id: hit_stop
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.hit_stop
+  - frame_id: damage_pop
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.damage_pop
+  - frame_id: settle
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.settle
+  - frame_id: recover
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.recover
+  - frame_id: dissolve
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.dissolve
+  - frame_id: trail
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.trail
+  - frame_id: impact
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_hex_seal.impact

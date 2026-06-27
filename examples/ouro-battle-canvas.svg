@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent graphical TUI battle canvas</title>
+  <desc id="desc">A stylized terminal screenshot of the left hero versus right enemy battle stage with scene texture, hit flash, echo pulse, camera shake, window pressure, and partial refresh evidence.</desc>
+  <defs>
+    <linearGradient id="terminal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#101820"/>
+      <stop offset="0.65" stop-color="#121318"/>
+      <stop offset="1" stop-color="#1c1714"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .top { font-size: 22px; fill: #f0d38a; font-weight: 700; }
+      .text { font-size: 20px; fill: #dce5dd; }
+      .small { font-size: 16px; fill: #9baab0; }
+      .green { fill: #8dd98a; }
+      .red { fill: #df776e; }
+      .gold { fill: #f0b464; }
+      .cyan { fill: #8ecae6; }
+      .panel { fill: #0b1117; stroke: #465761; stroke-width: 1.4; rx: 10; }
+      .stage { fill: url(#terminal); stroke: #70808a; stroke-width: 2; rx: 10; }
+      .muted { fill: #65737a; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#070a0e"/>
+  <rect x="50" y="40" width="1180" height="640" class="stage"/>
+  <text x="82" y="84" class="mono top">█▀▀ THE ECHO ALTAR / IMPACT   BEAT T009 HERO ▀▀█</text>
+  <rect x="82" y="112" width="350" height="450" class="panel"/>
+  <rect x="456" y="112" width="365" height="450" class="panel"/>
+  <rect x="844" y="112" width="354" height="450" class="panel"/>
+  <text x="106" y="148" class="mono top">HERO [CNDL] Astia</text>
+  <text x="480" y="148" class="mono small">░SELECT░ ▒WIND▒ ▓TRAVEL▓ █IMPACT█ ░JUDGE░</text>
+  <text x="868" y="148" class="mono top">ENEMY [k] ACOLYTE</text>
+  <text x="106" y="190" class="mono text">VOX seal the chant</text>
+  <text x="106" y="236" class="mono text">ACT&gt;▄██▄░</text>
+  <text x="106" y="270" class="mono text">   ▐▓c▓██</text>
+  <text x="106" y="304" class="mono text">    ▟██▙</text>
+  <text x="106" y="350" class="mono small">[W:STF] c==*  Black Candle Staff</text>
+  <text x="106" y="390" class="mono green">BUILD [ONLINE] shadow/control</text>
+  <text x="106" y="436" class="mono text">HP ████████████ 100/100</text>
+  <text x="106" y="470" class="mono text">MP ████████░░░░ 54/72</text>
+  <text x="106" y="504" class="mono gold">ATB READY</text>
+  <text x="106" y="536" class="mono small">SKILL STG* HEX4 FOC*</text>
+  <text x="480" y="198" class="mono small">SCENE CANDLE/ASH/BROKEN ARCH</text>
+  <text x="480" y="232" class="mono cyan">DIRECTOR HIT / READY / INT</text>
+  <text x="480" y="266" class="mono small">TEMPO H100 ████ E034 █░ WIN</text>
+  <text x="480" y="300" class="mono gold">      ░▒▓▓██==&gt;  SEAL LANE</text>
+  <text x="480" y="334" class="mono gold">      ▓▓ HIT FLASH -16HP &gt;&gt;&gt;</text>
+  <text x="480" y="368" class="mono small">      PULSE ████▓░░ HIT hit</text>
+  <text x="480" y="402" class="mono small">      CAMERA █SHAKE█ hit stop</text>
+  <text x="480" y="436" class="mono small">WINDOW PRESSURE ANSWERED █░░░░ CD4</text>
+  <text x="480" y="470" class="mono text">DECISION FOCUS</text>
+  <text x="480" y="504" class="mono small">ACTION HEX -&gt; k / PLAN CONTROL</text>
+  <text x="480" y="538" class="mono small">JUDGE VALID | Echo Cost 0 | TTY PARTIAL REFRESH</text>
+  <text x="868" y="190" class="mono text">ENM armor cracking</text>
+  <text x="868" y="236" class="mono text">     ░▄▒▄░       &lt;TGT</text>
+  <text x="868" y="270" class="mono text">      ▐▒k▒</text>
+  <text x="868" y="304" class="mono text">       ▟▒</text>
+  <text x="868" y="350" class="mono gold">THREAT WINDOW 1/1</text>
+  <text x="868" y="390" class="mono red">HIT -16 HP SLN</text>
+  <text x="868" y="436" class="mono text">HP ███████░░░░░ 34/70</text>
+  <text x="868" y="470" class="mono text">ATB ███████████░</text>
+  <text x="868" y="504" class="mono gold">INTENT SILENCED</text>
+  <text x="868" y="536" class="mono small">STACK -c██░ &gt;k███</text>
+  <rect x="82" y="584" width="1116" height="92" class="panel"/>
+  <text x="106" y="622" class="mono top">CINEMATIC BEAT</text>
+  <text x="330" y="622" class="mono text">VOX There. The wick forgets its prayer.  ENM armor cracking</text>
+  <text x="106" y="650" class="mono small">FLOAT -16 HP | SLN   STRIP [WIND] ░SEAL LANE░ ▓HIT -16▓ █VALID█   LOG CAST HEX -MP18</text>
+  <text x="106" y="672" class="mono small">TTY PARTIAL REFRESH move_row_2=yes clear_line=yes ansi_escape=no</text>
+</svg>

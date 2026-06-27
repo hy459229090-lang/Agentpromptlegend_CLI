@@ -1,0 +1,156 @@
+schema_version: "0.1"
+content_version: "mvp_cinematic_assets"
+brief_families:
+  - id: hero_actor_sheet
+    source_types: [hero]
+    output: transparent PNG sprite sheet, 96x96 or 128x128 cells
+    prompt: "Dark terminal roguelike hero actor sheet, Black Candle silhouette language, readable at low resolution, stable anchor, idle/ready/attack/skill/guard/hit/low HP/victory/defeat poses, no text."
+    negative_prompt: "no letters, no logo, no UI text, no brand replica, no photoreal person, no busy background, no cropped limbs, no unrelated props"
+    terminal_target: "10x6 Unicode fallback cells and bitmap stage actor column"
+    qa_checks: [transparent_background, stable_anchor, pose_delta, terminal_legible, mit_safe]
+  - id: enemy_actor_sheet
+    source_types: [enemy]
+    output: transparent PNG sprite sheet, 96x96 cells; boss may use 192x128
+    prompt: "Dark terminal roguelike enemy actor sheet, family/tier silhouette, idle/telegraph/attack-or-cast/hit/break/death/codex reveal poses, strong readable outline, no text."
+    negative_prompt: "no letters, no logo, no UI text, no brand replica, no photoreal gore, no busy background, no unrelated props"
+    terminal_target: "10x6 Unicode fallback cells and right-side enemy actor column"
+    qa_checks: [transparent_background, silhouette_readable, tier_variant, pose_delta, mit_safe]
+  - id: skill_effect_sheet
+    source_types: [skill]
+    output: transparent PNG effect sheet, 160x64 or 192x64
+    prompt: "Low-resolution spell or weapon effect sheet for terminal combat, spawn/travel/near-hit/impact/dissolve frames, visible trail, hit-stop shape change, no text."
+    negative_prompt: "no arrows made of text, no letters, no logo, no UI frame, no brand replica, no busy background"
+    terminal_target: "center effect lane with Unicode cell fallback"
+    qa_checks: [transparent_background, frame_delta, lane_readable, hit_stop_visible, mit_safe]
+  - id: item_icon_card
+    source_types: [item]
+    output: transparent PNG icon and compact card crop, 64x64
+    prompt: "Dark terminal roguelike item icon and reward card motif, readable object silhouette, compact shape, strong value contrast, no text."
+    negative_prompt: "no written labels, no logo, no brand replica, no realistic product pack, no busy background"
+    terminal_target: "reward/shop/build card and small HUD mark"
+    qa_checks: [silhouette_readable, card_crop_safe, terminal_legible, mit_safe]
+  - id: affix_badge_card
+    source_types: [affix]
+    output: transparent PNG badge and reward-card motif, 48x48
+    prompt: "Small dark fantasy affix badge for terminal build UI, one clear motif, readable at icon size, no text."
+    negative_prompt: "no letters, no logo, no brand replica, no full character, no busy background"
+    terminal_target: "Build badge, reward card, online state chip"
+    qa_checks: [icon_readable, badge_shape_stable, terminal_legible, mit_safe]
+  - id: resonance_badge_card
+    source_types: [resonance]
+    output: transparent PNG badge and online/high-roll motif, 48x48
+    prompt: "Resonance build badge for dark terminal roguelike, stronger than affix badge, readable motif, online and high-roll state variants, no text."
+    negative_prompt: "no letters, no logo, no brand replica, no full character, no busy background"
+    terminal_target: "Build online/high roll badge and reward card motif"
+    qa_checks: [icon_readable, state_variant, terminal_legible, mit_safe]
+  - id: stage_plate
+    source_types: [dungeon, node_type]
+    output: low-density PNG stage plate, 320x160 or 480x240
+    prompt: "Dark terminal roguelike stage plate, low-density background texture, clear floor mood, leaves empty left/right actor columns and center effect lane, no text."
+    negative_prompt: "no letters, no logo, no UI text, no photoreal venue, no dense clutter, no brand replica"
+    terminal_target: "combat intro plate, route/shop/rest/event/boss scene background"
+    qa_checks: [low_density, stage_readable, actor_space_clear, mit_safe]
+  - id: hud_sprite
+    source_types: [ui_state]
+    output: transparent PNG HUD sprite, compact variants
+    prompt: "Terminal roguelike HUD sprite, compact bar or pop effect, readable at tiny size, high contrast, no text except values rendered by engine."
+    negative_prompt: "no labels, no logo, no brand replica, no full UI mockup, no busy background"
+    terminal_target: "HP/MP/ATB bars, damage pop, combat HUD"
+    qa_checks: [tiny_readable, value_overlay_safe, terminal_legible, mit_safe]
+  - id: status_badge_sprite
+    source_types: [ui_state]
+    output: transparent PNG status badge variants, 32x32
+    prompt: "Small status badge for terminal combat, single visual motif for applied/ticking/expire states, readable without text."
+    negative_prompt: "no written abbreviations, no logo, no brand replica, no busy background"
+    terminal_target: "status chip beside actor and Unicode fallback glyph"
+    qa_checks: [badge_readable, state_variant, terminal_legible, mit_safe]
+  - id: codex_reward_sprite
+    source_types: [ui_state]
+    output: transparent PNG card/reveal sprite variants
+    prompt: "Dark terminal roguelike codex or reward card reveal sprite, locked/fog/reveal/learned or seed/pair/online/high/lock states, no text."
+    negative_prompt: "no letters, no logo, no brand replica, no full menu screenshot, no busy background"
+    terminal_target: "codex reveal, reward card, Build state badge"
+    qa_checks: [state_variant, card_crop_safe, terminal_legible, mit_safe]
+brief_aliases:
+  - {id: astia_black_candle_shadow_apprentice, family: hero_actor_sheet, source_type: hero, source_content_id: hero_shadow_apprentice}
+  - {id: norn_ash_guardian_shield_theatre, family: hero_actor_sheet, source_type: hero, source_content_id: hero_ash_guardian}
+  - {id: vela_broken_string_mirror_duel, family: hero_actor_sheet, source_type: hero, source_content_id: hero_broken_string_hunter}
+  - {id: mirel_mire_oracle_poison_omen, family: hero_actor_sheet, source_type: hero, source_content_id: hero_mire_oracle}
+  - {id: korr_gravewright_engine_gear, family: hero_actor_sheet, source_type: hero, source_content_id: hero_gravewright}
+  - {id: sera_echo_exile_bell_hymn, family: hero_actor_sheet, source_type: hero, source_content_id: hero_echo_exile}
+  - {id: hungry_cultist_trace_silhouette, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_hungry_cultist}
+  - {id: ravenous_zealot_ritebound_silhouette, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_hungry_cultist_rite}
+  - {id: black_candle_acolyte_chant_silhouette, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_black_candle_acolyte}
+  - {id: black_candle_priest_ritebound_chant, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_black_candle_priest_rite}
+  - {id: black_candle_high_priest_archive_boss, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_black_candle_high_priest_archive}
+  - {id: mire_rat_poison_vermin, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_mire_rat}
+  - {id: mire_scorpion_ritebound_venom, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_mire_scorpion_rite}
+  - {id: ash_wraith_fire_phase, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_ash_wraith}
+  - {id: ash_golem_ritebound_shield, family: enemy_actor_sheet, source_type: enemy, source_content_id: enemy_ash_golem_rite}
+  - {id: shadow_sting_candle_lance, family: skill_effect_sheet, source_type: skill, source_content_id: skill_shadow_sting}
+  - {id: hex_seal_black_candle_sigil, family: skill_effect_sheet, source_type: skill, source_content_id: skill_hex_seal}
+  - {id: corrupted_focus_shadow_shield, family: skill_effect_sheet, source_type: skill, source_content_id: skill_corrupted_focus}
+  - {id: tower_brace_shield_flare, family: skill_effect_sheet, source_type: skill, source_content_id: skill_tower_brace}
+  - {id: ember_punish_retaliation_arc, family: skill_effect_sheet, source_type: skill, source_content_id: skill_ember_punish}
+  - {id: ash_glare_silence_beam, family: skill_effect_sheet, source_type: skill, source_content_id: skill_ash_glare}
+  - {id: pierce_string_bolt_bleed, family: skill_effect_sheet, source_type: skill, source_content_id: skill_pierce_string}
+  - {id: hook_break_execute_arc, family: skill_effect_sheet, source_type: skill, source_content_id: skill_hook_break}
+  - {id: eclipse_step_evade_shadow, family: skill_effect_sheet, source_type: skill, source_content_id: skill_eclipse_step}
+  - {id: mire_needle_poison_sliver, family: skill_effect_sheet, source_type: skill, source_content_id: skill_mire_needle}
+  - {id: omen_vial_crack_mute, family: skill_effect_sheet, source_type: skill, source_content_id: skill_omen_vial}
+  - {id: sinking_veil_mire_guard, family: skill_effect_sheet, source_type: skill, source_content_id: skill_sinking_veil}
+  - {id: grave_nail_marker, family: skill_effect_sheet, source_type: skill, source_content_id: skill_grave_nail}
+  - {id: crank_charge_machine_guard, family: skill_effect_sheet, source_type: skill, source_content_id: skill_crank_charge}
+  - {id: burial_engine_fire_construct, family: skill_effect_sheet, source_type: skill, source_content_id: skill_burial_engine}
+  - {id: bell_echo_guard_ring, family: skill_effect_sheet, source_type: skill, source_content_id: skill_bell_echo}
+  - {id: silent_hymn_holy_mute, family: skill_effect_sheet, source_type: skill, source_content_id: skill_silent_hymn}
+  - {id: returning_chime_echo_strike, family: skill_effect_sheet, source_type: skill, source_content_id: skill_returning_chime}
+  - {id: cracked_wand_black_candle_icon, family: item_icon_card, source_type: item, source_content_id: item_cracked_wand}
+  - {id: iron_bracer_guard_icon, family: item_icon_card, source_type: item, source_content_id: item_iron_bracer}
+  - {id: quick_string_hunter_icon, family: item_icon_card, source_type: item, source_content_id: item_quick_string}
+  - {id: omen_vial_poison_icon, family: item_icon_card, source_type: item, source_content_id: item_omen_vial}
+  - {id: grave_nail_trap_icon, family: item_icon_card, source_type: item, source_content_id: item_grave_nail}
+  - {id: cracked_bell_echo_icon, family: item_icon_card, source_type: item, source_content_id: item_cracked_bell}
+  - {id: black_sun_codex_shadow_icon, family: item_icon_card, source_type: item, source_content_id: item_black_sun_codex}
+  - {id: warden_aegis_guard_icon, family: item_icon_card, source_type: item, source_content_id: item_warden_aegis}
+  - {id: mire_grimoire_poison_icon, family: item_icon_card, source_type: item, source_content_id: item_mire_grimoire}
+  - {id: burial_crank_gear_icon, family: item_icon_card, source_type: item, source_content_id: item_burial_crank}
+  - {id: empty_score_echo_icon, family: item_icon_card, source_type: item, source_content_id: item_empty_score}
+  - {id: severed_string_legendary_icon, family: item_icon_card, source_type: item, source_content_id: item_severed_string}
+  - {id: mire_heart_legendary_icon, family: item_icon_card, source_type: item, source_content_id: item_mire_heart}
+  - {id: gears_of_the_fallen_legendary_icon, family: item_icon_card, source_type: item, source_content_id: item_gears_of_the_fallen}
+  - {id: hymnal_of_the_voiceless_legendary_icon, family: item_icon_card, source_type: item, source_content_id: item_hymnal_of_the_voiceless}
+  - {id: corrupted_focus_shadow_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_corrupted_focus}
+  - {id: iron_will_guard_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_iron_will}
+  - {id: quickdraw_hunter_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_quickdraw}
+  - {id: ember_thorn_guard_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_ember_thorn}
+  - {id: silent_step_stealth_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_silent_step}
+  - {id: candle_smoke_control_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_candle_smoke}
+  - {id: mire_touch_poison_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_mire_touch}
+  - {id: omen_sense_control_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_omen_sense}
+  - {id: trap_sense_gear_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_trap_sense}
+  - {id: ignition_ward_fire_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_ignition_ward}
+  - {id: echo_resonance_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_echo_resonance}
+  - {id: cleansing_tone_holy_badge, family: affix_badge_card, source_type: affix, source_content_id: affix_cleansing_tone}
+  - {id: corruption_school_online_badge, family: resonance_badge_card, source_type: resonance, source_content_id: resonance_corruption_school}
+  - {id: iron_legion_online_badge, family: resonance_badge_card, source_type: resonance, source_content_id: resonance_iron_legion}
+  - {id: mire_veil_online_badge, family: resonance_badge_card, source_type: resonance, source_content_id: resonance_mire_veil}
+  - {id: grave_gear_online_badge, family: resonance_badge_card, source_type: resonance, source_content_id: resonance_grave_gear}
+  - {id: echo_ward_online_badge, family: resonance_badge_card, source_type: resonance, source_content_id: resonance_echo_ward}
+  - {id: ember_crypt_dead_candles_stage, family: stage_plate, source_type: dungeon, source_content_id: dungeon_ember_crypt}
+  - {id: ember_crypt_normal_combat_lane, family: stage_plate, source_type: node_type, source_content_id: normal_combat}
+  - {id: black_candle_merchant_stage, family: stage_plate, source_type: node_type, source_content_id: shop}
+  - {id: candle_shrine_rest_stage, family: stage_plate, source_type: node_type, source_content_id: rest}
+  - {id: mysterious_altar_event_stage, family: stage_plate, source_type: node_type, source_content_id: event}
+  - {id: black_chapel_boss_stage, family: stage_plate, source_type: node_type, source_content_id: boss}
+  - {id: hp_bar_dark_terminal_sprite, family: hud_sprite, source_type: ui_state, source_content_id: hp_bar}
+  - {id: mp_bar_echo_sprite, family: hud_sprite, source_type: ui_state, source_content_id: mp_bar}
+  - {id: atb_bar_tension_sprite, family: hud_sprite, source_type: ui_state, source_content_id: atb_bar}
+  - {id: damage_pop_hit_stop_sprite, family: hud_sprite, source_type: ui_state, source_content_id: damage_pop}
+  - {id: silence_status_badge, family: status_badge_sprite, source_type: ui_state, source_content_id: status_silence}
+  - {id: bleed_status_badge, family: status_badge_sprite, source_type: ui_state, source_content_id: status_bleed}
+  - {id: poison_status_badge, family: status_badge_sprite, source_type: ui_state, source_content_id: status_poison}
+  - {id: shield_status_badge, family: status_badge_sprite, source_type: ui_state, source_content_id: status_shield}
+  - {id: corruption_status_badge, family: status_badge_sprite, source_type: ui_state, source_content_id: status_corruption}
+  - {id: codex_reveal_archive_sprite, family: codex_reward_sprite, source_type: ui_state, source_content_id: codex_reveal}
+  - {id: reward_card_build_state_sprite, family: codex_reward_sprite, source_type: ui_state, source_content_id: reward_card}

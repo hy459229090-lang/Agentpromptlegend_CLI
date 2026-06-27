@@ -1,0 +1,54 @@
+schema_version: '0.1'
+records:
+- asset_id: skill_pierce_string_effect_sheet
+  candidate_id: cand_skill_pierce_string_001
+  work_order_id: wo_skill_pierce_string_effect_sheet
+  source_brief: pierce_string_bolt_bleed
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_skill_pierce_string_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:14:34Z'
+  runtime_target_path: runtime/skill_pierce_string_effect_sheet/cand_skill_pierce_string_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    frame_delta: true
+    lane_readable: true
+    hit_stop_visible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: aim
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.aim
+  - frame_id: string_snap
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.string_snap
+  - frame_id: bolt_travel
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.bolt_travel
+  - frame_id: impact
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.impact
+  - frame_id: bleed_pop
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.bleed_pop
+  - frame_id: recover
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_pierce_string.recover

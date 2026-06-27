@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_tower_brace_effect_sheet
+candidate_id: cand_skill_tower_brace_001
+work_order_id: wo_skill_tower_brace_effect_sheet
+source_brief: tower_brace_shield_flare
+runtime_promoted: true
+frames:
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 418
+  - 470
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 470
+  visible_pixels: 51066
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.idle
+- frame_id: brace
+  path: brace.png
+  frame_size:
+  - 418
+  - 470
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 470
+  visible_pixels: 68448
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.brace
+- frame_id: shield_flare
+  path: shield_flare.png
+  frame_size:
+  - 418
+  - 470
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 470
+  visible_pixels: 61691
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.shield_flare
+- frame_id: impact_stop
+  path: impact_stop.png
+  frame_size:
+  - 418
+  - 470
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 470
+  visible_pixels: 67397
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.impact_stop
+- frame_id: counter_spark
+  path: counter_spark.png
+  frame_size:
+  - 418
+  - 471
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 471
+  visible_pixels: 64495
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.counter_spark
+- frame_id: settle
+  path: settle.png
+  frame_size:
+  - 418
+  - 471
+  visible_bbox:
+  - 0
+  - 0
+  - 418
+  - 471
+  visible_pixels: 57078
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_tower_brace.settle

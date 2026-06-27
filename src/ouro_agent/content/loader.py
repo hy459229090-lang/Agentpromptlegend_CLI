@@ -9,9 +9,12 @@ import yaml
 from ouro_agent.content.schema import (
     AffixData,
     ContentBundle,
+    DungeonData,
+    DungeonFloor,
     EnemyData,
     HeroData,
     ItemData,
+    NodeData,
     ResonanceData,
     SchemaError,
     SkillData,
@@ -122,6 +125,53 @@ def load_content_bundle(content_root: Path) -> ContentBundle:
                             f"{where}: hero '{hero.id}' references unknown affix '{aid}'"
                         )
                 bundle.heroes[hero.id] = hero
+
+        for path in _iter_yaml_files(content_root / "dungeons"):
+            raw = _read_yaml(path)
+            for idx, item in enumerate(raw.get("nodes", []) or []):
+                where = f"{path.name}#nodes[{idx}]"
+                node = NodeData.from_dict(item, where)
+                if node.id in bundle.nodes:
+                    raise ContentError(f"{where}: duplicate node id '{node.id}'")
+                for eid in node.enemy_ids:
+                    if eid and eid not in bundle.enemies:
+                        raise ContentError(
+                            f"{where}: node '{node.id}' references unknown enemy '{eid}'"
+                        )
+                if node.shop_items:
+                    for shop_item in node.shop_items:
+                        if shop_item.item_id and shop_item.item_id not in bundle.items:
+                            raise ContentError(
+                                f"{where}: node '{node.id}' references unknown item '{shop_item.item_id}'"
+                            )
+                        if shop_item.affix_id and shop_item.affix_id not in bundle.affixes:
+                            raise ContentError(
+                                f"{where}: node '{node.id}' references unknown affix '{shop_item.affix_id}'"
+                            )
+                if node.rewards and node.rewards.reward_choices:
+                    for choice in node.rewards.reward_choices:
+                        if choice.item_id and choice.item_id not in bundle.items:
+                            raise ContentError(
+                                f"{where}: node '{node.id}' references unknown item '{choice.item_id}'"
+                            )
+                        if choice.affix_id and choice.affix_id not in bundle.affixes:
+                            raise ContentError(
+                                f"{where}: node '{node.id}' references unknown affix '{choice.affix_id}'"
+                            )
+                bundle.nodes[node.id] = node
+
+            for idx, item in enumerate(raw.get("dungeons", []) or []):
+                where = f"{path.name}#dungeons[{idx}]"
+                dungeon = DungeonData.from_dict(item, where)
+                if dungeon.id in bundle.dungeons:
+                    raise ContentError(f"{where}: duplicate dungeon id '{dungeon.id}'")
+                for floor in dungeon.floors:
+                    for nid in floor.nodes:
+                        if nid not in bundle.nodes:
+                            raise ContentError(
+                                f"{where}: dungeon '{dungeon.id}' references unknown node '{nid}'"
+                            )
+                bundle.dungeons[dungeon.id] = dungeon
     except SchemaError as err:
         raise _wrap(err) from err
 

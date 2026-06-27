@@ -1,0 +1,84 @@
+schema_version: '0.1'
+records:
+- asset_id: hero_gravewright_battle_sheet
+  candidate_id: cand_hero_gravewright_001
+  work_order_id: wo_hero_gravewright_battle_sheet
+  source_brief: korr_gravewright_engine_gear
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_hero_gravewright_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:14:33Z'
+  runtime_target_path: runtime/hero_gravewright_battle_sheet/cand_hero_gravewright_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    stable_anchor: true
+    pose_delta: true
+    terminal_legible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: portrait
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.portrait
+  - frame_id: idle
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.idle
+  - frame_id: ready
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.ready
+  - frame_id: attack
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.attack
+  - frame_id: skill
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.skill
+  - frame_id: guard
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.guard
+  - frame_id: hit
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.hit
+  - frame_id: low_hp
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.low_hp
+  - frame_id: victory
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.victory
+  - frame_id: defeat
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.defeat
+  - frame_id: signature
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_gravewright.signature

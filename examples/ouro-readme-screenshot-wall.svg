@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent Steam-style screenshot wall</title>
+  <desc id="desc">A storefront-style wall of four terminal UI screenshots: main menu, encounter briefing, decision-focused battle canvas, and after-action report.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#080c11"/>
+      <stop offset="0.42" stop-color="#121820"/>
+      <stop offset="1" stop-color="#22191d"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0e151d"/>
+      <stop offset="1" stop-color="#17151a"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .title { font-size: 38px; font-weight: 800; fill: #f3efe5; letter-spacing: 0; }
+      .subtitle { font-size: 18px; fill: #b7c2bf; }
+      .tag { font-size: 16px; fill: #ffe0a3; font-weight: 700; }
+      .panel-title { font-size: 21px; fill: #f2c36d; font-weight: 800; }
+      .line { font-size: 17px; fill: #d9e4dc; }
+      .small { font-size: 14px; fill: #9aa9ae; }
+      .cyan { fill: #8ecae6; }
+      .green { fill: #91d18b; }
+      .red { fill: #e07b73; }
+      .gold { fill: #f2b35f; }
+      .muted { fill: #65737a; }
+      .card { fill: url(#card); stroke: #485a63; stroke-width: 1.3; rx: 14; filter: url(#shadow); }
+      .rail { fill: #101920; stroke: #40525b; stroke-width: 1; rx: 7; }
+      .soft { fill: #17232b; stroke: #40525b; stroke-width: 1; rx: 8; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="36" y="28" width="1208" height="664" rx="24" fill="#070b10" stroke="#303f48" stroke-width="2"/>
+  <text x="66" y="79" class="mono title">OURO AGENT :: PROMPT LEGEND</text>
+  <text x="67" y="111" class="mono subtitle">Steam-style screenshot wall / Build, Fight, Learn before the engineering notes begin</text>
+  <rect x="820" y="52" width="370" height="42" rx="9" fill="#1d2b33" stroke="#536a72"/>
+  <text x="842" y="79" class="mono tag">中文 / English  |  Playable offline now</text>
+
+  <rect x="66" y="138" width="570" height="258" class="card"/>
+  <text x="94" y="176" class="mono panel-title">MAIN MENU CONSOLE</text>
+  <text x="94" y="207" class="mono small">[NEXT] Recommended: ouro demo --seed 1</text>
+  <rect x="94" y="225" width="504" height="38" class="rail"/>
+  <text x="116" y="250" class="mono line">PLAYER JOURNEY BOARD  START &gt; BUILD &gt; RUN &gt; LEARN</text>
+  <rect x="94" y="278" width="152" height="72" class="soft"/>
+  <text x="112" y="306" class="mono tag">[PLAY]</text>
+  <text x="112" y="331" class="mono line">New Run</text>
+  <rect x="266" y="278" width="152" height="72" class="soft"/>
+  <text x="284" y="306" class="mono tag">[BUILD]</text>
+  <text x="284" y="331" class="mono line">Hero/Weapon</text>
+  <rect x="438" y="278" width="160" height="72" class="soft"/>
+  <text x="456" y="306" class="mono tag">[LEARN]</text>
+  <text x="456" y="331" class="mono line">Run Report</text>
+  <text x="94" y="373" class="mono small">Mock Path: ready  |  Visual: unicode optional  |  Trace: local</text>
+
+  <rect x="664" y="138" width="570" height="258" class="card"/>
+  <text x="692" y="176" class="mono panel-title">ENCOUNTER BRIEFING</text>
+  <text x="692" y="207" class="mono small">MINI STAGE before turn 1</text>
+  <text x="692" y="244" class="mono line">HERO Astia          | MINI STAGE          | ENEMY [k] Acolyte</text>
+  <text x="692" y="277" class="mono line">  .^.               | THREAT RAIL [----]  |   ~(k)~</text>
+  <text x="692" y="308" class="mono line"> /|c|\              | WINDOW RAIL [----]  |   /|w|\</text>
+  <text x="692" y="339" class="mono line">  / \               | OPEN control window |    / \</text>
+  <text x="692" y="371" class="mono small">BRIEF FIELDS: [ENEMY] [THREAT] [BUILD] [WINDOW] [PLAN]</text>
+
+  <rect x="66" y="426" width="570" height="244" class="card"/>
+  <text x="94" y="464" class="mono panel-title">THE ECHO ALTAR / COUNTER WINDOW</text>
+  <text x="94" y="496" class="mono line">HERO [CNDL] Astia        SELECT &gt; WINDOW &gt; JUDGE</text>
+  <text x="94" y="530" class="mono line">VOX seal the chant       ░▒▓▓██==&gt;    SEAL -16 HP</text>
+  <text x="94" y="563" class="mono green">HP ████████████ 100/100  BUILD [ONLINE] shadow/control</text>
+  <text x="94" y="596" class="mono gold">DECISION FOCUS  ACTION HEX | RISK tempo | WINDOW PRESSURE</text>
+  <text x="94" y="628" class="mono small">CINEMATIC BEAT  VOX [INTERRUPT] | ENM [HIT] | FLOAT -16 HP</text>
+
+  <rect x="664" y="426" width="570" height="244" class="card"/>
+  <text x="692" y="464" class="mono panel-title">AFTER-ACTION REPORT</text>
+  <text x="692" y="496" class="mono line">BATTLE RESULT BOARD  [RESULT] victory | HP 85/100</text>
+  <text x="692" y="530" class="mono line">BATTLE TURN MAP      [FIRST HERO] Hex Seal</text>
+  <text x="692" y="563" class="mono cyan">CODEX PROGRESS       Black Candle: observed &gt; studied</text>
+  <text x="692" y="596" class="mono line">PLAY NEXT BOARD      ouro run --mock --prompt-style control</text>
+  <text x="692" y="628" class="mono small">Model chooses. Local Judge decides. Reproduce: ouro demo --lang en --seed 1.</text>
+</svg>

@@ -32,3 +32,48 @@ resonances:
     description:
       en: Two guard tags and two armor tags lock together; the line holds.
       zh: 两道守卫标签与两道护甲标签互锁，阵线稳如铁墙。
+
+  - id: resonance_mire_veil
+    display_name:
+      en: Mire Veil
+      zh: 瘴纱帷幕
+    required_tag_counts:
+      poison: 3
+    stat_mods:
+      power: 4
+      mp: 8
+    description:
+      en: Three poison tags weave a toxic veil that weakens enemies over time.
+      zh: 三道毒素标签编织成毒纱，随时间削弱敌人。
+
+  - id: resonance_grave_gear
+    display_name:
+      en: Grave Gear
+      zh: 坟场机关
+    required_tag_counts:
+      gear: 2
+      trap: 2
+    stat_mods:
+      attack: 3
+      power: 3
+    description:
+      en: Gear and trap tags interlock to create deadly mechanical combinations.
+      zh: 机关与陷阱标签互锁，创造致命的机械组合。
+
+  - id: resonance_echo_ward
+    display_name:
+      en: Echo Ward
+      zh: 回声护壁
+    required_tag_counts:
+      echo: 3
+    stat_mods:
+      defense: 4
+      mp: 6
+    fixed_effects:
+      - kind: battle_start_status
+        status_id: status_shield
+        stacks: 6
+        duration: 2
+    description:
+      en: Echo tags resonate to create a protective barrier that repels attacks.
+      zh: 回声标签共鸣形成护壁，反弹攻击。

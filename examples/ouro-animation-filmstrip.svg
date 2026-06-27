@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent animated TUI filmstrip</title>
+  <desc id="desc">An animated SVG filmstrip showing non-combat and battle TUI phases plus the Motion Director flow: mode select, route lock, reward lock, shop lock, rest lock, event lock, and battle select through impact.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#071015"/>
+      <stop offset="0.58" stop-color="#11141b"/>
+      <stop offset="1" stop-color="#1b1712"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .title { font-size: 28px; fill: #f0d38a; font-weight: 700; }
+      .label { font-size: 19px; fill: #dce5dd; font-weight: 700; }
+      .text { font-size: 17px; fill: #dce5dd; }
+      .small { font-size: 14px; fill: #9baab0; }
+      .gold { fill: #f0b464; }
+      .green { fill: #8dd98a; }
+      .cyan { fill: #8ecae6; }
+      .red { fill: #df776e; }
+      .panel { fill: #0b1117; stroke: #465761; stroke-width: 1.3; rx: 9; }
+      .hot { fill: #13202a; stroke: #f0b464; stroke-width: 2; rx: 9; }
+      .stage { fill: url(#bg); stroke: #70808a; stroke-width: 2; rx: 12; }
+      .muted { fill: #65737a; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#06090d"/>
+  <rect x="44" y="34" width="1192" height="652" class="stage"/>
+  <text x="76" y="80" class="mono title">OURO AGENT :: ANIMATION FILMSTRIP</text>
+  <text x="76" y="111" class="mono small">Reproduce: script -q /private/tmp/ouro_uianim2_tty_run.log env OURO_AGENT_HOME=/private/tmp/ouro_uianim2_tty_home venv312/bin/ouro --lang en run --mock --seed 7 --auto --unicode --no-trace --delay 0.01 --content-dir content</text>
+  <text x="76" y="137" class="mono small">Animated SVG preview: focus states and lock states move before battle; battle frames move through select, windup, travel, impact, and judge.</text>
+
+  <g id="hud">
+    <rect x="76" y="154" width="1128" height="126" class="panel"/>
+    <text x="104" y="190" class="mono label">DEFAULT TTY FLOW</text>
+    <text x="104" y="222" class="mono text">MODE SELECT -> ROUTE LOCK -> REWARD LOCK -> SHOP LOCK -> REST LOCK -> EVENT LOCK -> THE ECHO ALTAR</text>
+    <text x="104" y="250" class="mono small">MOTION DIRECTOR: FLOW &gt;THREAT&lt; [SELECT] [IMPACT] [JUDGE] [MEANING]</text>
+    <text x="104" y="270" class="mono small">FOCUS available options, reward, and route pressure | RISK blind picks can miss resource, build, or counter windows | NEXT play result frame and continue the run</text>
+  </g>
+
+  <g id="phase-mode" opacity="1">
+    <rect x="76" y="292" width="352" height="144" class="hot"/>
+    <text x="100" y="328" class="mono label">MODE SELECT / AGENT</text>
+    <text x="100" y="360" class="mono text">&gt;AGENT&lt; [PROMPT] [JUDGE] [READY]</text>
+    <text x="100" y="394" class="mono small">FOCUS agent slot online</text>
+    <text x="100" y="420" class="mono small">Prompt and local judge load next</text>
+    <animate attributeName="opacity" values="1;1;0.28;0.28;1" dur="5.6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="phase-route" opacity="0.28">
+    <rect x="464" y="292" width="352" height="144" class="panel"/>
+    <text x="488" y="328" class="mono label">ROUTE LOCK / LOCK</text>
+    <text x="488" y="360" class="mono text">[SCAN] [FOCUS] &gt;LOCK&lt;</text>
+    <text x="488" y="394" class="mono small">Route Map picks the next node</text>
+    <text x="488" y="420" class="mono small">Risk, reward, and build fit stay visible</text>
+    <animate attributeName="opacity" values="0.28;1;1;0.28;0.28" dur="5.6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="phase-reward" opacity="0.28">
+    <rect x="852" y="292" width="352" height="144" class="panel"/>
+    <text x="876" y="328" class="mono label">REWARD LOCK / LOCK</text>
+    <text x="876" y="360" class="mono text">[SCAN] [FOCUS] &gt;LOCK&lt;</text>
+    <text x="876" y="394" class="mono small">REWARD BUILD TRACK remains readable</text>
+    <text x="876" y="420" class="mono small">PICK PRIORITY BOARD explains the choice</text>
+    <animate attributeName="opacity" values="0.28;0.28;1;1;0.28" dur="5.6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="phase-shop-rest-event" opacity="0.28">
+    <rect x="76" y="466" width="352" height="144" class="panel"/>
+    <text x="100" y="502" class="mono label">SHOP / REST / EVENT LOCK</text>
+    <text x="100" y="534" class="mono text">SHOP LOCK / LOCK</text>
+    <text x="100" y="562" class="mono text">REST LOCK / LOCK</text>
+    <text x="100" y="590" class="mono text">EVENT LOCK / LOCK</text>
+    <animate attributeName="opacity" values="0.28;0.28;0.28;1;1" dur="5.6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="phase-battle" opacity="1">
+    <rect x="464" y="466" width="740" height="144" class="hot"/>
+    <text x="488" y="502" class="mono label">THE ECHO ALTAR / SELECT -> WINDUP -> TRAVEL -> IMPACT -> JUDGE</text>
+    <text x="488" y="534" class="mono cyan">HERO [CNDL] Astia       ░▒▓▓██==&gt;       ENEMY [k] ACOLYTE</text>
+    <text x="488" y="562" class="mono text">STRIP █SELECT█ ░WIND░ ░TRAVEL░ ░IMPACT░ ░JUDGE░</text>
+    <text x="488" y="590" class="mono gold">THE ECHO ALTAR / IMPACT     FLOAT -16 HP | SLN     JUDGE VALID</text>
+    <animate attributeName="opacity" values="0.55;0.75;1;1;0.55" dur="2.4s" repeatCount="indefinite"/>
+  </g>
+
+  <rect x="76" y="632" width="1128" height="34" class="panel"/>
+  <text x="100" y="654" class="mono small">Evidence anchors: MODE SELECT / AGENT | ROUTE LOCK / LOCK | REWARD LOCK / LOCK | FLOW &gt;THREAT&lt; [SELECT] [IMPACT] [JUDGE] [MEANING] | THE ECHO ALTAR / SELECT | THE ECHO ALTAR / IMPACT</text>
+</svg>

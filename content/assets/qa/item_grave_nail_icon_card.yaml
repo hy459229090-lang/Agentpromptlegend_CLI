@@ -1,0 +1,35 @@
+schema_version: '0.1'
+records:
+- asset_id: item_grave_nail_icon_card
+  candidate_id: cand_item_grave_nail_001
+  work_order_id: wo_item_grave_nail_icon_card
+  source_brief: grave_nail_trap_icon
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_item_grave_nail_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:18:40Z'
+  runtime_target_path: runtime/item_grave_nail_icon_card/cand_item_grave_nail_001/cut_metadata.yaml
+  checks:
+    silhouette_readable: true
+    card_crop_safe: true
+    terminal_legible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: icon
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.item_grave_nail.icon
+  - frame_id: card
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.item_grave_nail.card
+  - frame_id: hud_mark
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.item_grave_nail.hud_mark

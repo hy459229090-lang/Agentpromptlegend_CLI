@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_mire_needle_effect_sheet
+candidate_id: cand_skill_mire_needle_001
+work_order_id: wo_skill_mire_needle_effect_sheet
+source_brief: mire_needle_poison_sliver
+runtime_promoted: true
+frames:
+- frame_id: draw
+  path: draw.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 50
+  - 154
+  - 384
+  - 410
+  visible_pixels: 29672
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.draw
+- frame_id: throw
+  path: throw.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 216
+  - 384
+  - 388
+  visible_pixels: 19476
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.throw
+- frame_id: travel
+  path: travel.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 245
+  - 354
+  - 353
+  visible_pixels: 12047
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.travel
+- frame_id: impact
+  path: impact.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 139
+  - 332
+  - 458
+  visible_pixels: 32285
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.impact
+- frame_id: poison_pop
+  path: poison_pop.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 52
+  - 58
+  - 323
+  - 339
+  visible_pixels: 33100
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.poison_pop
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 45
+  - 78
+  - 283
+  - 330
+  visible_pixels: 14129
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_mire_needle.recover

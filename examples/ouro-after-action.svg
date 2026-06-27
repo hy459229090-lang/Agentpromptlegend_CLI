@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent after action report and Codex preview</title>
+  <desc id="desc">A terminal-style after action screen showing pixel HUD panels for battle result, turn map, tactical diagnosis, Codex progress, and next commands.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="0.55" stop-color="#141b20"/>
+      <stop offset="1" stop-color="#1f1814"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .head { font-size: 25px; fill: #f0d38a; font-weight: 800; }
+      .text { font-size: 20px; fill: #e1e7df; }
+      .small { font-size: 16px; fill: #9aa7ae; }
+      .green { fill: #8bd98f; }
+      .red { fill: #e27a72; }
+      .gold { fill: #f3b762; }
+      .blue { fill: #8ecae6; }
+      .panel { fill: #0b1117; stroke: #465761; stroke-width: 1.4; rx: 12; }
+      .bright { stroke: #a9854a; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="48" y="36" width="1184" height="648" rx="22" fill="#080d12" stroke="#34434b" stroke-width="2"/>
+  <text x="80" y="84" class="mono head">BATTLE COMPLETE / THE RUN REMEMBERS</text>
+  <text x="80" y="116" class="mono small">victory is a stage, not a final line: tempo, mistakes, Codex progress, and the next run stay visible</text>
+  <rect x="80" y="148" width="540" height="250" class="panel bright"/>
+  <text x="108" y="188" class="mono head">#====[ BATTLE RESULT BOARD ]====#</text>
+  <text x="108" y="230" class="mono green">[RESULT] victory | HP 85/100 | MP 0/72</text>
+  <text x="108" y="264" class="mono text">[TEMPO] hero 6 / enemy 6 / tick 50</text>
+  <text x="108" y="298" class="mono text">[ACTION] basic:skill 0:6 / fallbacks 0</text>
+  <text x="108" y="332" class="mono text">[DAMAGE] dealt 173 / taken 15</text>
+  <text x="108" y="366" class="mono gold">[NEXT] add control, speed, or lower high-MP priority</text>
+  <rect x="660" y="148" width="540" height="250" class="panel"/>
+  <text x="688" y="188" class="mono head">+....[ BATTLE TURN MAP ]....+</text>
+  <text x="688" y="230" class="mono text">[FLOW] H009-16 -&gt; E010CHG -&gt; E012</text>
+  <text x="688" y="264" class="mono text">       H017-48 -&gt; E019 -&gt; H025</text>
+  <text x="688" y="298" class="mono text">       H034-47 -&gt; E037CHG -&gt; H050-47</text>
+  <text x="688" y="332" class="mono blue">[FIRST HERO] Hex Seal</text>
+  <text x="688" y="366" class="mono small">[READ] one hero hit created the swing</text>
+  <rect x="80" y="428" width="350" height="210" class="panel"/>
+  <text x="106" y="468" class="mono head">TACTICAL DIAGNOSIS</text>
+  <text x="106" y="506" class="mono text">Counter windows: 1/2 answered</text>
+  <text x="106" y="540" class="mono red">Problem: chant pressure escaped</text>
+  <text x="106" y="574" class="mono gold">Next Build Pick: control / silence / speed</text>
+  <rect x="460" y="428" width="350" height="210" class="panel"/>
+  <text x="486" y="468" class="mono head">CODEX HUNT BOARD</text>
+  <text x="486" y="506" class="mono text">Observed: 2/9 monsters</text>
+  <text x="486" y="540" class="mono text">Threat pool: chant 3 / fast 3</text>
+  <text x="486" y="574" class="mono blue">Priority: Ravenous Zealot</text>
+  <rect x="840" y="428" width="360" height="210" class="panel"/>
+  <text x="866" y="468" class="mono head">&gt;==[ PLAY NEXT BOARD ]==&lt;</text>
+  <text x="866" y="506" class="mono text">ouro run --mock</text>
+  <text x="866" y="540" class="mono text">ouro status --lang en</text>
+  <text x="866" y="574" class="mono text">ouro codex --lang en</text>
+</svg>

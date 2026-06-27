@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: affix_candle_smoke_badge
+candidate_id: cand_affix_candle_smoke_001
+work_order_id: wo_affix_candle_smoke_badge
+source_brief: candle_smoke_control_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 95
+  - 204
+  - 596
+  - 549
+  visible_pixels: 82333
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_candle_smoke.badge
+- frame_id: reward_motif
+  path: reward_motif.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 77
+  - 59
+  - 724
+  - 671
+  visible_pixels: 310956
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_candle_smoke.reward_motif
+- frame_id: build_online
+  path: build_online.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 0
+  - 179
+  - 617
+  - 569
+  visible_pixels: 124379
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_candle_smoke.build_online

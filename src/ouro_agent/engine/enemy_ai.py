@@ -13,6 +13,8 @@ from ouro_agent.engine.models import BattleState, Enemy, Hero
 def decide_enemy_action(enemy: Enemy, state: BattleState, rng: random.Random) -> dict:
     """Return a structured action dict for an enemy turn."""
     if enemy.behavior_kind == "rule_chant":
+        if enemy.find_status("status_silence") is not None:
+            return {"type": "silenced"}
         if enemy.chant_progress < enemy.chant_charge_turns:
             return {"type": "chant_charge"}
         if rng.random() < enemy.attack_chance:
@@ -66,6 +68,12 @@ def resolve_enemy_action(
             damage=damage,
             kind="chant_release",
         )
+        return
+
+    if kind == "silenced":
+        enemy.chant_progress = 0
+        state.push_log("enemy.silenced", enemy=enemy.name)
+        state.emit("enemy_silenced", enemy_id=enemy.id)
         return
 
     state.push_log("enemy.defend", enemy=enemy.name)

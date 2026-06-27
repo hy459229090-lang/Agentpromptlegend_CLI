@@ -5,9 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from ouro_agent.content import load_content_bundle
+from ouro_agent.art.sprite_atlas import SpriteAtlas
+from ouro_agent.content import load_content_bundle, validate_asset_manifest
 from ouro_agent.engine import resolve_build
 from ouro_agent.engine.battle import BattleLoop
+from ouro_agent.i18n import visual_width
 from ouro_agent.providers.mock import MockProvider
 
 
@@ -16,27 +18,86 @@ def bundle(content_root: Path):
     return load_content_bundle(content_root)
 
 
-def test_three_heroes_loaded(bundle):
+def test_six_heroes_loaded(bundle):
     assert {
         "hero_shadow_apprentice",
         "hero_ash_guardian",
         "hero_broken_string_hunter",
+        "hero_mire_oracle",
+        "hero_gravewright",
+        "hero_echo_exile",
     } == set(bundle.heroes)
 
 
-def test_nine_skills_loaded(bundle):
-    assert len(bundle.skills) >= 9
+def test_six_heroes_have_identity_and_build_tendency(bundle):
+    assert {"hero_mire_oracle", "hero_gravewright", "hero_echo_exile"}.issubset(
+        bundle.heroes
+    )
+    for hero in bundle.heroes.values():
+        assert hero.id.startswith("hero_")
+        assert hero.short_tag.startswith("[") and hero.short_tag.endswith("]")
+        assert hero.class_name.en
+        assert hero.class_name.zh
+        assert hero.tags
+        assert len(hero.skills) == 3
+        assert hero.default_prompt.en
+        assert hero.default_prompt.zh
+        assert hero.default_build.items or hero.default_build.affixes
+
+        build = resolve_build(hero, bundle)
+        assert build.archetype("en")
+        assert build.strategy_lines("en")
+        assert build.tags
+
+
+def test_monster_families_have_tier_ladders_and_boss_mock_battle(bundle):
+    from collections import defaultdict
+
+    by_family: dict[str, set[str]] = defaultdict(set)
+    for enemy in bundle.enemies.values():
+        assert enemy.id.startswith("enemy_")
+        assert enemy.family_id.startswith("family_")
+        assert enemy.tier in {"trace", "ritebound", "archive_bound"}
+        assert enemy.codex_stage_unknown.en
+        assert enemy.codex_stage_observed.en
+        assert enemy.codex_stage_familiar.en
+        assert enemy.codex_stage_mastered.en
+        by_family[enemy.family_id].add(enemy.tier)
+
+    assert len(by_family) >= 4
+    for tiers in by_family.values():
+        assert {"trace", "ritebound"}.issubset(tiers)
+
+    bosses = [enemy for enemy in bundle.enemies.values() if enemy.tier == "archive_bound"]
+    assert bosses
+    assert any(enemy.behavior.kind == "rule_chant" for enemy in bosses)
+
+    loop = BattleLoop(
+        bundle,
+        MockProvider(seed=3, language="en"),
+        seed=3,
+        max_ticks=20,
+        language="en",
+    )
+    state = loop.setup("hero_shadow_apprentice", [bosses[0].id])
+    result = loop.run(state)
+    assert result in {"victory", "defeat", "timeout"}
+    assert state.enemies[0].tier == "archive_bound"
+
+
+def test_eighteen_skills_loaded(bundle):
+    assert len(bundle.skills) >= 18
     for hero in bundle.heroes.values():
         for sid in hero.skills:
             assert sid in bundle.skills
 
 
-def test_six_items_with_tier_breakdown(bundle):
-    assert len(bundle.items) == 6
+def test_items_with_tier_breakdown(bundle):
+    assert len(bundle.items) >= 6
     tiers = [item.tier for item in bundle.items.values()]
-    assert tiers.count("common") == 3
-    assert tiers.count("heroic") == 2
-    assert tiers.count("legendary") == 1
+    assert tiers.count("common") >= 3
+    assert tiers.count("heroic") >= 2
+    assert tiers.count("legendary") >= 1
 
 
 def test_legendary_item_has_allowed_effects(bundle):
@@ -46,8 +107,8 @@ def test_legendary_item_has_allowed_effects(bundle):
         assert item.allowed_effects, "legendary must declare allowed_effects"
 
 
-def test_six_affixes(bundle):
-    assert len(bundle.affixes) == 6
+def test_affixes_loaded(bundle):
+    assert len(bundle.affixes) >= 6
 
 
 def test_two_resonances(bundle):
@@ -151,11 +212,11 @@ def test_validation_report_includes_b_counts(bundle, content_root):
 
     report = validate_content_dir(content_root)
     assert report.ok
-    assert report.heroes == 3
-    assert report.skills == 9
-    assert report.items == 6
-    assert report.affixes == 6
-    assert report.resonances == 2
+    assert report.heroes == 6
+    assert report.skills == 18
+    assert report.items >= 6
+    assert report.affixes >= 6
+    assert report.resonances >= 2
 
 
 def test_render_hero_card_zh(bundle):
@@ -168,6 +229,48 @@ def test_render_hero_card_zh(bundle):
     assert "灰烬守卫" in text
     assert "守望塔盾" in text
     assert "铁色军团" in text
+    assert "resonance_iron_legion" not in text
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    astia_build = resolve_build(astia, bundle)
+    astia_text = render_hero_card(astia, bundle, astia_build, language="zh")
+    assert "腐化学派" in astia_text
+    assert "构筑变化: [ONLINE] 暗影/控制" in astia_text
+    assert "AI 行为: 优先打断与节奏技能" in astia_text
+    assert "标签:" in astia_text
+    assert "暗影 / 控制 / 风险 / 图鉴 / 腐化" in astia_text
+    assert "英雄开局配置板" in astia_text
+    assert "[提示词] 英雄默认 / Agent 行为倾向" in astia_text
+    assert "[构筑] [ONLINE] 在线 / 黑烛打断" in astia_text
+    assert "[核心] 暗影 / 控制" in astia_text
+    assert "[开局] 打断施法者，用 MP 换节奏" in astia_text
+    assert "构筑阶段: 在线 [ONLINE]" in astia_text
+    assert "还需: 防守 +2, 护甲 +2" in astia_text
+    assert "- 防守 +2  (对应 铁色军团)" in astia_text
+    assert "裂痕短杖 [普通] (暗影)" in astia_text
+    assert "黑日典籍 [英雄] (暗影, 图鉴)" in astia_text
+    assert "腐化凝神 (暗影, 腐化)" in astia_text
+    assert "腐化学派 (暗影)" in astia_text
+    assert "构筑关系 核心/暗影/控制" in astia_text
+    assert "AI favors interrupts" not in astia_text
+    assert "[common]" not in astia_text
+    assert "[heroic]" not in astia_text
+    assert "HERO LOADOUT BOARD" not in astia_text
+    assert "BUILD MAP BOARD" not in astia_text
+    assert "ACTION KIT BOARD" not in astia_text
+    assert "[PROMPT]" not in astia_text
+    assert "[BUILD]" not in astia_text
+    assert "[CORE]" not in astia_text
+    assert "[OPENER]" not in astia_text
+    assert "[BUILD] [ONLINE] Online" not in astia_text
+    assert "构筑阶段: Online" not in astia_text
+    assert "shadow       [###]" not in astia_text
+    assert "guard +2" not in astia_text
+    assert "(for 铁色军团)" not in astia_text
+    assert "core/shadow" not in astia_text
+    assert "Build 关系" not in astia_text
+    assert "构筑关系 核心/shadow" not in astia_text
+    assert "resonance_corruption_school" not in astia_text
 
 
 def test_render_hero_list_en_is_ascii_safe(bundle):
@@ -178,3 +281,359 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     assert "Astia" in text
     assert "Norn" in text
     assert "Vela" in text
+    assert "Build:" in text
+    assert "Weapon:" in text
+    assert "Risk:" in text
+    assert "[HERO] [CNDL] .^." in text
+    assert "[HERO] [SHLD] /###\\" in text
+    assert "[HERO] [XBOW] __/->" in text
+    assert "[HERO] [VENM] .-." in text
+    assert "[HERO] [GEAR] [o]" in text
+    assert "[HERO]  ##@##" not in text
+    assert "[PATH]  ##==>##  route" not in text
+    assert "HERO ROSTER BOARD" in text
+    assert "WEAPON GALLERY BOARD" in text
+    assert "[1] [W:STF] c==* [ONLINE] | Online" in text
+    assert "[2] [W:SHD] [#] [ONLINE] | Online" in text
+    assert "[3] [W:XBW] ==> [PAIR] | Pair" in text
+    assert "[4] [W:VIL] (v) [ONLINE] | Online" in text
+    assert "[5] [W:GER] [o] [ONLINE] | Online" in text
+    assert "[6] [W:BEL] )o( [ONLINE] | Online" in text
+    assert "      c==*" in text
+    assert "      --###-" in text
+    assert "      ||" in text
+    assert "      Build: [ONLINE] shadow/control" in text
+    assert "      AI: AI favors interrupts and tempo skills." in text
+    assert "Next: ouro weapons --unicode, then open hero-card for full Build plan" in text
+    assert "[1] Astia [ONLINE] | Prompt control | Risk normal | shadow / control" in text
+    assert "[2] Norn" in text
+    assert "Prompt guarded" in text
+    assert "[3] Vela" in text
+    assert "Prompt aggressive" in text
+    assert "Next: ouro hero-card 1 --prompt-style control, or ouro hero-card astia" in text
+    assert "Open: ouro hero-card 1" in text
+    assert "hero_shadow_apprentice" not in text
+    assert "<hero_id>" not in text
+    for line in text.splitlines():
+        assert visual_width(line) <= 100
+
+    unicode_text = render_hero_list(bundle, language="en", unicode_mode=True)
+    assert "▄██▄" in unicode_text
+    assert "░▓███░" in unicode_text
+    assert "████▸" in unicode_text
+    assert "[HERO] [CNDL] ▄██▄" in unicode_text
+    assert "[HERO]  ##@##" not in unicode_text
+    for line in unicode_text.splitlines():
+        assert visual_width(line) <= 100
+
+    zh_text = render_hero_list(bundle, language="zh")
+    assert "英雄队列面板" in zh_text
+    assert "[1] 阿斯缇娅 [ONLINE] | 提示词 控制 | 风险 普通 | 暗影 / 控制" in zh_text
+    assert "[2] 诺恩 [ONLINE] | 提示词 稳守 | 风险 容易 | 防守 / 护甲" in zh_text
+    assert "[3] 薇拉 [PAIR] | 提示词 猛攻 | 风险 困难 | 流血 / 猎手" in zh_text
+    assert "[3] [W:XBW] ==> [PAIR] | 薇拉 | 成对" in zh_text
+    assert "构筑: [ONLINE] 暗影/控制" in zh_text
+    assert "标签: 暗影 / 控制" in zh_text
+    assert "下一步: ouro weapons --unicode，然后打开 hero-card 查看完整构筑计划" in zh_text
+    assert "Prompt control" not in zh_text
+    assert "Prompt guarded" not in zh_text
+    assert "风险 normal" not in zh_text
+    assert "风险 easy" not in zh_text
+    assert "风险 hard" not in zh_text
+    assert "shadow / control" not in zh_text
+    assert "guard / armor" not in zh_text
+    assert "bleed / hunter" not in zh_text
+    assert " | Online" not in zh_text
+    assert " | Pair" not in zh_text
+    assert "Build 计划" not in zh_text
+    for line in zh_text.splitlines():
+        assert visual_width(line) <= 100
+
+
+def test_render_weapon_gallery_command_surface(bundle):
+    from ouro_agent.tui import render_weapon_gallery
+
+    text = render_weapon_gallery(bundle, language="en")
+    assert text.isascii()
+    assert "WEAPON GALLERY :: BUILD ARSENAL" in text
+    assert "Compare silhouettes, Build tags, and AI behavior" in text
+    assert "[1] [W:STF] c==* Astia" in text
+    assert "[2] [W:SHD] [#] Norn" in text
+    assert "[3] [W:XBW] ==> Vela" in text
+    assert "[OWNER] Astia / Shadow Apprentice" in text
+    assert "[STAGE] [ONLINE] shadow/control" in text
+    assert "[AI] interrupts + tempo skills" in text
+    assert "[OPEN] ouro hero-card astia" in text
+    assert "NEXT WEAPON ROUTE" in text
+    assert "[DETAIL] ouro hero-card astia --unicode" in text
+    assert "hero_shadow_apprentice" not in text
+    assert "item_" not in text
+    assert "skill_" not in text
+    for width in (80, 100, 120):
+        matrix = render_weapon_gallery(bundle, language="en", width=width)
+        assert "WEAPON GALLERY :: BUILD ARSENAL" in matrix
+        assert "[RUN] ouro run --mock --hero astia" in matrix
+        for line in matrix.splitlines():
+            assert visual_width(line) <= width
+
+    unicode_text = render_weapon_gallery(bundle, language="en", unicode_mode=True)
+    assert "░▓███░" in unicode_text
+    assert "████▸" in unicode_text
+
+    zh_text = render_weapon_gallery(bundle, language="zh", unicode_mode=True, width=100)
+    assert "武器图鉴 :: 构筑兵装" in zh_text
+    assert "先比较武器轮廓、构筑标签和 Agent 行为" in zh_text
+    assert "[图] ░▓███░" in zh_text
+    assert "[拥有] 阿斯缇娅 / 暗影学徒" in zh_text
+    assert "[阶段] [ONLINE] 暗影/控制" in zh_text
+    assert "[行为] 优先打断与节奏技能" in zh_text
+    assert "[打开] ouro hero-card astia" in zh_text
+    assert "下一步武器路线" in zh_text
+    assert "[构筑] ouro list-heroes --unicode" in zh_text
+    assert "[详情] ouro hero-card astia --unicode" in zh_text
+    assert "[运行] ouro run --mock --hero astia" in zh_text
+    assert "Build 标签" not in zh_text
+    assert "ART " not in zh_text
+    assert "[AI]" not in zh_text
+    assert "[BUILD]" not in zh_text
+    assert "[DETAIL]" not in zh_text
+    assert "[RUN]" not in zh_text
+    assert "hero_shadow_apprentice" not in zh_text
+    for line in zh_text.splitlines():
+        assert visual_width(line) <= 100
+
+
+def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        prompt_style="control",
+    )
+    assert text.isascii()
+    assert "Build: Black Candle Interrupt" in text
+    assert "Weapon: [W:STF]" in text
+    assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
+    assert "Build Before -> After: [ONLINE] shadow/control" in text
+    assert "AI Effect: AI favors interrupts and tempo skills." in text
+    assert "BUILD TUI NAV" in text
+    assert "BUILD FOCUS RAIL" in text
+    assert "* Stage: Online" in text
+    assert "> Prompt: control" in text
+    assert "BUILD COMMAND RAIL" in text
+    assert "[TRY] ouro run --mock --hero astia" in text
+    assert "[ARSENAL] ouro weapons --unicode" in text
+    assert "HERO LOADOUT BOARD" in text
+    assert "BUILD MAP BOARD" in text
+    assert "  Weapon: [W:STF] c==* Cracked Wand [common] tags shadow" in text
+    assert "  Affix : Corrupted Focus [shadow, corruption] + Candle Smoke [shadow, control]" in text
+    assert "  Link  : [R] Corruption School <- shadow 5/3" in text
+    assert "  Core  : [ONLINE] Online | shadow [###] 5/3 | control [##-] 2/3" in text
+    assert "  Skill Plan:" in text
+    assert "    [HEX] Hex Seal MP18 CD4 -> core/shadow/control | seal chant windows" in text
+    assert "  AI Bias: prompt control + Black Candle Interrupt -> open by denying chant windows" in text
+    assert "  Best next: guard +2 for Iron Legion | armor +2 for Iron Legion" in text
+    assert "ACTION KIT BOARD" in text
+    assert text.count("ACTION KIT BOARD") == 1
+    assert "[STG] Shadow Sting MP 12, cd 2 | Pos DAMAGE | Use convert MP to pressure | Build core/shadow" in text
+    assert "[HEX] Hex Seal MP 18, cd 4 | Pos CONTROL | Use seal chant windows | Build core/shadow/control" in text
+    assert "[FOC] Corrupted Focus MP 0, cd 3 | Pos SETUP | Use raise shield before danger | Build core/shadow" in text
+    assert "[PROMPT] control / agent behavior" in text
+    assert "[BUILD] [ONLINE] Online / Black Candle Interrupt" in text
+    assert "[CORE] shadow / control" in text
+    assert "[OPENER] open by denying chant windows" in text
+    assert "[RUN] ouro run --mock --hero astia --prompt-style control" in text
+    assert "Corruption School" in text
+    assert "skill_shadow_sting" not in text
+    assert "skill_hex_seal" not in text
+    assert "skill_corrupted_focus" not in text
+    assert "resonance_corruption_school" not in text
+    assert "AI Bias:" in text
+    assert "Prompt Template: control" in text
+    assert "interrupt high-ATB" in text
+    assert "skill_" not in text
+    assert "item_" not in text
+    assert "affix_" not in text
+    assert "resonance_" not in text
+
+    attrition_text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        prompt_style="attrition",
+    )
+    assert "  AI Bias: prompt attrition + Black Candle Interrupt -> set damage over time early" in attrition_text
+    assert "  AI Bias: prompt control + Black Candle Interrupt -> open by denying chant windows" not in attrition_text
+
+    zh_text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="zh",
+        prompt_style="control",
+    )
+    assert "构筑关系图" in zh_text
+    assert "构筑 TUI 导航" in zh_text
+    assert "构筑焦点轨" in zh_text
+    assert "* 阶段: 在线" in zh_text
+    assert "> 提示词: control" in zh_text
+    assert "构筑命令轨" in zh_text
+    assert "[试玩] ouro run --mock --hero astia" in zh_text
+    assert "  武器    : [W:STF] c==* 裂痕短杖 [普通] 标签 暗影" in zh_text
+    assert "  连接    : [R] 腐化学派 <- 暗影 5/3" in zh_text
+    assert "  技能计划:" in zh_text
+    assert "    [HEX] 禁咒封印 蓝量18 冷却4 -> 核心/暗影/控制 | 封住吟唱窗口" in zh_text
+    assert "  AI倾向: 提示词 control + 黑烛打断 -> 先控吟唱窗口" in zh_text
+    assert "技能行动套件" in zh_text
+    assert "构筑关系 核心/暗影/控制" in zh_text
+    assert "HERO LOADOUT BOARD" not in zh_text
+    assert "BUILD MAP BOARD" not in zh_text
+    assert "ACTION KIT BOARD" not in zh_text
+    assert "[PROMPT]" not in zh_text
+    assert "[BUILD]" not in zh_text
+    assert "[CORE]" not in zh_text
+    assert "AI倾向: Prompt" not in zh_text
+    assert "Build 关系" not in zh_text
+    assert "构筑关系 核心/shadow/control" not in zh_text
+    assert "封住吟唱窗口" in zh_text
+    assert "skill_hex_seal" not in zh_text
+
+
+def test_render_hero_card_unicode_shows_block_weapon_art(bundle, content_root: Path):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    report = validate_asset_manifest(content_root, bundle)
+    atlas = SpriteAtlas.from_manifest_report(report)
+    text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        unicode_mode=True,
+        asset_atlas=atlas,
+    )
+
+    assert "[ASSET] BMP hero portrait | fallback cell.hero_shadow_apprentice.portrait" in text
+    assert "[THUMB]" in text
+    assert "hero 313x418 crop 249x280 px 50919" in text
+    assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
+    assert "░▓███░" in text
+    assert "AI Effect:" in text
+
+
+def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    for hero_id in (
+        "hero_shadow_apprentice",
+        "hero_ash_guardian",
+        "hero_broken_string_hunter",
+        "hero_mire_oracle",
+        "hero_gravewright",
+        "hero_echo_exile",
+    ):
+        hero = bundle.get_hero(hero_id)
+        build = resolve_build(hero, bundle)
+        text = render_hero_card(hero, bundle, build, language="en")
+        assert "Build:" in text
+        assert "Weapon:" in text
+        assert "Risk:" in text
+        assert "BUILD TUI NAV" in text
+        assert "BUILD FOCUS RAIL" in text
+        assert "BUILD COMMAND RAIL" in text
+        assert "HERO LOADOUT BOARD" in text
+        assert "ACTION KIT BOARD" in text
+        assert text.count("ACTION KIT BOARD") == 1
+        assert "[PROMPT] hero default / agent behavior" in text
+        assert "[RUN] ouro run --mock --hero" in text
+        assert "[RUN] ouro run --mock --hero hero_" not in text
+        assert "AI Bias:" in text
+        assert "MP " in text
+        assert "cd " in text
+        assert "BUILD MAP BOARD" in text
+
+        for width in (80, 100, 120):
+            matrix_text = render_hero_card(hero, bundle, build, language="en", width=width)
+            assert "BUILD MAP BOARD" in matrix_text
+            for line in matrix_text.splitlines():
+                assert visual_width(line) <= width
+
+
+def test_build_progress_calculates_stage_for_astia(bundle):
+    from ouro_agent.engine.build import BuildStage
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.stage in {BuildStage.ONLINE, BuildStage.HIGH_ROLL, BuildStage.LOCKED_IN}
+    assert progress.stage_name
+    assert progress.stage.badge in {"[SEED]", "[PAIR]", "[ONLINE]", "[HIGH]", "[LOCK]"}
+    assert "shadow" in progress.core_tags
+    assert "control" in progress.core_tags
+    assert progress.active_resonances
+    assert any(r == "resonance_corruption_school" for r in progress.active_resonances)
+
+
+def test_build_progress_identifies_near_resonances(bundle):
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.near_resonances is not None
+    for near in progress.near_resonances:
+        assert "id" in near
+        assert "display_name" in near
+        assert "missing" in near
+        assert near["missing"]
+
+
+def test_build_progress_provides_best_next_picks(bundle):
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    progress = build.calculate_progress(bundle)
+
+    assert progress.best_next_picks is not None
+    for pick in progress.best_next_picks:
+        assert "tag" in pick
+        assert "need" in pick
+        assert pick["need"] > 0
+
+
+def test_build_stage_badge_display(bundle):
+    from ouro_agent.engine.build import BuildStage
+
+    assert BuildStage.SEED.badge == "[SEED]"
+    assert BuildStage.PAIR.badge == "[PAIR]"
+    assert BuildStage.ONLINE.badge == "[ONLINE]"
+    assert BuildStage.HIGH_ROLL.badge == "[HIGH]"
+    assert BuildStage.LOCKED_IN.badge == "[LOCK]"
+
+    assert BuildStage.SEED.display_name == "Seed"
+    assert BuildStage.PAIR.display_name == "Pair"
+    assert BuildStage.ONLINE.display_name == "Online"
+    assert BuildStage.HIGH_ROLL.display_name == "High Roll"
+    assert BuildStage.LOCKED_IN.display_name == "Locked In"
+
+
+def test_hero_card_shows_build_stage_badge(bundle):
+    from ouro_agent.tui import render_hero_card
+
+    astia = bundle.get_hero("hero_shadow_apprentice")
+    build = resolve_build(astia, bundle)
+    text = render_hero_card(astia, bundle, build, language="en")
+
+    assert "[ONLINE]" in text or "[HIGH]" in text or "[LOCK]" in text
+    assert "BUILD STAGE:" in text or "构筑阶段:" in text
+    assert "Core Tags:" in text
+    assert "Active Resonances:" in text
+    assert "Corruption School" in text
+    assert "resonance_corruption_school" not in text

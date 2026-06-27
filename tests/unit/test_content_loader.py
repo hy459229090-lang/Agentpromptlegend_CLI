@@ -1,11 +1,12 @@
 """REQ-DATA-001/002 content loading and reference checks."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
 
-from ouro_agent.content import load_content_bundle, ContentError
+from ouro_agent.content import load_content_bundle, ContentError, resolve_content_dir
 
 
 def test_load_default_content_bilingual(content_root: Path):
@@ -26,6 +27,28 @@ def test_load_default_content_bilingual(content_root: Path):
         bundle.enemies
     )
     assert bundle.enemies["enemy_hungry_cultist"].display_name.zh == "饥饿邪教徒"
+
+
+def test_resolve_default_content_dir_falls_back_to_installed_share(
+    tmp_path: Path,
+    monkeypatch,
+):
+    """REQ-DIST-005: installed CLI can find bundled content outside repo cwd."""
+    cwd = tmp_path / "cwd"
+    cwd.mkdir()
+    prefix = tmp_path / "venv"
+    installed = prefix / "share" / "ouro-agent" / "content"
+    installed.mkdir(parents=True)
+    monkeypatch.chdir(cwd)
+    monkeypatch.setattr(sys, "prefix", str(prefix))
+
+    assert resolve_content_dir("content") == installed
+
+
+def test_resolve_content_dir_preserves_explicit_custom_path(tmp_path: Path):
+    custom = tmp_path / "custom-content"
+
+    assert resolve_content_dir(custom) == custom
 
 
 def test_localized_text_falls_back_when_one_lang_missing(tmp_path: Path):

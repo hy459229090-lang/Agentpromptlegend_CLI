@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent motion evidence wall</title>
+  <desc id="desc">A fixed-seed animated evidence wall showing mode select, route focus, reward focus, battle hit, and death pause frames for the Ouro Agent TUI.</desc>
+  <defs>
+    <linearGradient id="motion-bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#06090d"/>
+      <stop offset="0.45" stop-color="#11161d"/>
+      <stop offset="1" stop-color="#1a1510"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .title { font-size: 28px; fill: #f2d58b; font-weight: 700; }
+      .label { font-size: 18px; fill: #e5efe8; font-weight: 700; }
+      .text { font-size: 15px; fill: #dce5dd; }
+      .small { font-size: 12px; fill: #9aa9ad; }
+      .gold { fill: #f0b464; }
+      .cyan { fill: #8ecae6; }
+      .green { fill: #8dd98a; }
+      .red { fill: #df776e; }
+      .stage { fill: url(#motion-bg); stroke: #667781; stroke-width: 2; rx: 12; }
+      .panel { fill: #0a1016; stroke: #3f515b; stroke-width: 1.2; rx: 8; }
+      .hot { fill: #121f28; stroke: #f0b464; stroke-width: 2; rx: 8; }
+      .danger { fill: #1f1112; stroke: #df776e; stroke-width: 2; rx: 8; }
+      .rail { stroke: #8ecae6; stroke-width: 3; stroke-linecap: round; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#06090d"/>
+  <rect x="40" y="32" width="1200" height="656" class="stage"/>
+  <text x="72" y="78" class="mono title">OURO AGENT :: MOTION EVIDENCE WALL</text>
+  <text x="72" y="106" class="mono small">Fixed seed 7. Evidence types: animated SVG filmstrip + PTY log + no-animation log. No API key, no network, mock provider only.</text>
+  <text x="72" y="128" class="mono small">PTY evidence: /private/tmp/ouro_tuimotion_001_tty_run.log | NO-ANIMATION evidence: /private/tmp/ouro_tuimotion_001_noanim.log</text>
+
+  <g id="timeline">
+    <line x1="90" y1="162" x2="1190" y2="162" class="rail"/>
+    <circle cx="130" cy="162" r="8" fill="#f0b464"/>
+    <circle cx="380" cy="162" r="8" fill="#8ecae6"/>
+    <circle cx="635" cy="162" r="8" fill="#8dd98a"/>
+    <circle cx="890" cy="162" r="8" fill="#f0b464"/>
+    <circle cx="1145" cy="162" r="8" fill="#df776e"/>
+    <text x="100" y="190" class="mono small">MODE</text>
+    <text x="344" y="190" class="mono small">ROUTE FOCUS</text>
+    <text x="596" y="190" class="mono small">REWARD FOCUS</text>
+    <text x="852" y="190" class="mono small">BATTLE HIT</text>
+    <text x="1110" y="190" class="mono small">DEATH PAUSE</text>
+  </g>
+
+  <g id="frame-mode" opacity="1">
+    <rect x="72" y="218" width="360" height="178" class="hot"/>
+    <text x="96" y="250" class="mono label">FRAME 01 MODE SELECT / AGENT</text>
+    <text x="96" y="280" class="mono text">PHASE &gt;AGENT&lt; [PROMPT] [JUDGE] [READY]</text>
+    <text x="96" y="306" class="mono text">FLOW &gt;THREAT&lt; [SELECT] [IMPACT] [JUDGE] [MEANING]</text>
+    <text x="96" y="332" class="mono cyan">FOCUS hero, weapon, and build identity</text>
+    <text x="96" y="358" class="mono small">RUN READY BOARD arms the watchable run.</text>
+    <animate attributeName="opacity" values="1;1;0.35;0.35;1" dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="frame-route" opacity="0.45">
+    <rect x="460" y="218" width="360" height="178" class="panel"/>
+    <text x="484" y="250" class="mono label">FRAME 02 ROUTE FOCUS / SCAN</text>
+    <text x="484" y="280" class="mono text">ROUTE LOCK / SCAN</text>
+    <text x="484" y="306" class="mono text">FOCUS available options, reward, and route pressure</text>
+    <text x="484" y="332" class="mono text">RISK blind picks can miss resource windows</text>
+    <text x="484" y="358" class="mono small">ROUTE MAP -> DIRECTOR BOARD -> COMMIT</text>
+    <animate attributeName="opacity" values="0.35;1;1;0.35;0.35" dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="frame-reward" opacity="0.45">
+    <rect x="848" y="218" width="360" height="178" class="panel"/>
+    <text x="872" y="250" class="mono label">FRAME 03 REWARD FOCUS / LOCK</text>
+    <text x="872" y="280" class="mono text">REWARD LOCK / LOCK</text>
+    <text x="872" y="306" class="mono text">PICK PRIORITY BOARD explains the choice</text>
+    <text x="872" y="332" class="mono green">[SEED] -> [PAIR] -> [ONLINE] -> [LOCK]</text>
+    <text x="872" y="358" class="mono small">Build delta is visible before state commit.</text>
+    <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="frame-battle">
+    <rect x="72" y="424" width="748" height="184" class="hot"/>
+    <text x="96" y="456" class="mono label">FRAME 04 BATTLE HIT / THE ECHO ALTAR</text>
+    <text x="96" y="486" class="mono cyan">HERO [CNDL] Astia       ░▒▓▓██==&gt;       ENEMY [k] ACOLYTE</text>
+    <text x="96" y="512" class="mono text">STRIP █SELECT█ ▓WIND▓ ▓TRAVEL▓ █IMPACT█ ░JUDGE░</text>
+    <text x="96" y="538" class="mono gold">FLOAT -16 HP | SLN    JUDGE VALID    WINDOW answered</text>
+    <text x="96" y="564" class="mono text">CINEMATIC BEAT: THREAT -> SELECT -> IMPACT -> JUDGE -> MEANING</text>
+    <text x="96" y="590" class="mono small">A static screenshot still shows who acted, who was hit, and what changed.</text>
+    <animate attributeName="opacity" values="0.65;0.85;1;1;0.65" dur="2.2s" repeatCount="indefinite"/>
+  </g>
+
+  <g id="frame-death" opacity="0.92">
+    <rect x="848" y="424" width="360" height="184" class="danger"/>
+    <text x="872" y="456" class="mono label">FRAME 05 DEATH PAUSE / RUN RESULT</text>
+    <text x="872" y="486" class="mono red">YOU DIED</text>
+    <text x="872" y="512" class="mono text">RUN SUMMARY | Floor 4 | Battles 3W/1L</text>
+    <text x="872" y="538" class="mono text">RETRY LOADOUT: [PROMPT] control [SEED] 8</text>
+    <text x="872" y="564" class="mono text">NEXT review route/rest timing and Codex gaps</text>
+    <text x="872" y="590" class="mono small">Settlement pause is part of the animated player journey.</text>
+    <animate attributeName="opacity" values="0.45;0.45;0.75;1;1" dur="6s" repeatCount="indefinite"/>
+  </g>
+
+  <rect x="72" y="632" width="1136" height="34" class="panel"/>
+  <text x="96" y="654" class="mono small">Evidence anchors: FRAME 01 MODE SELECT | FRAME 02 ROUTE FOCUS | FRAME 03 REWARD FOCUS | FRAME 04 BATTLE HIT | FRAME 05 DEATH PAUSE | YOU DIED | Run Summary</text>
+</svg>

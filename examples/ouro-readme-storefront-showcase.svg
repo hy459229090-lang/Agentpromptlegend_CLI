@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent storefront hero showcase</title>
+  <desc id="desc">A player-first game showcase for Ouro Agent with a language switch, offline demo CTA, build-fight-learn loop, and graphical TUI battle stage.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#070b0f"/>
+      <stop offset="0.55" stop-color="#111820"/>
+      <stop offset="1" stop-color="#1b1612"/>
+    </linearGradient>
+    <linearGradient id="stage" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1218"/>
+      <stop offset="0.58" stop-color="#151d22"/>
+      <stop offset="1" stop-color="#201817"/>
+    </linearGradient>
+    <filter id="lift">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .title { font-size: 74px; font-weight: 900; fill: #f4efe4; letter-spacing: 0; }
+      .subtitle { font-size: 25px; fill: #d4c7a6; }
+      .small { font-size: 18px; fill: #96a8ad; }
+      .micro { font-size: 15px; fill: #849198; }
+      .label { font-size: 19px; fill: #f3c168; font-weight: 800; }
+      .line { font-size: 22px; fill: #e1e7dd; }
+      .bigline { font-size: 28px; fill: #edf3ea; font-weight: 800; }
+      .green { fill: #91d18b; }
+      .red { fill: #e07b73; }
+      .cyan { fill: #8ecae6; }
+      .gold { fill: #f2b35f; }
+      .muted { fill: #5f7078; }
+      .panel { fill: #0b1117; stroke: #43535c; stroke-width: 1.4; rx: 16; filter: url(#lift); }
+      .stage { fill: url(#stage); stroke: #71838a; stroke-width: 2; rx: 18; filter: url(#lift); }
+      .button { fill: #17252d; stroke: #60747a; stroke-width: 1.4; rx: 12; }
+      .button2 { fill: #241c18; stroke: #80613b; stroke-width: 1.4; rx: 12; }
+      .button3 { fill: #17261d; stroke: #547459; stroke-width: 1.4; rx: 12; }
+      .chip { fill: #121d24; stroke: #40515a; stroke-width: 1; rx: 10; }
+      .rail { fill: #121a20; stroke: #3d4e56; stroke-width: 1; rx: 8; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="44" y="42" width="1512" height="816" rx="28" fill="#070b10" stroke="#33414a" stroke-width="2"/>
+
+  <text x="82" y="118" class="mono title">OURO AGENT</text>
+  <text x="86" y="158" class="mono subtitle">Prompt Legend / build one AI hero, then watch the dungeon judge your Prompt</text>
+  <text x="88" y="198" class="mono small">CLI roguelike  |  auto-battler  |  prompt-build game  |  playable offline in mock mode</text>
+
+  <rect x="1112" y="76" width="390" height="54" class="button"/>
+  <text x="1138" y="111" class="mono label">LANGUAGE  ENGLISH / 中文</text>
+  <rect x="1112" y="148" width="390" height="54" class="button2"/>
+  <text x="1138" y="183" class="mono label">PLAY DEMO  ouro demo --lang en</text>
+
+  <rect x="84" y="232" width="444" height="126" class="panel"/>
+  <text x="112" y="273" class="mono label">PLAYER FANTASY</text>
+  <text x="112" y="312" class="mono bigline">Design the mind.</text>
+  <text x="112" y="346" class="mono line">Release the run. Read the scars.</text>
+
+  <rect x="556" y="232" width="444" height="126" class="panel"/>
+  <text x="584" y="273" class="mono label">CORE RULE</text>
+  <text x="584" y="312" class="mono bigline">Model chooses.</text>
+  <text x="584" y="346" class="mono line">Local Judge decides damage, status, victory.</text>
+
+  <rect x="1028" y="232" width="444" height="126" class="panel"/>
+  <text x="1056" y="273" class="mono label">FIRST RUN</text>
+  <text x="1056" y="312" class="mono bigline">No network. No API key.</text>
+  <text x="1056" y="346" class="mono line">Deterministic seeds and mock provider.</text>
+
+  <rect x="84" y="396" width="996" height="438" class="stage"/>
+  <text x="118" y="444" class="mono label">THE ECHO ALTAR / GRAPHICAL TUI BATTLE</text>
+  <rect x="118" y="472" width="280" height="264" class="panel"/>
+  <rect x="430" y="472" width="306" height="264" class="panel"/>
+  <rect x="768" y="472" width="280" height="264" class="panel"/>
+
+  <text x="140" y="510" class="mono label">HERO [CNDL] ASTIA</text>
+  <text x="140" y="546" class="mono line">VOX [INTERRUPT]</text>
+  <text x="140" y="588" class="mono line">ACT&gt;▄██▄░</text>
+  <text x="140" y="624" class="mono line">   ▐▓c▓██</text>
+  <text x="140" y="660" class="mono line">    ▟██▙</text>
+  <text x="140" y="704" class="mono green">HP ████████ 100</text>
+
+  <text x="458" y="510" class="mono label">SELECT &gt; WINDOW &gt; JUDGE</text>
+  <text x="458" y="556" class="mono cyan">DECISION FOCUS</text>
+  <text x="458" y="598" class="mono gold">░▒▓▓██==&gt;  SEAL -16</text>
+  <text x="458" y="644" class="mono line">ACTION HEX -&gt; k</text>
+  <text x="458" y="686" class="mono green">JUDGE VALID  |  Echo Cost 0</text>
+
+  <text x="792" y="510" class="mono label">ENEMY [k] ACOLYTE</text>
+  <text x="792" y="546" class="mono line">ENM [HIT]</text>
+  <text x="792" y="588" class="mono line">     ░▄▒▄░</text>
+  <text x="792" y="624" class="mono line">      ▐▒k▒</text>
+  <text x="792" y="660" class="mono line">       ▟▒</text>
+  <text x="792" y="704" class="mono red">HP ███░░░░ 34/70</text>
+
+  <rect x="118" y="760" width="930" height="52" class="rail"/>
+  <text x="140" y="793" class="mono small">CINEMATIC BEAT  VOX [INTERRUPT] | ENM [HIT] | FLOAT -16 HP | STRIP [WIND] ░SEAL LANE░ ▓HIT▓ █VALID█</text>
+
+  <rect x="1112" y="396" width="390" height="132" class="button"/>
+  <text x="1142" y="436" class="mono label">BUILD</text>
+  <text x="1142" y="476" class="mono line">Hero, weapon, affixes,</text>
+  <text x="1142" y="508" class="mono line">Prompt style, Build tags.</text>
+
+  <rect x="1112" y="556" width="390" height="132" class="button2"/>
+  <text x="1142" y="596" class="mono label">FIGHT</text>
+  <text x="1142" y="636" class="mono line">Watch the Agent answer</text>
+  <text x="1142" y="668" class="mono line">pressure without manual skills.</text>
+
+  <rect x="1112" y="716" width="390" height="118" class="button3"/>
+  <text x="1142" y="756" class="mono label">LEARN</text>
+  <text x="1142" y="796" class="mono line">Codex, run report, death</text>
+  <text x="1142" y="828" class="mono line">history, next build.</text>
+
+  <rect x="84" y="838" width="1492" height="22" fill="#0b1117"/>
+  <text x="104" y="854" class="mono micro">BUILD &gt; FIGHT &gt; LEARN   |   README media is reproducible from mock CLI output   |   English ASCII-safe, Chinese UTF-8 recommended</text>
+</svg>

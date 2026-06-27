@@ -124,7 +124,7 @@ skills:
       apply_status:
         id: status_silence
         stacks: 1
-        duration: 1
+        duration: 2
       base: 4
       power_scale: 0.3
       damage_type: physical
@@ -201,3 +201,203 @@ skills:
         Slip beneath a shadow. Brief shield against the next blow.
       zh: >-
         悄然没入暗影，对下一次攻击获得短暂护盾。
+
+  # --- Mirel (Mire Oracle) ---
+  - id: skill_mire_needle
+    display_name:
+      en: Mire Needle
+      zh: 沼针
+    mp_cost: 10
+    cooldown: 1
+    target_rule: single_enemy
+    tags: [poison, damage]
+    effect:
+      kind: damage
+      base: 10
+      power_scale: 0.7
+      damage_type: physical
+      apply_status:
+        id: status_poison
+        stacks: 3
+        duration: 3
+    visible_description:
+      en: >-
+        A poisoned glass sliver that starts the attrition clock.
+      zh: >-
+        投出带毒玻璃细针，开启消耗倒计时。
+  - id: skill_omen_vial
+    display_name:
+      en: Omen Vial
+      zh: 预兆毒瓶
+    mp_cost: 16
+    cooldown: 3
+    target_rule: single_enemy
+    tags: [poison, control]
+    effect:
+      kind: status
+      apply_status:
+        id: status_silence
+        stacks: 1
+        duration: 1
+      base: 8
+      power_scale: 0.5
+      damage_type: shadow
+    visible_description:
+      en: >-
+        A cracked vial that mutes a caster and leaves a dark omen.
+      zh: >-
+        砸出裂纹毒瓶，短暂压制施法并留下晦暗预兆。
+  - id: skill_sinking_veil
+    display_name:
+      en: Sinking Veil
+      zh: 沉沼纱幕
+    mp_cost: 8
+    cooldown: 3
+    target_rule: self
+    tags: [poison, guard]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 10
+        duration: 2
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Pull mire vapor into a defensive veil.
+      zh: >-
+        将瘟沼雾气拉成防御纱幕。
+
+  # --- Korr (Gravewright) ---
+  - id: skill_grave_nail
+    display_name:
+      en: Grave Nail
+      zh: 坟钉
+    mp_cost: 8
+    cooldown: 1
+    target_rule: single_enemy
+    tags: [gear, damage]
+    effect:
+      kind: damage
+      base: 16
+      power_scale: 0.6
+      damage_type: physical
+      apply_status:
+        id: status_bleed
+        stacks: 1
+        duration: 3
+    visible_description:
+      en: >-
+        Hammer a grave nail into the target, leaving a bleeding marker.
+      zh: >-
+        将坟钉钉入目标，留下流血标记。
+  - id: skill_crank_charge
+    display_name:
+      en: Crank Charge
+      zh: 曲柄充能
+    mp_cost: 0
+    cooldown: 3
+    target_rule: self
+    tags: [gear, guard]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 12
+        duration: 2
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Wind the burial engine and brace behind the crate.
+      zh: >-
+        拧紧葬仪机关，借背箱稳住阵脚。
+  - id: skill_burial_engine
+    display_name:
+      en: Burial Engine
+      zh: 葬仪机关
+    mp_cost: 18
+    cooldown: 4
+    target_rule: single_enemy
+    tags: [gear, fire, damage]
+    effect:
+      kind: damage
+      base: 28
+      power_scale: 0.9
+      damage_type: fire
+    visible_description:
+      en: >-
+        Release a compact engine burst into one marked foe.
+      zh: >-
+        将小型机关爆发打入单个被标记的敌人。
+
+  # --- Sera (Echo Exile) ---
+  - id: skill_bell_echo
+    display_name:
+      en: Bell Echo
+      zh: 铃声回响
+    mp_cost: 6
+    cooldown: 2
+    target_rule: self
+    tags: [echo, guard]
+    effect:
+      kind: status
+      apply_status:
+        id: status_shield
+        stacks: 9
+        duration: 2
+      base: 0
+      power_scale: 0
+      damage_type: none
+    visible_description:
+      en: >-
+        Ring a cracked bell; the echo hardens into a brief ward.
+      zh: >-
+        敲响裂铃，回声凝成短暂护壁。
+  - id: skill_silent_hymn
+    display_name:
+      en: Silent Hymn
+      zh: 静默圣歌
+    mp_cost: 14
+    cooldown: 3
+    target_rule: single_enemy
+    tags: [echo, control, holy]
+    effect:
+      kind: status
+      apply_status:
+        id: status_silence
+        stacks: 1
+        duration: 2
+      base: 5
+      power_scale: 0.4
+      damage_type: holy
+    visible_description:
+      en: >-
+        A voiceless hymn that seals a chant and scrapes the target.
+      zh: >-
+        无声圣歌封住吟唱，并刮伤目标。
+  - id: skill_returning_chime
+    display_name:
+      en: Returning Chime
+      zh: 回返钟声
+    mp_cost: 18
+    cooldown: 4
+    target_rule: single_enemy
+    tags: [echo, damage]
+    effect:
+      kind: damage
+      base: 24
+      power_scale: 0.9
+      damage_type: holy
+      apply_status:
+        id: status_corruption
+        stacks: 1
+        duration: 2
+    visible_description:
+      en: >-
+        Send the bell note out and pull it back through the target.
+      zh: >-
+        放出钟声，再让它穿过目标回返。

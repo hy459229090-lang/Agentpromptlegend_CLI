@@ -6,6 +6,7 @@ __pycache__/
 .ruff_cache/
 .venv/
 venv/
+venv*/
 dist/
 build/
 *.egg-info/
@@ -37,3 +38,4 @@ Thumbs.db
 .idea/
 .vscode/
 .claude/
+.obsidian/

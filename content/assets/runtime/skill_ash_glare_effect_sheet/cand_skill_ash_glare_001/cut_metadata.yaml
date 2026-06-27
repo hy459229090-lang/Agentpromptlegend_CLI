@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_ash_glare_effect_sheet
+candidate_id: cand_skill_ash_glare_001
+work_order_id: wo_skill_ash_glare_effect_sheet
+source_brief: ash_glare_silence_beam
+runtime_promoted: true
+frames:
+- frame_id: focus
+  path: focus.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 54
+  - 151
+  - 384
+  - 421
+  visible_pixels: 14532
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.focus
+- frame_id: glare
+  path: glare.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 154
+  - 384
+  - 428
+  visible_pixels: 26853
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.glare
+- frame_id: travel
+  path: travel.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 220
+  - 384
+  - 383
+  visible_pixels: 21140
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.travel
+- frame_id: mute
+  path: mute.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 107
+  - 347
+  - 486
+  visible_pixels: 67874
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.mute
+- frame_id: settle
+  path: settle.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 39
+  - 65
+  - 346
+  - 370
+  visible_pixels: 20278
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.settle
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 14
+  - 106
+  - 276
+  - 345
+  visible_pixels: 9300
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_ash_glare.recover

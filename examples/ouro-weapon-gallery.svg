@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Ouro Agent weapon gallery and Build arsenal</title>
+  <desc id="desc">A stylized terminal screenshot showing the weapon gallery, Build stages, AI behavior, and next commands.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0a1015"/>
+      <stop offset="0.58" stop-color="#11191d"/>
+      <stop offset="1" stop-color="#20191a"/>
+    </linearGradient>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .head { font-size: 27px; fill: #f2d087; font-weight: 800; }
+      .sub { font-size: 17px; fill: #9fb0b8; }
+      .text { font-size: 20px; fill: #e0e7dd; }
+      .small { font-size: 16px; fill: #9ca8ad; }
+      .green { fill: #8bd98f; }
+      .gold { fill: #f2b35f; }
+      .blue { fill: #8ecae6; }
+      .red { fill: #e27a72; }
+      .panel { fill: #0b1117; stroke: #465761; stroke-width: 1.4; rx: 12; }
+      .bright { stroke: #a9854a; }
+      .line { stroke: #465761; stroke-width: 1; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="48" y="36" width="1184" height="648" rx="22" fill="#080d12" stroke="#34434b" stroke-width="2"/>
+  <text x="80" y="84" class="mono head">WEAPON GALLERY :: BUILD ARSENAL</text>
+  <text x="80" y="116" class="mono sub">compare silhouettes, Build tags, and AI behavior before choosing the Agent</text>
+  <text x="925" y="84" class="mono sub">reproduce: ouro weapons --unicode</text>
+
+  <rect x="80" y="150" width="360" height="252" class="panel bright"/>
+  <text x="106" y="190" class="mono head">[1] [W:STF] ASTIA</text>
+  <text x="106" y="234" class="mono gold">ART  ▐==*   ░▓███░   ▌▌</text>
+  <text x="106" y="274" class="mono text">OWNER Shadow Apprentice</text>
+  <text x="106" y="310" class="mono green">STAGE [ONLINE] shadow/control</text>
+  <text x="106" y="346" class="mono blue">AI interrupts + tempo skills</text>
+  <text x="106" y="374" class="mono small">OPEN ouro hero-card astia</text>
+
+  <rect x="464" y="150" width="360" height="252" class="panel"/>
+  <text x="490" y="190" class="mono head">[2] [W:SHD] NORN</text>
+  <text x="490" y="234" class="mono gold">ART  ▄███▄   ████▌   ▀ ▀</text>
+  <text x="490" y="274" class="mono text">OWNER Ash Guardian</text>
+  <text x="490" y="310" class="mono green">STAGE [ONLINE] guard/shield</text>
+  <text x="490" y="346" class="mono blue">AI braces before telegraphs</text>
+  <text x="490" y="374" class="mono small">OPEN ouro hero-card norn</text>
+
+  <rect x="848" y="150" width="360" height="252" class="panel"/>
+  <text x="874" y="190" class="mono head">[3] [W:XBW] VELA</text>
+  <text x="874" y="234" class="mono gold">ART  ▄▄▸   ████▸   ▀▀▸</text>
+  <text x="874" y="274" class="mono text">OWNER Broken String Hunter</text>
+  <text x="874" y="310" class="mono green">STAGE [PAIR] bleed/execute</text>
+  <text x="874" y="346" class="mono blue">AI bleed stack -&gt; execute</text>
+  <text x="874" y="374" class="mono small">OPEN ouro hero-card vela</text>
+
+  <rect x="80" y="430" width="360" height="170" class="panel"/>
+  <text x="106" y="470" class="mono head">[4] [W:VIL] MIREL</text>
+  <text x="106" y="510" class="mono gold">ART  ▄█▄  ▐▒▒▒▌  ▀▄▀</text>
+  <text x="106" y="546" class="mono green">[ONLINE] poison/omen</text>
+  <text x="106" y="574" class="mono small">poison + silence attrition</text>
+
+  <rect x="464" y="430" width="360" height="170" class="panel"/>
+  <text x="490" y="470" class="mono head">[5] [W:GER] KORR</text>
+  <text x="490" y="510" class="mono gold">ART  ▐▓o▓▌  ███  ▄███▄</text>
+  <text x="490" y="546" class="mono green">[ONLINE] gear/trap</text>
+  <text x="490" y="574" class="mono small">mark -&gt; engine burst</text>
+
+  <rect x="848" y="430" width="360" height="170" class="panel"/>
+  <text x="874" y="470" class="mono head">[6] [W:BEL] SERA</text>
+  <text x="874" y="510" class="mono gold">ART  ▐o▌  ▓███▓  ▀ ▀</text>
+  <text x="874" y="546" class="mono green">[ONLINE] echo/cleanse</text>
+  <text x="874" y="574" class="mono small">echo wards for heavy turns</text>
+
+  <rect x="80" y="622" width="1128" height="42" class="panel bright"/>
+  <text x="106" y="649" class="mono text">NEXT WEAPON ROUTE: ouro list-heroes --unicode  |  ouro hero-card astia --unicode  |  ouro run --mock --hero astia</text>
+</svg>

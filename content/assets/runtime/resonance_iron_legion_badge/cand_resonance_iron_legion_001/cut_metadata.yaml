@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: resonance_iron_legion_badge
+candidate_id: cand_resonance_iron_legion_001
+work_order_id: wo_resonance_iron_legion_badge
+source_brief: iron_legion_online_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 49
+  - 106
+  - 519
+  - 613
+  visible_pixels: 131596
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_iron_legion.badge
+- frame_id: card_motif
+  path: card_motif.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 77
+  - 74
+  - 514
+  - 643
+  visible_pixels: 247314
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_iron_legion.card_motif
+- frame_id: online_state
+  path: online_state.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 40
+  - 103
+  - 494
+  - 614
+  visible_pixels: 125275
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_iron_legion.online_state
+- frame_id: high_roll_state
+  path: high_roll_state.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 6
+  - 75
+  - 512
+  - 642
+  visible_pixels: 154598
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.resonance_iron_legion.high_roll_state

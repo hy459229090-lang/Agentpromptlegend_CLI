@@ -165,6 +165,11 @@ class Judge:
             damage = self._apply_skill_to(skill, hero, target, state)
             damage_total += damage
             target_ids.append(target.id)
+        counter = self._tower_brace_counter(skill, hero, state)
+        if counter is not None:
+            counter_target, counter_damage = counter
+            damage_total += counter_damage
+            target_ids.append(counter_target.id)
 
         state.push_log(
             "hero.cast_skill",
@@ -173,6 +178,13 @@ class Judge:
             mp=skill_state.mp_cost,
             cd=skill_state.cooldown,
         )
+        if counter is not None:
+            state.push_log(
+                "hero.ash_counter",
+                hero=hero.name,
+                enemy=counter_target.name,
+                dmg=counter_damage,
+            )
         state.emit(
             "hero_skill",
             skill_id=skill.id,
@@ -185,6 +197,7 @@ class Judge:
             summary=(
                 f"cast_skill {skill.id} -> {','.join(target_ids)} | "
                 f"{damage_total} dmg"
+                f"{' | boss_break' if counter is not None else ''}"
             ),
             damage=damage_total,
             target_ids=tuple(target_ids),
@@ -229,6 +242,30 @@ class Judge:
             stacks=application.stacks,
             duration=application.duration,
         )
+
+    def _tower_brace_counter(
+        self,
+        skill: SkillData,
+        hero: Hero,
+        state: BattleState,
+    ) -> tuple[Enemy, int] | None:
+        if skill.id != "skill_tower_brace":
+            return None
+        target = _archive_chant_target(state)
+        if target is None:
+            return None
+        raw = hero.defense + hero.power + 6
+        damage = max(18, raw - target.defense // 3)
+        target.hp = max(0, target.hp - damage)
+        target.chant_progress = 0
+        target.add_status(StatusEffect(id="status_silence", stacks=1, duration=2))
+        state.emit(
+            "boss_break",
+            enemy_id=target.id,
+            damage=damage,
+            source=skill.id,
+        )
+        return target, damage
 
     def _resolve_defend(self, hero: Hero, state: BattleState) -> JudgeOutcome:
         hero.add_status(StatusEffect(id="status_shield", stacks=4, duration=2))
@@ -289,3 +326,14 @@ class Judge:
         if skill.target_rule == "all_allies":
             return [hero]
         return []
+
+
+def _archive_chant_target(state: BattleState) -> Enemy | None:
+    candidates = [
+        enemy
+        for enemy in state.alive_enemies()
+        if enemy.tier == "archive_bound" and enemy.chant_progress > 0
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda enemy: enemy.chant_progress)
