@@ -1,0 +1,84 @@
+schema_version: '0.1'
+records:
+- asset_id: hero_mire_oracle_battle_sheet
+  candidate_id: cand_hero_mire_oracle_001
+  work_order_id: wo_hero_mire_oracle_battle_sheet
+  source_brief: mirel_mire_oracle_poison_omen
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_hero_mire_oracle_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:14:33Z'
+  runtime_target_path: runtime/hero_mire_oracle_battle_sheet/cand_hero_mire_oracle_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    stable_anchor: true
+    pose_delta: true
+    terminal_legible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: portrait
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.portrait
+  - frame_id: idle
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.idle
+  - frame_id: ready
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.ready
+  - frame_id: attack
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.attack
+  - frame_id: skill
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.skill
+  - frame_id: guard
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.guard
+  - frame_id: hit
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.hit
+  - frame_id: low_hp
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.low_hp
+  - frame_id: victory
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.victory
+  - frame_id: defeat
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.defeat
+  - frame_id: signature
+    anchor:
+    - 64
+    - 96
+    duration_ms: 80
+    fallback_cell_id: cell.hero_mire_oracle.signature

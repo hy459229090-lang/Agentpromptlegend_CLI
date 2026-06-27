@@ -1,0 +1,87 @@
+schema_version: '0.1'
+asset_id: ui_reward_card_sprite
+candidate_id: cand_ui_reward_card_001
+work_order_id: wo_ui_reward_card_sprite
+source_brief: reward_card_build_state_sprite
+runtime_promoted: true
+frames:
+- frame_id: seed
+  path: seed.png
+  frame_size:
+  - 434
+  - 724
+  visible_bbox:
+  - 92
+  - 108
+  - 392
+  - 613
+  visible_pixels: 135641
+  anchor:
+  - 48
+  - 64
+  duration_ms: 80
+  fallback_cell_id: cell.ui.reward_card.seed
+- frame_id: pair
+  path: pair.png
+  frame_size:
+  - 434
+  - 724
+  visible_bbox:
+  - 82
+  - 108
+  - 382
+  - 613
+  visible_pixels: 135525
+  anchor:
+  - 48
+  - 64
+  duration_ms: 80
+  fallback_cell_id: cell.ui.reward_card.pair
+- frame_id: online
+  path: online.png
+  frame_size:
+  - 435
+  - 724
+  visible_bbox:
+  - 29
+  - 97
+  - 401
+  - 625
+  visible_pixels: 135068
+  anchor:
+  - 48
+  - 64
+  duration_ms: 80
+  fallback_cell_id: cell.ui.reward_card.online
+- frame_id: high
+  path: high.png
+  frame_size:
+  - 434
+  - 724
+  visible_bbox:
+  - 8
+  - 88
+  - 393
+  - 636
+  visible_pixels: 144962
+  anchor:
+  - 48
+  - 64
+  duration_ms: 80
+  fallback_cell_id: cell.ui.reward_card.high
+- frame_id: lock
+  path: lock.png
+  frame_size:
+  - 435
+  - 724
+  visible_bbox:
+  - 12
+  - 104
+  - 376
+  - 615
+  visible_pixels: 141744
+  anchor:
+  - 48
+  - 64
+  duration_ms: 80
+  fallback_cell_id: cell.ui.reward_card.lock

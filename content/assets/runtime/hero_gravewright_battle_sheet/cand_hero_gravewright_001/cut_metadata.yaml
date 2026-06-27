@@ -1,0 +1,183 @@
+schema_version: '0.1'
+asset_id: hero_gravewright_battle_sheet
+candidate_id: cand_hero_gravewright_001
+work_order_id: wo_hero_gravewright_battle_sheet
+source_brief: korr_gravewright_engine_gear
+runtime_promoted: true
+frames:
+- frame_id: portrait
+  path: portrait.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 39702
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.portrait
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 36472
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.idle
+- frame_id: ready
+  path: ready.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 40479
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.ready
+- frame_id: attack
+  path: attack.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 39125
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.attack
+- frame_id: skill
+  path: skill.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 42418
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.skill
+- frame_id: guard
+  path: guard.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 35259
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.guard
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 38546
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.hit
+- frame_id: low_hp
+  path: low_hp.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 33608
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.low_hp
+- frame_id: victory
+  path: victory.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 37375
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.victory
+- frame_id: defeat
+  path: defeat.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 32298
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.defeat
+- frame_id: signature
+  path: signature.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 362
+  visible_pixels: 50777
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_gravewright.signature

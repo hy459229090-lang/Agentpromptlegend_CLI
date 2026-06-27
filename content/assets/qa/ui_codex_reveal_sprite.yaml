@@ -1,0 +1,41 @@
+schema_version: '0.1'
+records:
+- asset_id: ui_codex_reveal_sprite
+  candidate_id: cand_ui_codex_reveal_001
+  work_order_id: wo_ui_codex_reveal_sprite
+  source_brief: codex_reveal_archive_sprite
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_ui_codex_reveal_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:18:43Z'
+  runtime_target_path: runtime/ui_codex_reveal_sprite/cand_ui_codex_reveal_001/cut_metadata.yaml
+  checks:
+    state_variant: true
+    card_crop_safe: true
+    terminal_legible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: locked
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.ui.codex_reveal.locked
+  - frame_id: fog
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.ui.codex_reveal.fog
+  - frame_id: reveal
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.ui.codex_reveal.reveal
+  - frame_id: learned
+    anchor:
+    - 32
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.ui.codex_reveal.learned

@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_iron_bracer_icon_card
+candidate_id: cand_item_iron_bracer_001
+work_order_id: wo_item_iron_bracer_icon_card
+source_brief: iron_bracer_guard_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 111
+  - 164
+  - 446
+  - 560
+  visible_pixels: 75306
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_iron_bracer.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 91
+  - 86
+  - 496
+  - 639
+  visible_pixels: 223004
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_iron_bracer.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 142
+  - 226
+  - 398
+  - 486
+  visible_pixels: 30193
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_iron_bracer.hud_mark

@@ -81,6 +81,37 @@ def _audit_commands(*, skip_release_check: bool) -> tuple[AuditCommand, ...]:
     commands.extend(
         (
             AuditCommand(
+                "asset-status-strict",
+                (
+                    python_bin,
+                    str(ROOT / "scripts/asset_status_report.py"),
+                    "--content-dir",
+                    "content",
+                    "--require-all-candidates",
+                    "--require-all-cut-metadata",
+                    "--require-all-qa-passed",
+                    "--require-all-runtime",
+                ),
+            ),
+            AuditCommand(
+                "asset-qa",
+                (
+                    python_bin,
+                    str(ROOT / "scripts/asset_qa_check.py"),
+                    "--content-dir",
+                    "content",
+                ),
+            ),
+            AuditCommand(
+                "asset-manifest",
+                (
+                    python_bin,
+                    str(ROOT / "scripts/asset_manifest_check.py"),
+                    "--content-dir",
+                    "content",
+                ),
+            ),
+            AuditCommand(
                 "scope",
                 (python_bin, str(ROOT / "scripts/release_scope.py"), "--json"),
             ),
@@ -117,12 +148,17 @@ def _build_report(
 ) -> dict[str, Any]:
     by_key = {result.key: result for result in results}
     release = by_key.get("release")
+    asset_status = by_key.get("asset-status-strict")
+    asset_qa = by_key.get("asset-qa")
+    asset_manifest = by_key.get("asset-manifest")
     scope = by_key.get("scope")
     signoff = by_key.get("signoff")
     scope_report = _loads_object(scope.stdout if scope else "")
     signoff_report = _loads_object(signoff.stdout if signoff else "")
 
     release_ready = True if skipped_release_check else bool(release and release.ok)
+    asset_results = [asset_status, asset_qa, asset_manifest]
+    assets_ready = all(result is not None and result.ok for result in asset_results)
     scope_ready = bool(scope and scope.ok and scope_report.get("ok") is True)
     signoff_ready = bool(signoff and signoff.ok and signoff_report.get("all_ready") is True)
     pending_signoffs = [
@@ -138,11 +174,19 @@ def _build_report(
 
     return {
         "root": str(ROOT),
-        "goal_complete_ready": release_ready and scope_ready and signoff_ready,
+        "goal_complete_ready": release_ready and assets_ready and scope_ready and signoff_ready,
         "release_check": {
             "skipped": skipped_release_check,
             "ready": release_ready,
             "returncode": None if release is None else release.returncode,
+        },
+        "asset_hard_gates": {
+            "ready": assets_ready,
+            "commands": [
+                _asset_gate_result("asset-status-strict", asset_status, "asset pipeline strict gate: OK"),
+                _asset_gate_result("asset-qa", asset_qa, "asset QA records: OK"),
+                _asset_gate_result("asset-manifest", asset_manifest, "asset manifest: OK"),
+            ],
         },
         "scope": {
             "ready": scope_ready,
@@ -165,6 +209,20 @@ def _build_report(
             }
             for result in results
         ],
+    }
+
+
+def _asset_gate_result(
+    key: str,
+    result: AuditResult | None,
+    marker: str,
+) -> dict[str, Any]:
+    stdout = "" if result is None else result.stdout
+    return {
+        "key": key,
+        "ready": bool(result and result.ok and marker in stdout),
+        "returncode": None if result is None else result.returncode,
+        "marker": marker,
     }
 
 
@@ -199,10 +257,12 @@ def _print_report(report: dict[str, Any]) -> None:
     print("OURO COMPLETION AUDIT")
     print(f"repo: {report['root']}")
     release = report["release_check"]
+    assets = report["asset_hard_gates"]
     scope = report["scope"]
     signoff = report["signoff"]
     release_label = "SKIPPED" if release["skipped"] else _status_word(bool(release["ready"]))
     print(f"release gates : {release_label}")
+    print(f"asset gates   : {_status_word(bool(assets['ready']))}")
     print(
         "scope boundary: "
         f"{_status_word(bool(scope['ready']))} "
@@ -219,7 +279,10 @@ def _print_report(report: dict[str, Any]) -> None:
         print("Goal complete readiness: READY")
     else:
         print("Goal complete readiness: NOT READY")
-        print("Do not mark the goal complete until release gates, scope, and all sign-offs are ready.")
+        print(
+            "Do not mark the goal complete until release gates, asset hard gates, "
+            "scope, and all sign-offs are ready."
+        )
         pending_items = signoff.get("pending_items", [])
         if pending_items:
             print("")

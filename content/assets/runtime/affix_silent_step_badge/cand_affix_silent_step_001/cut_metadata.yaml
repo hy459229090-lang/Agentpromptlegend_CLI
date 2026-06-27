@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: affix_silent_step_badge
+candidate_id: cand_affix_silent_step_001
+work_order_id: wo_affix_silent_step_badge
+source_brief: silent_step_stealth_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 146
+  - 153
+  - 594
+  - 595
+  visible_pixels: 102772
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_silent_step.badge
+- frame_id: reward_motif
+  path: reward_motif.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 108
+  - 62
+  - 616
+  - 671
+  visible_pixels: 307825
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_silent_step.reward_motif
+- frame_id: build_online
+  path: build_online.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 109
+  - 131
+  - 585
+  - 609
+  visible_pixels: 111019
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_silent_step.build_online

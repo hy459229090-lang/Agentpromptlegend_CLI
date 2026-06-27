@@ -1,62 +1,56 @@
 # 暗影代理：祷文传说 / Ouro Agent: Prompt Legend
 
 <p align="center">
-  <strong>构筑它的脑子，放它进地牢，读懂它留下的伤痕。</strong><br>
-  <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
-  <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
-  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · Mock 离线可玩 · 中英双语 TUI · 先像游戏页，再像工程文档</sub>
+  <strong>训练一个 AI 英雄，把它放进黑暗终端地牢，看看你的 Prompt 到底构筑出了什么。</strong><br>
+  <strong>Train one AI hero. Send it into a dark terminal dungeon. Learn what your Prompt really built.</strong><br>
+  <sub>命令行 AI 肉鸽 · Prompt 构筑自动战斗 · 确定性本地裁判 · Mock 离线可玩 · 中文 / English</sub>
 </p>
 
 <p align="center">
   <img alt="暗影代理首屏主视觉：语言切换、试玩入口和图形化 TUI 战斗" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
-  <br><strong>Steam 式玩家承诺：</strong>你设计它带进地牢的战斗脑子；一局运行会证明这套 Prompt 能不能承受压力。<br>
-  <strong>Steam-style promise:</strong> build the mind, release the run, then read the scars.<br>
-  <sub>先看画面，再看工程说明。Media first. Rules second. Engineering third.</sub>
+  <br><strong>你不是逐回合操控英雄的人。你构筑 Agent，然后看地牢审计它的每次决策。</strong><br>
+  <sub>模型选择行动，本地裁判结算。第一次试玩不需要网络或 API key。</sub>
 </p>
 
-## 玩家入口面板 / Player Start Panel
+## 入口 / Start Here
 
 <table>
   <tr>
-    <th colspan="4">语言切换 / Language · 中文 / English · 选择介绍页 / Choose Your Page</th>
+    <th>阅读</th>
+    <th>试玩</th>
+    <th>看画面</th>
+    <th>查当前版本</th>
   </tr>
   <tr>
-    <td align="center"><strong>中文</strong><br><strong>当前中文介绍页</strong><br><sub>先看游戏介绍，不先读工程日志</sub><br><a href="README.md#english-store-page"><strong>ENGLISH</strong> · English Store Page</a><br><sub>Read in English · game first, docs later</sub></td>
-    <td align="center"><a href="#play-now"><strong>进入地牢</strong><br><strong>立即试玩 / Play Now</strong><br><sub><strong>30 秒试玩</strong>: <code>ouro demo --lang zh --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>先看画面</strong><br><strong>先看游戏画面 / Gameplay Screens</strong><br><sub><strong>先看最佳画面</strong>: Build / Fight / Learn</sub></a></td>
-    <td align="center"><a href="#game-capsule"><strong>查看构筑</strong><br><strong>Hero Capsule</strong><br><sub>武器、角色、Codex</sub></a></td>
-  </tr>
-  <tr>
-    <td colspan="4" align="center">
-      <strong>CLI 语言切换 / CLI Language Toggle:</strong>
-      <code>ouro --lang zh</code> / <code>ouro --lang en</code>
-      <br><sub>Mock 离线，无需 API key；中文界面建议 UTF-8 终端；English 界面保持 ASCII-safe。</sub>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="4" align="center"><a href="README.md"><strong>双语首页 / Bilingual README</strong></a></td>
+    <td align="center"><strong>中文当前页</strong><br><a href="README.md"><strong>English README</strong></a><br><sub>CLI: <code>ouro --lang zh</code> / <code>ouro --lang en</code></sub></td>
+    <td align="center"><a href="#play-now"><strong>离线开局</strong></a><br><code>ouro try --lang zh --seed 1</code><br><sub>mock、可复现、无需 API key</sub></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>看 TUI 战斗</strong></a><br><sub>Build / Fight / Learn</sub></td>
+    <td align="center"><a href="#当前可玩内容"><strong>当前可玩内容</strong></a><br><sub>命令、Provider、安全边界</sub></td>
   </tr>
 </table>
 
-| 这是一款什么游戏？ | 为什么会想再开一局？ |
-|--------------------|------------------------|
-| **一款 Prompt 构筑型命令行肉鸽。** 战斗前你配置一个 AI 英雄；开战后模型只选择行动，本地裁判负责伤害、状态、奖励、失败和胜利。 | Agent 会读局、失误、打断、缺蓝、击杀显影。每次失败都会留下战报、图鉴线索和下一局构筑方向。 |
-| **A dark terminal roguelike where the Prompt is the build.** You configure one hero Agent before combat, then the run plays out automatically under local rules. | The Agent can read the moment, miss a counter window, run out of MP, or reveal a Codex clue. The after-action report turns that failure into the next build. |
+## 一句话介绍 / The Pitch
+
+**暗影代理：祷文传说** 是一款单人 CLI AI 肉鸽，Prompt 是构筑的一部分。
+战斗前你配置一个英雄 Agent：英雄、武器、词条、Build 方向、Prompt 风格和战术偏好。
+战斗中你不能点技能、不能手动选目标；模型只输出结构化行动，本地引擎负责校验并结算
+HP、MP、ATB、状态、奖励、失败和胜利。
+
+它不是“聊天机器人播报伤害”。它的乐趣是：看你设计的 Agent 在压力下读局、犯错、
+打断、缺蓝、解锁图鉴，再把失败变成下一局更清楚的构筑方向。
 
 <a id="storefront-hero"></a>
 
-## 商店页封面 / Storefront Hero
+## 第一眼 / First Look
 
 <p align="center">
   <img alt="暗影代理祷文传说游戏介绍图" src="examples/ouro-readme-storefront.svg" width="100%">
-  <br><strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
-  <strong>你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。</strong><br>
-  <strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
-  <sub>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。模型只选招式，裁判负责结算。Model chooses. Local Judge decides.</sub>
+  <br><strong>战前构筑。战中观战。战后读懂它留下的伤痕。</strong><br>
+  <sub>Prompt 选择、确定性战斗规则、中英双语终端画面、可复现证据，都是同一条循环的一部分。</sub>
 </p>
 
 <p align="center">
-  <strong>游戏标签：</strong>
+  <strong>游戏标签 / Game tags：</strong>
   <code>单人</code>
   <code>AI 肉鸽</code>
   <code>自动战斗</code>
@@ -65,40 +59,19 @@
   <code>中文 / English</code>
 </p>
 
-<table>
-  <tr>
-    <th colspan="3">Steam 风格首页 / Steam-Style Front Page · 三个清晰动作</th>
-  </tr>
-  <tr>
-    <td align="center"><a href="#play-now"><strong>立即试玩</strong><br><sub>一条命令，Mock 离线</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>观看战斗</strong><br><sub>真实 TUI 截图</sub></a></td>
-    <td align="center"><a href="README.md#english-store-page"><strong>English Store Page</strong><br><sub>英文介绍页</sub></a></td>
-  </tr>
-  <tr>
-    <td colspan="3" align="center"><strong>商店页胶囊：</strong>先语言、先画面、先可玩证明。</td>
-  </tr>
-</table>
-
-<p align="center">
-  <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
-  <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
-  <sub>先选语言，跑一条命令，看战斗画面，再继续读工程说明。</sub>
-</p>
-
-| 中文 30 秒开局 | English 30-second start | 直接看战斗画面 |
-|----------------|-------------------------|----------------|
-| `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `pip install -e .`<br>`ouro demo --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+| 中文 30 秒试玩 | English 30-second try | 直接看战斗画面 |
+|----------------|-----------------------|----------------|
+| `pip install -e .`<br>`ouro try --lang zh --seed 1` | `pip install -e .`<br>`ouro try --lang en --seed 1` | `ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content` |
 
 <table>
   <tr>
     <td width="64%">
       <img alt="暗影代理 TUI 玩法商店式截图墙" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
-      <br><strong>商店式截图墙 / Steam-style screenshot wall</strong><br>
-      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。先看到真实 TUI 媒体，再读工程说明。</sub><br>
-      <sub>画面证据：主菜单、遭遇简报、图形化对战、战斗分镜和战后学习闭环。</sub>
+      <br><strong>玩法画面墙 / Gameplay wall</strong><br>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT。</sub>
     </td>
     <td width="36%">
-      <strong>第一眼会看到什么</strong><br><br>
+      <strong>第一局会证明什么</strong><br><br>
       <strong>Build</strong><br>
       武器卡、英雄定位、AI 行为标签和下一局命令会在战斗前出现。<br><br>
       <strong>Fight</strong><br>
@@ -109,24 +82,12 @@
   </tr>
 </table>
 
-| Steam 商店页式卖点 | 画面里能证明什么 |
-|--------------------|--------------------|
+| 玩家承诺 | 现在的可见证据 |
+|----------|----------------|
 | **Prompt 就是你的 Build。** | 武器卡、英雄定位、Build 徽章和 Prompt 倾向在战斗前就可见。 |
-| **终端不是日志，而是竞技场。** | TUI 在一帧里展示左英雄、右敌人、弹道、HP / MP / ATB、VOX / ENM、浮字和裁判结果。 |
+| **终端就是竞技场。** | TUI 在一帧里展示左英雄、右敌人、弹道、HP / MP / ATB、VOX / ENM、浮字和裁判结果。 |
 | **AI 能选择，但不能作弊。** | 模型只输出结构化行动；合法性、伤害、奖励、失败和胜利都由确定性本地规则结算。 |
-| **每次失败都服务下一局。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
-
-<details>
-<summary>商店页信息结构 / 好的 Steam 页面会先展示什么 / What a Steam page would show first</summary>
-
-| 好的 Steam 页面会先展示什么 | 这个 README 现在怎么处理 |
-|-----------------------------|--------------------------|
-| **胶囊图和截图墙** | 首屏先给主推海报、胶囊图、四格截图墙和 Build/Fight/Learn 画廊，再进入架构与 Provider 文档。 |
-| **一句话玩家幻想** | 构筑一个 Agent，把它放进压力局，看你的 Prompt 能不能活下来。 |
-| **可玩状态和行动按钮** | `ouro demo --lang zh --seed 1` 与 `ouro demo --lang en --seed 1` 放在工程说明之前。 |
-| **用画面证明，不只写承诺** | 每张媒体图都标出可复现 CLI 命令，并展示 mock 可跑通的游戏界面。 |
-
-</details>
+| **每次失败都留下证据。** | 战报、Codex 进度、死亡历史和可回放 trace 会把失败变成下一次构筑建议。 |
 
 <a id="game-capsule"></a>
 
@@ -151,9 +112,15 @@
 ## 先看游戏画面：构筑、战斗、复盘 / Screenshots: Build, Fight, Learn
 
 Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输出，不是概念图。
-对应命令可用
-`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-复现。SVG 资产保存在 `examples/`。
+默认动效试玩用
+`ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content`
+感受终端里的实时节奏。支持 bitmap 的终端中，`--graphics auto` 会优先播放本地 QA 通过的 PNG sprite（iTerm2 或 Kitty inline image）；不支持时自动降级到 Unicode cell sprite，再降级到 ASCII-safe 输出。也可以显式选择：
+`ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content`、
+`ouro --lang en play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content`，或
+`ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content`。
+运行时不生图：ImageGen 只用于开发期资产管线，实机战斗读取 `content/assets/` 里已经 QA 通过的本地资产。只有在截图复现、CI 日志、无障碍或低兼容终端时，才使用 `--no-animation` 得到确定性的静态帧。SVG 资产保存在 `examples/`。
+如果终端报告支持 bitmap 但实战仍像文字界面，先运行
+`ouro doctor graphics --graphics bitmap --probe-image --content-dir content`；它会在终端里打印一张本地 QA 通过的 runtime PNG，用来区分终端图片协议问题和战斗布局问题。
 
 <table>
   <tr>
@@ -166,8 +133,8 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
     <td width="33%">
       <img alt="图形化 TUI 战斗舞台" src="examples/ouro-battle-canvas.svg">
       <br><strong>Fight / 图形化战斗舞台 / Graphical Battle Stage</strong><br>
-      左英雄 vs 右敌人，中间弹道和本地裁判同屏；HP / MP / ATB / 风险条、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。<br>
-      <sub>复现：<code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
+      左英雄 vs 右敌人，中间场景层、命中闪光、回声脉冲、镜头震动、窗口压力和本地裁判同屏；HP / MP / ATB、浮字、Prompt 命中和 Build 状态都在一个战斗帧里。<br>
+      <sub>自动实时：<code>ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content</code><br>Bitmap 最佳路径：<code>ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content</code><br>静态复现 / ASCII 降级：<code>ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content</code></sub>
     </td>
     <td width="33%">
       <img alt="战后复盘与图鉴进度" src="examples/ouro-after-action.svg">
@@ -178,10 +145,22 @@ Media Gallery / 先看游戏画面。下面的画面来自可复现的 CLI 输�
   </tr>
 </table>
 
+<p align="center">
+  <img alt="模式、锁定与战斗相位的 TUI 动画分镜" src="examples/ouro-animation-filmstrip.svg" width="100%">
+  <br><strong>Motion Preview / 动画节奏预览</strong><br>
+  默认 TTY 试玩现在会把开局、路线、奖励、商店、休整、事件和战斗相位都做成可见动效。这个文件是 animated SVG 分镜，和 PTY 证据日志使用同一条 mock 友好流程。
+</p>
+
+<p align="center">
+  <img alt="模式、路线、奖励、战斗命中和死亡停顿的动效证据墙" src="examples/ouro-motion-evidence.svg" width="100%">
+  <br><strong>Motion Evidence / 动效证据墙</strong><br>
+  固定 seed 证据把模式选择、路线焦点、奖励焦点、战斗命中和死亡停顿放进一张适合截图审阅的 animated SVG。
+</p>
+
 第一轮可玩流程应该像一个紧凑的游戏旅程：
 
 1. **RUN READY BOARD**：展示你给 Agent 的 Prompt、Build 阶段、核心标签、下一次构筑选择和本地裁判规则。
-2. **THE ECHO ALTAR / COUNTER WINDOW**：左英雄、右怪物、中间弹道；模型选择行动，本地裁判结算效果。
+2. **THE ECHO ALTAR / IMPACT**：左英雄、右怪物、中间弹道；模型选择行动，本地裁判结算效果，同时保留场景、脉冲、镜头、窗口压力和命中闪光。
 3. **BATTLE RESULT BOARD**：胜负、节奏、失误、Codex 研究和下一局命令留在屏幕上。
 
 <details>
@@ -195,10 +174,10 @@ RUN READY BOARD
   [NEXT PICK] guard, armor, poison
   [FIRST RULE] model chooses action, local judge resolves
 
-THE ECHO ALTAR / COUNTER WINDOW
-HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
-VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
-HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
+THE ECHO ALTAR / IMPACT
+HERO [CNDL] Astia     | SELECT > IMPACT > JUDGE | ENEMY [k] Acolyte
+VOX seal the chant    | HIT FLASH -16HP         | ENM armor cracking
+HP 100/100 MP 54/72   | CAMERA SHAKE + PULSE    | HP 34/70 FX SLN1
 
 CINEMATIC BEAT
   VOX [INTERRUPT] There. The wick forgets its prayer.
@@ -217,38 +196,19 @@ BATTLE TURN MAP
 ```
 </details>
 
-## 商店页速览
-
-**暗影代理：祷文传说** 是一款可以直接试玩的 CLI AI 肉鸽。你不是地下城里的剑士，
-而是战前调校 Agent 的构筑师：选择英雄、武器、词条、Build、Prompt 风格和战术偏好。
-开战后你不能救场，只能看它执行你的计划、暴露你的构筑缺陷，然后带着复盘回到下一局。
-
-模型只负责选择结构化行动；本地引擎负责校验目标、冷却、资源、伤害、状态、奖励、失败与胜利。
-这个边界就是玩法：Prompt 可以聪明，但地牢仍然有规则。
-
-| 游戏速览 / Storefront Snapshot | 当前承诺 |
-|--------------------------------|----------|
-| **类型** | CLI roguelike / auto-battler / prompt-building game |
-| **玩家幻想** | 构筑一个 Agent，把它放进压力局，看它读局、犯错、打断仪式，并从失败中成长 |
-| **语言切换 / Language** | README 有中英页面；CLI 语言切换使用 `ouro --lang zh` 或 `ouro --lang en` |
-| **试玩状态** | 默认 mock provider 可离线、可复现、无需网络和 API key |
-| **战斗规则** | 模型只选择行动；本地裁判负责合法性、伤害、奖励、失败和胜利 |
-| **画面目标** | 图形化 TUI：左英雄 vs 右敌人、HP/MP/ATB、风险条、弹道中轴、`Echo Cost / Read Echo / Spoken Echo / Ritual Time`、浮字、VOX/ENM 台词和分镜节奏 |
-
-| 玩家期待 | 你实际在做什么 | 它为什么不一样 |
-|----------|----------------|----------------|
-| 战前构筑，然后看 Agent 在压力下回答。 | 战前选择一个英雄、武器、词条、Build 标签、Prompt 风格和战术偏好。 | 游戏考验的是你的准备和 Prompt，而不是临场点技能速度。 |
-| 战斗不是滚日志。 | 观看左右对战的 TUI 舞台：HP/MP/ATB、意图、风险、模型行动、本地裁判、浮字和台词同屏出现。 | CLI 被当作低分辨率游戏画面使用，不只是调试控制台。 |
-| 每次失败都能指导下一局。 | 阅读战报、图鉴进度、死亡历史、状态页、回放和批量试跑结果，调整下一局构筑。 | 每个错误都会留下可复盘、可执行的下一步。 |
-
 ## 关于这个游戏
 
-它不是“聊天接口加伤害数字”。Prompt 是构筑的一部分，模型输出是战术意图，
-本地裁判保证地牢规则不会被模型绕过。
+Ouro Agent 的核心边界很硬：模型可以选择意图，但不能当规则本身。
+它不能虚构伤害、跳过冷却、发放奖励、读取未解锁图鉴，或自行宣布胜利。
+这些结果都来自本地确定性战斗规则。
+
+所以 AI 在这里更像一个有风险的队友，而不是旁白。它可能错过反制窗口、
+乱花 MP、过度遵守你的 Prompt，也可能打出关键打断。屏幕会告诉你本地裁判
+为什么接受、修复或拒绝这次行动。
 
 | 为什么值得点进来 | 现在有什么证据 |
 |------------------|----------------|
-| **AI 会以有趣的方式犯错。** | 每场战斗都显示模型行动、本地裁判、资源、风险和最近日志。 |
+| **AI 会以有趣的方式犯错。** | 每个 Battle Frame 都显示模型行动、本地裁判、资源、风险和最近日志。 |
 | **TUI 被当作游戏画面。** | 武器图鉴、战斗 Canvas、图鉴、状态页、战报和死亡历史都用卡片化终端界面呈现。 |
 | **第一次试玩没有门槛。** | Mock 模式离线、可复现、无需 API key。 |
 
@@ -275,7 +235,8 @@ BATTLE TURN MAP
 
 ```bash
 pip install -e .
-ouro demo --lang zh --seed 1
+ouro try --lang zh --seed 1
+ouro demo --lang zh --seed 1   # 兼容别名
 ```
 
 想直接打一场或跑完整副本：
@@ -294,7 +255,7 @@ ouro menu --lang zh
 想看更强画面感：
 
 ```bash
-ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
+ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content
 ```
 
 想看复盘和长期成长：
@@ -312,7 +273,7 @@ ouro history --lang zh --limit 5
 
 | 你能玩到什么 | 现在是否可用 | 推荐命令 |
 |--------------|--------------|----------|
-| 引导式首局试玩 | 可用 | `ouro demo --lang zh --seed 1` |
+| 引导式首局试玩 | 可用 | `ouro try --lang zh --seed 1` |
 | 玩家旅程控制台与命令地图 | 可用 | `ouro menu --lang zh` |
 | 单场 AI 战斗 | 可用 | `ouro play --mock` |
 | 完整副本：路线、商店、休息、奖励和 Boss | 可用 | `ouro run --mock` |
@@ -322,12 +283,12 @@ ouro history --lang zh --limit 5
 | 批量试跑与数值报告 | 可用 | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-400%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-464%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`400 测试通过`。任何测试都不联网。
+`464 测试通过`。任何测试都不联网。
 
 ---
 
@@ -340,7 +301,8 @@ pip install -e .
 
 ouro --version
 ouro doctor --lang zh --content-dir content
-ouro demo --lang zh --seed 1                              # 引导式首局试玩
+ouro try --lang zh --seed 1                               # 快速首局试玩
+ouro demo --lang zh --seed 1                              # 发布评审兼容别名
 ouro run --mock                                           # 从 demo 继续进入完整运行
 ouro list-heroes
 ouro weapons --unicode
@@ -565,7 +527,7 @@ scripts/                      开发辅助脚本
 
 ## License
 
-License 待定。
+本项目使用 MIT License，详见 [LICENSE](LICENSE)。
 
 ## 完成前签收
 
@@ -577,7 +539,7 @@ venv312/bin/python scripts/signoff_check.py --json
 venv312/bin/python scripts/signoff_check.py --strict
 ```
 
-它会动态报告用户满意度、License、真实 Provider live smoke 与 Git
+它会动态报告用户满意度、MIT license ready、真实 Provider live smoke 与 Git
 提交边界这些需要人工或外部证据的签收项；用户满意度项会列出可复制的
 acceptance commands；`--json` 可给 CI/发布记录复用。
 `venv312/bin/python scripts/acceptance_check.py` 可一条命令跑完 mock-first
@@ -588,5 +550,5 @@ acceptance commands；`--json` 可给 CI/发布记录复用。
 `docs/engineering/USER_ACCEPTANCE_20260601.md` 和
 `docs/engineering/LICENSE_DECISION_20260601.md` 和
 `docs/engineering/PROVIDER_LIVE_SMOKE_20260601.md`；只有真实验收完成后才改
-`SIGN-OFF` 行。
+用户满意度或 live-provider 的 `SIGN-OFF` 行。
 如需一个总览入口，可运行 `venv312/bin/python scripts/completion_audit.py`。

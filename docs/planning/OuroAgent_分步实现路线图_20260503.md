@@ -3,7 +3,7 @@
 > 日期：2026-05-03
 > 最近同步：2026-06-01
 > 状态：v0.4 release candidate；S0-S9 的实现与自动化证据已对齐到 `docs/product/06_需求追踪矩阵_20260503.md`。
-> 原则：当前不再继续旧 S6/S7/S8/S9 的实现排队；完整目标是否 complete 取决于用户满意度、License、live-provider smoke 和 git 边界签收。
+> 原则：当前不再继续旧 S6/S7/S8/S9 的实现排队；完整目标是否 complete 取决于用户满意度、live-provider smoke 和 git 边界签收；License 已选择 MIT。
 
 ---
 
@@ -45,9 +45,8 @@
 仍不能把整个用户目标标记为 complete 的项目不属于 S6-S9 未实现，而是外部签收：
 
 1. 用户满意度确认：目标包含“让我满意”，需要用户试玩或明确接受。
-2. License 或私有发布策略：需要用户选择，不能由实现代替。
-3. live-provider smoke：需要用户提供真实 env 后运行。
-4. git-boundary：需要人工审查并提交 release 范围。
+2. live-provider smoke：需要用户提供真实 env 后运行。
+3. git-boundary：需要人工审查并提交 release 范围。
 
 这些项目由 `docs/engineering/RELEASE_SIGNOFF_20260601.md` 和 `scripts/signoff_check.py --strict` 跟踪。
 
@@ -392,8 +391,7 @@
 当前实现顺序已经推进到 MVP release candidate。下一轮建议不再按旧 S6.x/S7/S8/S9 继续排实现任务，而是按发布完成度处理：
 
 1. 用户试玩或明确验收，生成 `docs/engineering/USER_ACCEPTANCE_20260601.md` 并写入 `SIGN-OFF: accepted`。
-2. 决定 License 或私有发布策略，同步 `pyproject.toml`、README、release handoff。
-3. 如需要真实 Provider 证据，设置用户提供的 env 后运行 `scripts/provider_smoke.py --live`，生成 `docs/engineering/PROVIDER_LIVE_SMOKE_20260601.md` 并写入 `SIGN-OFF: passed`。
-4. 按 `docs/engineering/CHANGESET_MANIFEST_20260601.md` 审查 git 边界、stage、commit、tag。
+2. 如需要真实 Provider 证据，设置用户提供的 env 后运行 `scripts/provider_smoke.py --live`，生成 `docs/engineering/PROVIDER_LIVE_SMOKE_20260601.md` 并写入 `SIGN-OFF: passed`。
+3. 按 `docs/engineering/CHANGESET_MANIFEST_20260601.md` 审查 git 边界、stage、commit、tag。
 
 如果后续要进入 S10，必须先新建 v0.2 范围需求，不能把无限模式、排行榜或模型对战混进 v0.1.0 release candidate。

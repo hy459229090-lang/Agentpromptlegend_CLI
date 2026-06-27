@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: affix_cleansing_tone_badge
+candidate_id: cand_affix_cleansing_tone_001
+work_order_id: wo_affix_cleansing_tone_badge
+source_brief: cleansing_tone_holy_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 122
+  - 147
+  - 556
+  - 580
+  visible_pixels: 100460
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_cleansing_tone.badge
+- frame_id: reward_motif
+  path: reward_motif.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 84
+  - 53
+  - 598
+  - 658
+  visible_pixels: 309207
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_cleansing_tone.reward_motif
+- frame_id: build_online
+  path: build_online.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 66
+  - 138
+  - 569
+  - 628
+  visible_pixels: 121919
+  anchor:
+  - 24
+  - 24
+  duration_ms: 80
+  fallback_cell_id: cell.affix_cleansing_tone.build_online

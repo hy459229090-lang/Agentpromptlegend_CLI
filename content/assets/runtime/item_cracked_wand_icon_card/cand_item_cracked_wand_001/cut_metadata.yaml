@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_cracked_wand_icon_card
+candidate_id: cand_item_cracked_wand_001
+work_order_id: wo_item_cracked_wand_icon_card
+source_brief: cracked_wand_black_candle_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 86
+  - 107
+  - 401
+  - 586
+  visible_pixels: 37481
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_cracked_wand.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 88
+  - 101
+  - 458
+  - 626
+  visible_pixels: 193039
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_cracked_wand.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 160
+  - 254
+  - 349
+  - 494
+  visible_pixels: 18856
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_cracked_wand.hud_mark

@@ -18,9 +18,11 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import textwrap
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from ouro_agent import __version__
@@ -34,7 +36,13 @@ from ouro_agent.config import (
     set_field,
 )
 from ouro_agent.config.model import ConfigError, SUPPORTED_PROVIDERS
-from ouro_agent.content import ContentError, load_content_bundle, resolve_content_dir
+from ouro_agent.art.sprite_atlas import SpriteAtlas
+from ouro_agent.content import (
+    ContentError,
+    load_content_bundle,
+    resolve_content_dir,
+    validate_asset_manifest,
+)
 from ouro_agent.engine.battle import BattleLoop, TurnRecord
 from ouro_agent.engine.models import BattleState, StatusEffect
 from ouro_agent.i18n import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, label
@@ -69,7 +77,18 @@ from ouro_agent.sessions import (
     save_codex_progress,
 )
 from ouro_agent.trace import TraceConfig, TraceReplayError, TraceWriter, render_trace_replay
+from ouro_agent.tui.bitmap_renderer import render_bitmap_image_probe
+from ouro_agent.tui.graphics import BITMAP_BACKENDS
 from ouro_agent.tui import (
+    SUPPORTED_GRAPHICS_MODES,
+    build_battle_animation_frames,
+    build_battle_result_animation_frames,
+    build_choice_lock_animation_frames,
+    build_encounter_briefing_animation_frames,
+    build_mode_select_animation_frames,
+    build_no_animation_battle_frames,
+    build_reward_reveal_animation_frames,
+    build_sprite_battle_animation_frames,
     render_battle_report,
     render_battle_screen,
     render_codex_card,
@@ -90,9 +109,16 @@ from ouro_agent.tui import (
     render_run_report,
     render_run_summary,
     render_run_archives,
+    graphics_prefers_unicode,
     get_terminal,
+    render_graphics_doctor,
+    select_graphics_backend,
 )
-from ouro_agent.tui.presenter import present_battle_frame
+from ouro_agent.tui.presenter import (
+    present_battle_frame,
+    render_choice_prompt_chrome,
+    render_live_chrome,
+)
 from ouro_agent.validation import validate_content_dir
 
 
@@ -313,6 +339,55 @@ def _effective_color_mode(args: argparse.Namespace) -> str:
     return mode
 
 
+def _apply_graphics_mode(
+    config: OuroConfig,
+    args: argparse.Namespace,
+) -> OuroConfig:
+    capability = select_graphics_backend(
+        requested_mode=getattr(args, "graphics", "auto"),
+        no_animation=bool(getattr(args, "no_animation", False)),
+    )
+    requested = capability.requested_mode
+    explicit_unicode = bool(getattr(args, "unicode", False))
+    if requested == "ascii":
+        return config.with_field("unicode_mode", False)
+    if requested == "unicode":
+        return config.with_field("unicode_mode", True)
+    if graphics_prefers_unicode(capability):
+        return config.with_field("unicode_mode", True)
+    if not explicit_unicode:
+        return config.with_field("unicode_mode", False)
+    return config
+
+
+def _load_runtime_sprite_atlas(content_dir: Path, bundle) -> SpriteAtlas | None:
+    try:
+        manifest_report = validate_asset_manifest(content_dir, bundle)
+        return SpriteAtlas.from_manifest_report(manifest_report)
+    except ContentError:
+        return None
+
+
+def _stage_graphics_mode(capability) -> str:
+    if capability.selected_backend == "ascii":
+        return "ascii"
+    if capability.selected_backend in BITMAP_BACKENDS:
+        return capability.selected_backend
+    return "unicode"
+
+
+def _add_graphics_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--graphics",
+        choices=SUPPORTED_GRAPHICS_MODES,
+        default="auto",
+        help=(
+            "Terminal graphics backend: auto, bitmap, unicode, or ascii "
+            "(default: auto)."
+        ),
+    )
+
+
 def _write_storage_warning_once(
     kind: str,
     err: Exception,
@@ -414,6 +489,32 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     demo.set_defaults(handler=_cmd_demo)
 
+    # first playable experience
+    try_cmd = sub.add_parser(
+        "try",
+        help="Start the offline guided demo with a player-friendly command",
+    )
+    try_cmd.add_argument("--seed", type=int, default=1)
+    try_cmd.add_argument("--unicode", action="store_true")
+    try_cmd.add_argument("--color", choices=("never", "auto", "always"), default="never")
+    try_cmd.add_argument(
+        "--hero",
+        default=DEFAULT_HERO_ID,
+        help="Hero number, name, tag, or id to showcase (see 'ouro list-heroes')",
+    )
+    try_cmd.add_argument(
+        "--content-dir",
+        default=DEFAULT_CONTENT_DIR,
+        help=CONTENT_DIR_HELP,
+    )
+    try_cmd.add_argument(
+        "--prompt-style",
+        choices=supported_prompt_styles(),
+        default=None,
+        help="Apply a strategy template to the demo battle.",
+    )
+    try_cmd.set_defaults(handler=_cmd_demo)
+
     # config
     config = sub.add_parser("config", help="View or change configuration")
     config_sub = config.add_subparsers(dest="config_command")
@@ -454,6 +555,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     play.add_argument("--unicode", action="store_true")
     play.add_argument("--color", choices=("never", "auto", "always"), default="never")
+    _add_graphics_argument(play)
     play.add_argument(
         "--hero",
         default=None,
@@ -581,6 +683,19 @@ def _build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_CONTENT_DIR,
         help=CONTENT_DIR_HELP,
     )
+    doctor.add_argument(
+        "doctor_topic",
+        nargs="?",
+        choices=("graphics",),
+        default=None,
+        help="Optional doctor topic. Use 'graphics' for terminal graphics diagnostics.",
+    )
+    _add_graphics_argument(doctor)
+    doctor.add_argument(
+        "--probe-image",
+        action="store_true",
+        help="Render one local QA-passed runtime PNG after graphics diagnostics.",
+    )
     doctor.set_defaults(handler=_cmd_doctor)
 
     # run
@@ -601,6 +716,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--unicode", action="store_true")
     run.add_argument("--color", choices=("never", "auto", "always"), default="never")
+    _add_graphics_argument(run)
     run.add_argument(
         "--hero",
         default=None,
@@ -737,10 +853,16 @@ def _cmd_menu(args: argparse.Namespace) -> int:
 
 def _cmd_demo(args: argparse.Namespace) -> int:
     """Run a deterministic, no-network first experience smoke."""
+    with _demo_storage_context() as temporary_home:
+        return _run_demo(args, temporary_home=temporary_home)
+
+
+def _run_demo(args: argparse.Namespace, *, temporary_home: Path | None = None) -> int:
     saved_config = load_config()
     lang = _resolve_lang(args, saved_config)
     content_dir = resolve_content_dir(args.content_dir)
     bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
     demo_config = OuroConfig(
         provider="mock",
         model="mock-smart",
@@ -760,6 +882,8 @@ def _cmd_demo(args: argparse.Namespace) -> int:
     build = resolve_build(hero, bundle)
 
     sys.stdout.write(_demo_heading("OURO DEMO :: FIRST ECHO", "OURO DEMO :: 初次回响", lang))
+    if temporary_home is not None:
+        sys.stdout.write(_demo_storage_note(lang))
     sys.stdout.write(
         "\n"
         + _demo_step(
@@ -798,6 +922,7 @@ def _cmd_demo(args: argparse.Namespace) -> int:
             language=lang,
             prompt_style=args.prompt_style,
             unicode_mode=demo_config.unicode_mode,
+            asset_atlas=sprite_atlas if demo_config.unicode_mode else None,
         )
         + "\n"
     )
@@ -817,8 +942,8 @@ def _cmd_demo(args: argparse.Namespace) -> int:
         mock=True,
         seed=args.seed,
         no_trace=True,
-        no_animation=True,
-        delay=0.0,
+        no_animation=not sys.stdout.isatty(),
+        delay=0.10 if sys.stdout.isatty() else 0.0,
         unicode=bool(args.unicode),
         hero=hero_id,
         content_dir=str(content_dir),
@@ -841,9 +966,16 @@ def _cmd_demo(args: argparse.Namespace) -> int:
         + "\n"
     )
     progress = load_codex_progress()
-    sys.stdout.write(f"Codex : {codex_path()}\n\n")
+    codex_label = "图鉴" if lang == "zh" else "Codex"
+    sys.stdout.write(f"{codex_label} : {codex_path()}\n\n")
     sys.stdout.write(
-        render_codex_summary(bundle, codex_progress=progress, language=lang)
+        render_codex_summary(
+            bundle,
+            codex_progress=progress,
+            language=lang,
+            asset_atlas=sprite_atlas,
+            unicode_mode=demo_config.unicode_mode,
+        )
         + "\n"
     )
     sys.stdout.write(
@@ -858,6 +990,57 @@ def _cmd_demo(args: argparse.Namespace) -> int:
     )
     sys.stdout.write(_demo_next_commands(lang) + "\n")
     return 0
+
+
+def _agent_home_dir() -> Path:
+    env_dir = os.environ.get("OURO_AGENT_HOME")
+    return Path(env_dir) if env_dir else Path.home() / ".ouro_agent"
+
+
+def _agent_home_is_writable(home: Path) -> bool:
+    try:
+        home.mkdir(parents=True, exist_ok=True)
+        if not home.is_dir():
+            return False
+        probe = home / ".ouro_write_probe"
+        probe.write_text("ok\n", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+    except OSError:
+        return False
+    return True
+
+
+@contextmanager
+def _demo_storage_context() -> Iterator[Path | None]:
+    home = _agent_home_dir()
+    if _agent_home_is_writable(home):
+        yield None
+        return
+
+    previous = os.environ.get("OURO_AGENT_HOME")
+    with tempfile.TemporaryDirectory(prefix="ouro_try_home_") as temporary_home:
+        os.environ["OURO_AGENT_HOME"] = temporary_home
+        try:
+            yield Path(temporary_home)
+        finally:
+            if previous is None:
+                os.environ.pop("OURO_AGENT_HOME", None)
+            else:
+                os.environ["OURO_AGENT_HOME"] = previous
+
+
+def _demo_storage_note(lang: str) -> str:
+    if lang == "zh":
+        return (
+            "试玩存档\n"
+            "  [临时] 本次试玩使用临时进度。\n"
+            "  [保留] 设置 OURO_AGENT_HOME 为可写目录即可保留进度。\n"
+        )
+    return (
+        "DEMO STORAGE\n"
+        "  [TEMP] Temporary progress active for this guided try.\n"
+        "  [KEEP] Set OURO_AGENT_HOME to a writable folder to keep progress.\n"
+    )
 
 
 def _demo_heading(en: str, zh: str, lang: str) -> str:
@@ -875,6 +1058,8 @@ def _demo_step(index: int, en: str, zh: str, lang: str) -> str:
 def _demo_next_commands(lang: str) -> str:
     if lang == "zh":
         commands = (
+            ("快速试玩", "ouro try --seed 1"),
+            ("兼容 Demo", "ouro demo --seed 1"),
             ("完整运行", "ouro run --mock"),
             ("状态总览", "ouro status --lang zh"),
             ("运行报告", "ouro run-report --lang zh"),
@@ -885,6 +1070,8 @@ def _demo_next_commands(lang: str) -> str:
         title = "下一步命令"
     else:
         commands = (
+            ("Try", "ouro try --seed 1"),
+            ("Demo alias", "ouro demo --seed 1"),
             ("Full run", "ouro run --mock"),
             ("Status", "ouro status --lang en"),
             ("Run Report", "ouro run-report --lang en"),
@@ -1194,7 +1381,9 @@ def _cmd_hero_card(args: argparse.Namespace) -> int:
     config = load_config()
     lang = _resolve_lang(args, config)
     unicode_mode = bool(args.unicode) or config.unicode_mode
-    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    content_dir = resolve_content_dir(args.content_dir)
+    bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
     hero_id = _resolve_cli_hero_id(bundle, args.hero_id, lang)
     if hero_id is None:
         return HERO_PICK_EXIT_CODE
@@ -1208,6 +1397,7 @@ def _cmd_hero_card(args: argparse.Namespace) -> int:
             language=lang,
             prompt_style=args.prompt_style,
             unicode_mode=unicode_mode,
+            asset_atlas=sprite_atlas if unicode_mode else None,
         )
         + "\n"
     )
@@ -1224,10 +1414,13 @@ def _cmd_prompt_templates(args: argparse.Namespace) -> int:
 def _cmd_codex(args: argparse.Namespace) -> int:
     config = load_config()
     lang = _resolve_lang(args, config)
-    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    content_dir = resolve_content_dir(args.content_dir)
+    bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
     progress = load_codex_progress()
 
-    sys.stdout.write(f"Codex : {codex_path()}\n\n")
+    codex_label = "图鉴" if lang == "zh" else "Codex"
+    sys.stdout.write(f"{codex_label} : {codex_path()}\n\n")
     if args.enemy_id:
         enemy_key = _resolve_codex_enemy_key(args.enemy_id, bundle, lang)
         sys.stdout.write(
@@ -1236,12 +1429,20 @@ def _cmd_codex(args: argparse.Namespace) -> int:
                 bundle,
                 codex_progress=progress,
                 language=lang,
+                asset_atlas=sprite_atlas,
+                unicode_mode=config.unicode_mode,
             )
             + "\n"
         )
     else:
         sys.stdout.write(
-            render_codex_summary(bundle, codex_progress=progress, language=lang)
+            render_codex_summary(
+                bundle,
+                codex_progress=progress,
+                language=lang,
+                asset_atlas=sprite_atlas,
+                unicode_mode=config.unicode_mode,
+            )
             + "\n"
         )
     return 0
@@ -1280,7 +1481,8 @@ def _cmd_runs(args: argparse.Namespace) -> int:
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
     archives = load_run_archives()
 
-    sys.stdout.write(f"Run Archives: {run_archive_dir()}\n\n")
+    archive_label = "运行归档" if lang == "zh" else "Run Archives"
+    sys.stdout.write(f"{archive_label}: {run_archive_dir()}\n\n")
     sys.stdout.write(
         render_run_archives(
             archives,
@@ -1296,16 +1498,20 @@ def _cmd_runs(args: argparse.Namespace) -> int:
 def _cmd_run_report(args: argparse.Namespace) -> int:
     config = load_config()
     lang = _resolve_lang(args, config)
-    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    content_dir = resolve_content_dir(args.content_dir)
+    bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
 
     entry = None
     if args.archive_path:
         entry = load_run_archive(Path(args.archive_path).expanduser())
-        sys.stdout.write(f"Run Archive: {entry.get('_archive_path', args.archive_path)}\n\n")
+        archive_label = "运行归档" if lang == "zh" else "Run Archive"
+        sys.stdout.write(f"{archive_label}: {entry.get('_archive_path', args.archive_path)}\n\n")
     else:
         archives = load_run_archives()
         entry = archives[0] if archives else None
-        sys.stdout.write(f"Run Archives: {run_archive_dir()}\n\n")
+        archive_label = "运行归档" if lang == "zh" else "Run Archives"
+        sys.stdout.write(f"{archive_label}: {run_archive_dir()}\n\n")
 
     sys.stdout.write(
         render_run_report(
@@ -1313,6 +1519,8 @@ def _cmd_run_report(args: argparse.Namespace) -> int:
             bundle,
             language=lang,
             width=shutil.get_terminal_size((100, 24)).columns,
+            asset_atlas=sprite_atlas,
+            unicode_mode=config.unicode_mode,
         )
         + "\n"
     )
@@ -1325,7 +1533,8 @@ def _cmd_history(args: argparse.Namespace) -> int:
     bundle = load_content_bundle(resolve_content_dir(args.content_dir))
     deaths = load_death_history()
 
-    sys.stdout.write(f"Death History: {death_history_path()}\n\n")
+    history_label = "陨落历史" if lang == "zh" else "Death History"
+    sys.stdout.write(f"{history_label}: {death_history_path()}\n\n")
     sys.stdout.write(
         render_death_history(
             deaths,
@@ -1347,6 +1556,15 @@ def _cmd_validate_content(args: argparse.Namespace) -> int:
 
 
 def _cmd_doctor(args: argparse.Namespace) -> int:
+    if getattr(args, "doctor_topic", None) == "graphics":
+        capability = select_graphics_backend(
+            requested_mode=getattr(args, "graphics", "auto")
+        )
+        sys.stdout.write(render_graphics_doctor(capability) + "\n")
+        if getattr(args, "probe_image", False):
+            sys.stdout.write(_render_graphics_probe(capability, args) + "\n")
+        return 0
+
     config = load_config()
     lang = _resolve_lang(args, config)
     content_dir = resolve_content_dir(args.content_dir)
@@ -1385,6 +1603,39 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
     return 0 if report.ok and provider_report.ready else 3
 
 
+def _render_graphics_probe(capability, args: argparse.Namespace) -> str:
+    if not capability.selected_is_bitmap:
+        return (
+            "\nIMAGE PROBE\n"
+            f"skipped      : selected backend is {capability.selected_backend}; "
+            "run in a bitmap-capable TTY or force --graphics bitmap."
+        )
+    try:
+        content_dir = resolve_content_dir(args.content_dir)
+        bundle = load_content_bundle(content_dir)
+        atlas = _load_runtime_sprite_atlas(content_dir, bundle)
+        if atlas is None:
+            return "\nIMAGE PROBE\nerror        : runtime sprite atlas is unavailable"
+        frame = atlas.sprite("hero_shadow_apprentice_battle_sheet").frame("idle")
+        if frame.bitmap_path is None:
+            return "\nIMAGE PROBE\nerror        : probe frame has no runtime bitmap path"
+        probe = render_bitmap_image_probe(
+            frame.bitmap_path,
+            backend=capability.selected_backend,
+            cells=(24, 14),
+        )
+    except ContentError as err:
+        return f"\nIMAGE PROBE\nerror        : {err}"
+    return (
+        "\nIMAGE PROBE\n"
+        f"backend      : {capability.selected_backend}\n"
+        "asset        : hero_shadow_apprentice_battle_sheet/idle\n"
+        "expectation  : a hero PNG should appear below\n"
+        f"{probe}\n"
+        "IMAGE PROBE END"
+    )
+
+
 def _prompt_hero_choice(bundle, lang: str) -> str:
     prompt = (
         "Choose hero number/name/tag"
@@ -1421,6 +1672,94 @@ def _prompt_prompt_style(lang: str) -> str | None:
         sys.stderr.write(
             ("Invalid prompt style. Try again.\n" if lang == "en" else "Prompt 预设无效，请重新输入。\n")
         )
+
+
+def _play_ui_animation_frames(
+    term,
+    frames,
+    frame_delay: float,
+    *,
+    live_mode: str | None = None,
+    provider_label: str = "-",
+    seed: int | str | None = None,
+    language: str = "en",
+    width: int = 100,
+    unicode_mode: bool = False,
+    input_hint: str | None = None,
+) -> None:
+    for frame in frames:
+        text = frame.text
+        if live_mode is not None:
+            text = render_live_chrome(
+                text,
+                mode=live_mode,
+                phase=frame.phase,
+                provider_label=provider_label,
+                seed=seed,
+                language=language,
+                width=width,
+                unicode_mode=unicode_mode,
+                input_hint=input_hint,
+            )
+        term.render(text, partial=True)
+        if frame_delay > 0:
+            time.sleep(max(0.04, frame_delay * frame.delay_multiplier))
+
+
+def _choice_summary_label(choice, bundle, lang: str) -> str:
+    choice_type = getattr(choice, "type", "")
+    if choice_type == "item":
+        item_id = getattr(choice, "item_id", None)
+        if item_id in bundle.items:
+            item = bundle.items[item_id]
+            return item.display_name.get(lang) or item.display_name.get("en", item_id)
+    if choice_type == "affix":
+        affix_id = getattr(choice, "affix_id", None)
+        if affix_id in bundle.affixes:
+            affix = bundle.affixes[affix_id]
+            return affix.display_name.get(lang) or affix.display_name.get("en", affix_id)
+    if choice_type == "codex":
+        amount = getattr(choice, "progress", None) or 1
+        return f"Codex +{amount}" if lang == "en" else f"图鉴 +{amount}"
+    if choice_type == "gold":
+        amount = getattr(choice, "gold", None) or 0
+        return f"Gold +{amount}" if lang == "en" else f"金币 +{amount}"
+    if choice_type == "heal":
+        amount = getattr(choice, "heal_percent", None) or 0
+        return f"Heal {amount}%" if lang == "en" else f"治疗 {amount}%"
+    return str(choice_type or "choice")
+
+
+def _shop_choice_summary_label(item, bundle, lang: str) -> str:
+    item_type = getattr(item, "type", "")
+    if item_type in {"item", "relic"}:
+        item_id = getattr(item, "item_id", None)
+        if item_id in bundle.items:
+            data = bundle.items[item_id]
+            return data.display_name.get(lang) or data.display_name.get("en", item_id)
+    if item_type == "affix":
+        affix_id = getattr(item, "affix_id", None)
+        if affix_id in bundle.affixes:
+            data = bundle.affixes[affix_id]
+            return data.display_name.get(lang) or data.display_name.get("en", affix_id)
+    if item_type == "heal":
+        return "Recover" if lang == "en" else "恢复"
+    if item_type == "strategy":
+        style = getattr(item, "strategy_style", None) or ""
+        return f"Prompt {style}".strip() if lang == "en" else f"提示词 {style}".strip()
+    if item_type == "scout":
+        return "Scout intel" if lang == "en" else "侦察情报"
+    return str(item_type or "shop")
+
+
+def _rest_option_index(option: str) -> int:
+    return {"recover": 1, "focus": 2, "study": 3}.get(option, 0)
+
+
+def _rest_option_label(option: str, lang: str) -> str:
+    if lang == "zh":
+        return {"recover": "恢复", "focus": "专注", "study": "研究"}.get(option, option)
+    return {"recover": "Recover", "focus": "Focus", "study": "Study"}.get(option, option)
 
 
 def _cmd_batch(args: argparse.Namespace) -> int:
@@ -1479,10 +1818,18 @@ def _cmd_batch(args: argparse.Namespace) -> int:
 def _cmd_play(args: argparse.Namespace) -> int:
     saved_config = load_config()
     config = _effective_game_config(args, saved_config)
+    config = _apply_graphics_mode(config, args)
+    graphics_capability = select_graphics_backend(
+        requested_mode=getattr(args, "graphics", "auto"),
+        no_animation=bool(getattr(args, "no_animation", False)),
+    )
+    stage_mode = _stage_graphics_mode(graphics_capability)
     color_mode = _effective_color_mode(args)
     lang = config.language
 
-    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    content_dir = resolve_content_dir(args.content_dir)
+    bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
     codex_progress = load_codex_progress()
     hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
     if hero_id is None:
@@ -1552,6 +1899,8 @@ def _cmd_play(args: argparse.Namespace) -> int:
             provider_label=provider.name,
             prompt_style=args.prompt_style,
             language=lang,
+            asset_atlas=sprite_atlas,
+            unicode_mode=config.unicode_mode,
         )
         briefing_screen = render_encounter_briefing(
             state,
@@ -1561,18 +1910,129 @@ def _cmd_play(args: argparse.Namespace) -> int:
             width=term_width,
         )
         if use_refresh:
-            term.render(start_screen)
-            time.sleep(max(0.35, frame_delay))
-            term.render(setup_screen)
-            time.sleep(max(0.35, frame_delay))
-            term.render(briefing_screen)
-            time.sleep(max(0.25, frame_delay))
+            if sys.stdout.isatty():
+                _play_ui_animation_frames(
+                    term,
+                    build_mode_select_animation_frames(
+                        start_screen=start_screen,
+                        setup_screen=setup_screen,
+                        ready_screen=briefing_screen,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="setup",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
+                _play_ui_animation_frames(
+                    term,
+                    build_encounter_briefing_animation_frames(
+                        briefing_screen,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="battle",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
+            else:
+                term.render(start_screen)
+                time.sleep(max(0.35, frame_delay))
+                term.render(setup_screen)
+                time.sleep(max(0.35, frame_delay))
+                term.render(briefing_screen)
+                time.sleep(max(0.25, frame_delay))
         else:
             sys.stdout.write(start_screen + "\n\n")
             sys.stdout.write(setup_screen + "\n")
             sys.stdout.write("\n" + briefing_screen + "\n")
 
         def print_frame(state: BattleState, record: TurnRecord) -> None:
+            if use_refresh and sys.stdout.isatty():
+                animation_frames = ()
+                if sprite_atlas is not None and graphics_capability.selected_backend != "ascii":
+                    animation_frames = build_sprite_battle_animation_frames(
+                        state,
+                        record,
+                        atlas=sprite_atlas,
+                        mode=stage_mode,
+                        width=term_width,
+                        language=lang,
+                    )
+                if not animation_frames:
+                    animation_frames = build_battle_animation_frames(
+                        state,
+                        record,
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        unicode_mode=config.unicode_mode,
+                        language=lang,
+                        width=term_width,
+                        enhanced_bars=True,
+                        bundle=bundle,
+                        build=build,
+                        scene_text=default_scene,
+                        color_mode=color_mode,
+                    )
+                for animation_frame in animation_frames:
+                    presented = present_battle_frame(
+                        animation_frame.text,
+                        turn_index=len(loop.records) + 1,
+                        tick=record.tick,
+                        language=lang,
+                    )
+                    term.render(
+                        render_live_chrome(
+                            presented.text,
+                            mode="battle",
+                            phase=animation_frame.phase,
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        ),
+                        partial=not graphics_capability.selected_is_bitmap,
+                    )
+                    if frame_delay > 0:
+                        time.sleep(max(0.04, frame_delay * animation_frame.delay_multiplier))
+                return
+
+            if not use_refresh:
+                animation_frames = build_no_animation_battle_frames(
+                    state,
+                    record,
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    unicode_mode=config.unicode_mode,
+                    language=lang,
+                    width=term_width,
+                    enhanced_bars=False,
+                    bundle=bundle,
+                    build=build,
+                    scene_text=default_scene,
+                    color_mode=color_mode,
+                )
+                for animation_frame in animation_frames:
+                    presented = present_battle_frame(
+                        animation_frame.text,
+                        turn_index=len(loop.records) + 1,
+                        tick=record.tick,
+                        language=lang,
+                    )
+                    sys.stdout.write("\n" + presented.text + "\n")
+                return
+
             screen = render_battle_screen(
                 state,
                 record,
@@ -1595,7 +2055,19 @@ def _cmd_play(args: argparse.Namespace) -> int:
                     tick=record.tick,
                     language=lang,
                 )
-                term.render(presented.text)
+                term.render(
+                    render_live_chrome(
+                        presented.text,
+                        mode="battle",
+                        phase="frame",
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    partial=True,
+                )
             else:
                 presented = present_battle_frame(
                     screen,
@@ -1633,7 +2105,19 @@ def _cmd_play(args: argparse.Namespace) -> int:
                 language=lang,
             )
             if use_refresh:
-                term.render(presented.text)
+                term.render(
+                    render_live_chrome(
+                        presented.text,
+                        mode="battle",
+                        phase="thinking",
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    partial=True,
+                )
                 time.sleep(max(0.25, frame_delay))
             else:
                 sys.stdout.write("\n" + presented.text + "\n")
@@ -1728,6 +2212,24 @@ def _cmd_play(args: argparse.Namespace) -> int:
                 hero_hp=state.hero.hp,
                 enemy_hp=[e.hp for e in state.enemies],
             )
+            if use_refresh and sys.stdout.isatty():
+                _play_ui_animation_frames(
+                    term,
+                    build_battle_result_animation_frames(
+                        render_battle_report(state, loop.records, language=lang, width=term_width),
+                        result=state.result,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="battle",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
 
     record_battle_codex(
         codex_progress,
@@ -1777,10 +2279,18 @@ def _cmd_run(args: argparse.Namespace) -> int:
     """
     saved_config = load_config()
     config = _effective_game_config(args, saved_config)
+    config = _apply_graphics_mode(config, args)
+    graphics_capability = select_graphics_backend(
+        requested_mode=getattr(args, "graphics", "auto"),
+        no_animation=bool(getattr(args, "no_animation", False)),
+    )
+    stage_mode = _stage_graphics_mode(graphics_capability)
     color_mode = _effective_color_mode(args)
     lang = config.language
 
-    bundle = load_content_bundle(resolve_content_dir(args.content_dir))
+    content_dir = resolve_content_dir(args.content_dir)
+    bundle = load_content_bundle(content_dir)
+    sprite_atlas = _load_runtime_sprite_atlas(content_dir, bundle)
     codex_progress = load_codex_progress()
     hero_id = _resolve_cli_hero_id(bundle, args.hero or DEFAULT_HERO_ID, lang)
     if hero_id is None:
@@ -1831,12 +2341,25 @@ def _cmd_run(args: argparse.Namespace) -> int:
     use_refresh = not args.no_animation
     storage_warnings: set[str] = set()
 
-    def _prompt_choice(prompt_text: str, max_choice: int, auto: bool = False) -> int:
+    def _prompt_choice(
+        prompt_text: str,
+        max_choice: int,
+        auto: bool = False,
+        render_wait: Callable[[], None] | None = None,
+        read_input: Callable[[str], str] | None = None,
+        show_prompt: bool = True,
+    ) -> int:
         """Prompt user for a choice, or auto-select first option."""
         if auto:
             return 0
+        reader = read_input or _read_input
         while True:
-            raw = _read_input(f"\n{prompt_text}: ")
+            if render_wait is not None:
+                render_wait()
+            raw = reader(f"\n{prompt_text}: " if show_prompt else "")
+            if raw.lower() in {"q", "quit"}:
+                sys.stderr.write("\nAborted.\n")
+                raise CliAbort()
             if raw.isdigit():
                 choice = int(raw) - 1
                 if 0 <= choice < max_choice:
@@ -1859,6 +2382,79 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 if not content.endswith("\n"):
                     sys.stdout.write("\n")
                 sys.stdout.flush()
+
+        def _render_choice_wait(
+            content: str,
+            *,
+            mode: str,
+            prompt_text: str,
+            option_count: int | None,
+            allow_leave: bool = False,
+            allow_skip: bool = False,
+            focus_index: int | None = None,
+            focus_label: str | None = None,
+        ) -> None:
+            if use_refresh and sys.stdout.isatty():
+                def _choice_wait_frame(wait_phase: str) -> str:
+                    return render_choice_prompt_chrome(
+                        content,
+                        mode=mode,
+                        prompt_text=prompt_text,
+                        option_count=option_count,
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                        allow_leave=allow_leave,
+                        allow_skip=allow_skip,
+                        focus_index=focus_index,
+                        focus_label=focus_label,
+                        wait_phase=wait_phase,
+                    )
+
+                wait_phases: tuple[tuple[str, float], ...]
+                if frame_delay > 0:
+                    wait_phases = (("scan", 0.45), ("focus", 0.55), ("ready", 0.65))
+                else:
+                    wait_phases = (("ready", 0.0),)
+                for wait_phase, delay_multiplier in wait_phases:
+                    term.render(_choice_wait_frame(wait_phase), partial=True)
+                    if frame_delay > 0:
+                        time.sleep(max(0.04, frame_delay * delay_multiplier))
+            else:
+                _print_to_term(content)
+
+        def _read_term_input(prompt: str) -> str:
+            if use_refresh and sys.stdout.isatty():
+                with term.input_mode():
+                    raw = _read_input(prompt)
+                if prompt == "":
+                    term.clear_input_echo_line()
+                return raw
+            return _read_input(prompt)
+
+        def _choice_input_prompt(prompt: str) -> str:
+            return "" if use_refresh and sys.stdout.isatty() else f"\n{prompt}: "
+
+        def _reward_reveal_summary_content(gold: int, xp: int, choice_count: int) -> str:
+            if lang == "zh":
+                lines = [
+                    "奖励掉落",
+                    f"+{gold} 金币",
+                    f"+{xp} 经验",
+                    f"候选奖励卡: {choice_count}",
+                    "下一步: 继续路线推进",
+                ]
+            else:
+                lines = [
+                    "REWARD DROP",
+                    f"+{gold} Gold",
+                    f"+{xp} XP",
+                    f"Reward cards: {choice_count}",
+                    "Next: continue the route",
+                ]
+            return "\n" + "-" * term_width + "\n" + "\n".join(lines) + "\n"
 
         def _run_battle(
             enemy_ids: tuple[str, ...],
@@ -1927,8 +2523,109 @@ def _cmd_run(args: argparse.Namespace) -> int:
             # Get current build for battle screen
             current_build = run_state.resolved_build(bundle)
             floor_label = _run_battle_floor_label(run_state, bundle, lang)
+            briefing_screen = render_encounter_briefing(
+                battle_state,
+                bundle,
+                current_build,
+                language=lang,
+                width=term_width,
+            )
+            if use_refresh and sys.stdout.isatty():
+                _play_ui_animation_frames(
+                    term,
+                    build_encounter_briefing_animation_frames(
+                        briefing_screen,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="battle",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
 
             def print_frame(state: BattleState, record: TurnRecord) -> None:
+                if use_refresh and sys.stdout.isatty():
+                    animation_frames = ()
+                    if sprite_atlas is not None and graphics_capability.selected_backend != "ascii":
+                        animation_frames = build_sprite_battle_animation_frames(
+                            state,
+                            record,
+                            atlas=sprite_atlas,
+                            mode=stage_mode,
+                            width=term_width,
+                            language=lang,
+                        )
+                    if not animation_frames:
+                        animation_frames = build_battle_animation_frames(
+                            state,
+                            record,
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            unicode_mode=config.unicode_mode,
+                            floor_label=floor_label,
+                            language=lang,
+                            width=term_width,
+                            enhanced_bars=True,
+                            bundle=bundle,
+                            build=current_build,
+                            scene_text=scene_text,
+                            color_mode=color_mode,
+                        )
+                    for animation_frame in animation_frames:
+                        presented = present_battle_frame(
+                            animation_frame.text,
+                            turn_index=len(loop.records) + 1,
+                            tick=record.tick,
+                            language=lang,
+                        )
+                        term.render(
+                            render_live_chrome(
+                                presented.text,
+                                mode="battle",
+                                phase=animation_frame.phase,
+                                provider_label=provider.name,
+                                seed=args.seed,
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            ),
+                            partial=not graphics_capability.selected_is_bitmap,
+                        )
+                        if frame_delay > 0:
+                            time.sleep(max(0.04, frame_delay * animation_frame.delay_multiplier))
+                    return
+
+                if not use_refresh:
+                    animation_frames = build_no_animation_battle_frames(
+                        state,
+                        record,
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        unicode_mode=config.unicode_mode,
+                        floor_label=floor_label,
+                        language=lang,
+                        width=term_width,
+                        enhanced_bars=False,
+                        bundle=bundle,
+                        build=current_build,
+                        scene_text=scene_text,
+                        color_mode=color_mode,
+                    )
+                    for animation_frame in animation_frames:
+                        presented = present_battle_frame(
+                            animation_frame.text,
+                            turn_index=len(loop.records) + 1,
+                            tick=record.tick,
+                            language=lang,
+                        )
+                        sys.stdout.write("\n" + presented.text + "\n")
+                    return
+
                 screen = render_battle_screen(
                     state,
                     record,
@@ -1952,7 +2649,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
                         tick=record.tick,
                         language=lang,
                     )
-                    term.render(presented.text)
+                    term.render(
+                        render_live_chrome(
+                            presented.text,
+                            mode="battle",
+                            phase="frame",
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        ),
+                        partial=True,
+                    )
                 else:
                     presented = present_battle_frame(
                         screen,
@@ -1991,7 +2700,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
                     language=lang,
                 )
                 if use_refresh:
-                    term.render(presented.text)
+                    term.render(
+                        render_live_chrome(
+                            presented.text,
+                            mode="battle",
+                            phase="thinking",
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        ),
+                        partial=True,
+                    )
                     time.sleep(max(0.25, frame_delay))
                 else:
                     sys.stdout.write("\n" + presented.text + "\n")
@@ -2099,7 +2820,30 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 _print_to_term,
                 storage_warnings,
             )
-            battle_report = render_battle_report(battle_state, loop.records, language=lang)
+            battle_report = render_battle_report(
+                battle_state,
+                loop.records,
+                language=lang,
+                width=term_width,
+            )
+            if use_refresh and sys.stdout.isatty():
+                _play_ui_animation_frames(
+                    term,
+                    build_battle_result_animation_frames(
+                        battle_report,
+                        result=battle_state.result,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="battle",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
             result_label_key = {
                 "victory": "result_victory",
                 "defeat": "result_defeat",
@@ -2134,19 +2878,49 @@ def _cmd_run(args: argparse.Namespace) -> int:
             provider_label=provider.name,
             prompt_style=args.prompt_style,
             language=lang,
+            asset_atlas=sprite_atlas,
+            unicode_mode=config.unicode_mode,
         )
-        run_title = (
-            f"\n{label('run_title', lang)}\n"
-            f"Run ID: {run_id}\n"
-            f"Seed: {args.seed}\n"
-            f"Dungeon: {dungeon.display_name.get(lang)}\n"
-        )
+        if lang == "zh":
+            run_title = (
+                f"\n{label('run_title', lang)}\n"
+                f"{label('run_id_label', lang)}: {run_id}\n"
+                f"{label('seed_label', lang)}: {args.seed}\n"
+                f"{label('run_dungeon', lang)}: {dungeon.display_name.get(lang)}\n"
+            )
+        else:
+            run_title = (
+                f"\n{label('run_title', lang)}\n"
+                f"Run ID: {run_id}\n"
+                f"Seed: {args.seed}\n"
+                f"Dungeon: {dungeon.display_name.get(lang)}\n"
+            )
         if use_refresh:
-            _print_to_term(start_screen)
-            time.sleep(max(0.4, frame_delay))
-            _print_to_term(setup_screen)
-            time.sleep(max(0.4, frame_delay))
-            _print_to_term(run_title)
+            if sys.stdout.isatty():
+                _play_ui_animation_frames(
+                    term,
+                    build_mode_select_animation_frames(
+                        start_screen=start_screen,
+                        setup_screen=setup_screen,
+                        ready_screen=run_title,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    ),
+                    frame_delay,
+                    live_mode="setup",
+                    provider_label=provider.name,
+                    seed=args.seed,
+                    language=lang,
+                    width=term_width,
+                    unicode_mode=config.unicode_mode,
+                )
+            else:
+                _print_to_term(start_screen)
+                time.sleep(max(0.4, frame_delay))
+                _print_to_term(setup_screen)
+                time.sleep(max(0.4, frame_delay))
+                _print_to_term(run_title)
         else:
             _print_to_term(start_screen + "\n\n" + setup_screen + "\n" + run_title)
 
@@ -2154,13 +2928,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
             # Route choice phase
             if run_state.phase == RunPhase.ROUTE_CHOICE:
                 route_content = "\n" + "-" * term_width + "\n"
-                screen = render_route_choice(run_state, bundle, language=lang, width=term_width)
+                screen = render_route_choice(
+                    run_state,
+                    bundle,
+                    language=lang,
+                    width=term_width,
+                    asset_atlas=sprite_atlas,
+                    unicode_mode=config.unicode_mode,
+                )
                 route_content += screen + "\n"
-
-                _print_to_term(route_content)
 
                 available = run_state.get_available_nodes(bundle)
                 if not available:
+                    _print_to_term(route_content)
                     # No more nodes on this floor, advance
                     if run_state.has_next_floor(bundle):
                         run_state.advance_to_next_floor(bundle)
@@ -2169,23 +2949,68 @@ def _cmd_run(args: argparse.Namespace) -> int:
                         run_state.phase = RunPhase.COMPLETE
                     continue
 
-                # Prompt for choice (not using refresh mode for input)
+                if args.auto:
+                    _print_to_term(route_content)
+
+                # Prompt for choice. TTY refresh keeps the choice screen in app chrome while waiting.
                 choice_idx = _prompt_choice(
                     label("route_choice_prompt", lang),
                     len(available),
                     auto=args.auto,
+                    render_wait=(
+                        None
+                        if args.auto
+                        else lambda: _render_choice_wait(
+                            route_content,
+                            mode="route",
+                            prompt_text=label("route_choice_prompt", lang),
+                            option_count=len(available),
+                            focus_index=1,
+                            focus_label=(
+                                available[0][1].display_name.get(lang)
+                                or available[0][1].display_name.get("en", available[0][1].id)
+                            ),
+                        )
+                    ),
+                    read_input=_read_term_input,
+                    show_prompt=not (use_refresh and sys.stdout.isatty()),
                 )
                 node_index, node = available[choice_idx]
+                if use_refresh and sys.stdout.isatty():
+                    node_name = node.display_name.get(lang) or node.display_name.get("en", node.id)
+                    _play_ui_animation_frames(
+                        term,
+                        build_choice_lock_animation_frames(
+                            route_content,
+                            selected_index=choice_idx + 1,
+                            selected_label=node_name,
+                            kind="route",
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        ),
+                        frame_delay,
+                        live_mode="route",
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    )
                 run_state.select_node(node_index)
 
             # Node action phase
             elif run_state.phase == RunPhase.NODE_ACTION:
                 node = run_state.current_node(bundle)
-                _print_to_term(f"\nEntering: {node.display_name.get(lang)}\n")
+                if lang == "zh":
+                    _print_to_term(f"\n进入: {node.display_name.get(lang)}\n")
+                else:
+                    _print_to_term(f"\nEntering: {node.display_name.get(lang)}\n")
 
                 if node.node_type in ("normal_combat", "elite_combat", "boss", "mimic_chest"):
                     # Combat node
-                    _print_to_term(f"Node type: {_node_type_label_cli(node.node_type, lang)}\n")
+                    node_type_label = "节点类型" if lang == "zh" else "Node type"
+                    _print_to_term(f"{node_type_label}: {_node_type_label_cli(node.node_type, lang)}\n")
                     if node.risk_level:
                         _print_to_term(f"Risk: {_risk_level_label_cli(node.risk_level, lang)}\n")
 
@@ -2227,13 +3052,84 @@ def _cmd_run(args: argparse.Namespace) -> int:
                     if result == "victory":
                         # Add rewards
                         if node.rewards:
-                            run_state.add_rewards(node.rewards.gold or 0, node.rewards.xp or 0)
-                            _print_to_term(f"\nEarned: {node.rewards.gold or 0}g, {node.rewards.xp or 0}xp\n")
+                            reward_gold = node.rewards.gold or 0
+                            reward_xp = node.rewards.xp or 0
+                            reward_choice_count = len(node.rewards.reward_choices)
+                            run_state.add_rewards(reward_gold, reward_xp)
+                            reward_text = (
+                                f"\n获得: {reward_gold}金, {reward_xp}经验\n"
+                                if lang == "zh"
+                                else f"\nEarned: {reward_gold}g, {reward_xp}xp\n"
+                            )
+                            if lang == "zh":
+                                reward_input_hint = "奖励已显影；等待选择"
+                            else:
+                                reward_input_hint = "reward revealed; choose next"
+                            if not (use_refresh and sys.stdout.isatty()):
+                                _print_to_term(reward_text)
 
                             # Set reward choices if available
                             if node.rewards.reward_choices:
                                 run_state.set_reward_choices(node.rewards.reward_choices)
+                                if use_refresh and sys.stdout.isatty():
+                                    reward_reveal_content = (
+                                        "\n" + "-" * term_width + "\n"
+                                        + render_reward_choice(
+                                            run_state,
+                                            bundle,
+                                            language=lang,
+                                            width=term_width,
+                                            asset_atlas=sprite_atlas,
+                                            unicode_mode=config.unicode_mode,
+                                        )
+                                        + "\n"
+                                    )
+                                    _play_ui_animation_frames(
+                                        term,
+                                        build_reward_reveal_animation_frames(
+                                            reward_reveal_content,
+                                            gold=reward_gold,
+                                            xp=reward_xp,
+                                            choice_count=reward_choice_count,
+                                            language=lang,
+                                            width=term_width,
+                                            unicode_mode=config.unicode_mode,
+                                        ),
+                                        frame_delay,
+                                        live_mode="reward",
+                                        provider_label=provider.name,
+                                        seed=args.seed,
+                                        language=lang,
+                                        width=term_width,
+                                        unicode_mode=config.unicode_mode,
+                                        input_hint=reward_input_hint,
+                                    )
                             else:
+                                if use_refresh and sys.stdout.isatty():
+                                    _play_ui_animation_frames(
+                                        term,
+                                        build_reward_reveal_animation_frames(
+                                            _reward_reveal_summary_content(
+                                                reward_gold,
+                                                reward_xp,
+                                                reward_choice_count,
+                                            ),
+                                            gold=reward_gold,
+                                            xp=reward_xp,
+                                            choice_count=reward_choice_count,
+                                            language=lang,
+                                            width=term_width,
+                                            unicode_mode=config.unicode_mode,
+                                        ),
+                                        frame_delay,
+                                        live_mode="reward",
+                                        provider_label=provider.name,
+                                        seed=args.seed,
+                                        language=lang,
+                                        width=term_width,
+                                        unicode_mode=config.unicode_mode,
+                                        input_hint=reward_input_hint,
+                                    )
                                 # No reward choices, just mark node as complete
                                 floor = run_state.current_floor(bundle)
                                 node_id = floor.nodes[run_state.current_node_index]
@@ -2303,17 +3199,59 @@ def _cmd_run(args: argparse.Namespace) -> int:
             # Reward choice phase
             elif run_state.phase == RunPhase.REWARD_CHOICE:
                 reward_content = "\n" + "-" * term_width + "\n"
-                screen = render_reward_choice(run_state, bundle, language=lang, width=term_width)
+                screen = render_reward_choice(
+                    run_state,
+                    bundle,
+                    language=lang,
+                    width=term_width,
+                    asset_atlas=sprite_atlas,
+                    unicode_mode=config.unicode_mode,
+                )
                 reward_content += screen + "\n"
 
-                _print_to_term(reward_content)
-
                 choices = run_state.current_choices
+                if args.auto:
+                    _print_to_term(reward_content)
+
                 choice_idx = _prompt_choice(
                     label("reward_choice_prompt", lang),
                     len(choices),
                     auto=args.auto,
+                    render_wait=(
+                        None
+                        if args.auto
+                        else lambda: _render_choice_wait(
+                            reward_content,
+                            mode="reward",
+                            prompt_text=label("reward_choice_prompt", lang),
+                            option_count=len(choices),
+                            focus_index=1,
+                            focus_label=_choice_summary_label(choices[0], bundle, lang) if choices else None,
+                        )
+                    ),
+                    read_input=_read_term_input,
+                    show_prompt=not (use_refresh and sys.stdout.isatty()),
                 )
+                if use_refresh and sys.stdout.isatty():
+                    _play_ui_animation_frames(
+                        term,
+                        build_choice_lock_animation_frames(
+                            reward_content,
+                            selected_index=choice_idx + 1,
+                            selected_label=_choice_summary_label(choices[choice_idx], bundle, lang),
+                            kind="reward",
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        ),
+                        frame_delay,
+                        live_mode="reward",
+                        provider_label=provider.name,
+                        seed=args.seed,
+                        language=lang,
+                        width=term_width,
+                        unicode_mode=config.unicode_mode,
+                    )
                 run_state.choose_reward(choice_idx, bundle)
                 _try_save_codex_progress(
                     run_state.codex_progress,
@@ -2321,32 +3259,94 @@ def _cmd_run(args: argparse.Namespace) -> int:
                     _print_to_term,
                     storage_warnings,
                 )
-                _print_to_term(f"\nReward chosen!\n")
+                _print_to_term("\n奖励已选择！\n" if lang == "zh" else "\nReward chosen!\n")
 
             # Shop phase
             elif run_state.phase == RunPhase.SHOP:
                 def _render_shop_screen() -> str:
                     return (
                         "\n" + "-" * term_width + "\n"
-                        + render_shop(run_state, bundle, language=lang, width=term_width)
+                        + render_shop(
+                            run_state,
+                            bundle,
+                            language=lang,
+                            width=term_width,
+                            asset_atlas=sprite_atlas,
+                            unicode_mode=config.unicode_mode,
+                        )
                         + "\n"
                     )
 
-                _print_to_term(_render_shop_screen())
+                shop_content = _render_shop_screen()
+                if args.auto:
+                    _print_to_term(shop_content)
 
                 while True:
                     choices = run_state.current_choices
-                    prompt = f"{label('shop_prompt', lang)} (1-{len(choices)} or 'l')"
+                    prompt = f"{label('shop_prompt', lang)} (1-{len(choices)} / 0/q/l)"
 
                     if args.auto:
                         # Auto mode: just leave shop
+                        if use_refresh and sys.stdout.isatty():
+                            _play_ui_animation_frames(
+                                term,
+                                build_choice_lock_animation_frames(
+                                    shop_content,
+                                    selected_index=0,
+                                    selected_label=label("shop_leave", lang),
+                                    kind="shop",
+                                    language=lang,
+                                    width=term_width,
+                                    unicode_mode=config.unicode_mode,
+                                ),
+                                frame_delay,
+                                live_mode="shop",
+                                provider_label=provider.name,
+                                seed=args.seed,
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            )
                         _print_to_term(f"\n{label('shop_leave', lang)}\n")
                         run_state.leave_shop(bundle)
                         break
 
-                    raw = _read_input(f"\n{prompt}: ").lower()
+                    _render_choice_wait(
+                        shop_content,
+                        mode="shop",
+                        prompt_text=prompt,
+                        option_count=len(choices),
+                        allow_leave=True,
+                        focus_index=1 if choices else 0,
+                        focus_label=(
+                            _shop_choice_summary_label(choices[0], bundle, lang)
+                            if choices
+                            else label("shop_leave", lang)
+                        ),
+                    )
+                    raw = _read_term_input(_choice_input_prompt(prompt)).lower()
 
-                    if raw == "l" or raw == "leave":
+                    if raw in {"0", "q", "quit", "l", "leave"}:
+                        if use_refresh and sys.stdout.isatty():
+                            _play_ui_animation_frames(
+                                term,
+                                build_choice_lock_animation_frames(
+                                    shop_content,
+                                    selected_index=0,
+                                    selected_label=label("shop_leave", lang),
+                                    kind="shop",
+                                    language=lang,
+                                    width=term_width,
+                                    unicode_mode=config.unicode_mode,
+                                ),
+                                frame_delay,
+                                live_mode="shop",
+                                provider_label=provider.name,
+                                seed=args.seed,
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            )
                         _print_to_term(f"\n{label('shop_leave', lang)}\n")
                         run_state.leave_shop(bundle)
                         break
@@ -2356,38 +3356,97 @@ def _cmd_run(args: argparse.Namespace) -> int:
                         if 0 <= choice_idx < len(choices):
                             item = choices[choice_idx]
                             if run_state.can_afford(item):
+                                if use_refresh and sys.stdout.isatty():
+                                    _play_ui_animation_frames(
+                                        term,
+                                        build_choice_lock_animation_frames(
+                                            shop_content,
+                                            selected_index=choice_idx + 1,
+                                            selected_label=_shop_choice_summary_label(item, bundle, lang),
+                                            kind="shop",
+                                            language=lang,
+                                            width=term_width,
+                                            unicode_mode=config.unicode_mode,
+                                        ),
+                                        frame_delay,
+                                        live_mode="shop",
+                                        provider_label=provider.name,
+                                        seed=args.seed,
+                                        language=lang,
+                                        width=term_width,
+                                        unicode_mode=config.unicode_mode,
+                                    )
                                 success = run_state.buy_shop_item(choice_idx, bundle)
                                 if success:
                                     _print_to_term(f"\n{label('shop_item_bought', lang)}\n")
                                     # Re-render shop
-                                    _print_to_term(_render_shop_screen())
+                                    shop_content = _render_shop_screen()
+                                    _print_to_term(shop_content)
                             else:
                                 _print_to_term(f"\n{label('shop_cannot_afford', lang)}\n")
                         else:
                             sys.stderr.write(f"Invalid choice. Please enter a number between 1 and {len(choices)}.\n")
                     else:
-                        sys.stderr.write(f"Invalid input. Enter a number or 'l' to leave.\n")
+                        sys.stderr.write("Invalid input. Enter a number, 0, q, or l to leave.\n")
 
             # Rest phase
             elif run_state.phase == RunPhase.REST:
                 def _render_rest_screen() -> str:
                     return (
                         "\n" + "-" * term_width + "\n"
-                        + render_rest(run_state, bundle, language=lang, width=term_width)
+                        + render_rest(
+                            run_state,
+                            bundle,
+                            language=lang,
+                            width=term_width,
+                            asset_atlas=sprite_atlas,
+                            unicode_mode=config.unicode_mode,
+                        )
                         + "\n"
                     )
 
-                _print_to_term(_render_rest_screen())
+                rest_content = _render_rest_screen()
+                if args.auto:
+                    _print_to_term(rest_content)
 
                 if args.auto:
                     # Auto mode: rest and leave
+                    if use_refresh and sys.stdout.isatty():
+                        _play_ui_animation_frames(
+                            term,
+                            build_choice_lock_animation_frames(
+                                rest_content,
+                                selected_index=1,
+                                selected_label=_rest_option_label("recover", lang),
+                                kind="rest",
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            ),
+                            frame_delay,
+                            live_mode="rest",
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        )
                     _print_to_term(f"\n{label('rest_confirmed', lang)}\n")
                     run_state.apply_rest(option="recover")
                     run_state.leave_rest(bundle)
                     continue
 
                 while True:
-                    raw = _read_input(f"\n{label('rest_prompt', lang)}: ").lower()
+                    _render_choice_wait(
+                        rest_content,
+                        mode="rest",
+                        prompt_text=label("rest_prompt", lang),
+                        option_count=3,
+                        allow_skip=True,
+                        focus_index=1,
+                        focus_label=_rest_option_label("recover", lang),
+                    )
+                    raw = _read_term_input(_choice_input_prompt(label("rest_prompt", lang))).lower()
 
                     option_map = {
                         "1": "recover",
@@ -2403,11 +3462,52 @@ def _cmd_run(args: argparse.Namespace) -> int:
                         "s": "study",
                     }
                     if raw in option_map:
+                        option = option_map[raw]
+                        if use_refresh and sys.stdout.isatty():
+                            _play_ui_animation_frames(
+                                term,
+                                build_choice_lock_animation_frames(
+                                    rest_content,
+                                    selected_index=_rest_option_index(option),
+                                    selected_label=_rest_option_label(option, lang),
+                                    kind="rest",
+                                    language=lang,
+                                    width=term_width,
+                                    unicode_mode=config.unicode_mode,
+                                ),
+                                frame_delay,
+                                live_mode="rest",
+                                provider_label=provider.name,
+                                seed=args.seed,
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            )
                         _print_to_term(f"\n{label('rest_confirmed', lang)}\n")
-                        run_state.apply_rest(option=option_map[raw])
+                        run_state.apply_rest(option=option)
                         run_state.leave_rest(bundle)
                         break
                     elif raw == "n" or raw == "no":
+                        if use_refresh and sys.stdout.isatty():
+                            _play_ui_animation_frames(
+                                term,
+                                build_choice_lock_animation_frames(
+                                    rest_content,
+                                    selected_index=0,
+                                    selected_label=label("rest_skipped", lang),
+                                    kind="rest",
+                                    language=lang,
+                                    width=term_width,
+                                    unicode_mode=config.unicode_mode,
+                                ),
+                                frame_delay,
+                                live_mode="rest",
+                                provider_label=provider.name,
+                                seed=args.seed,
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            )
                         _print_to_term(f"\n{label('rest_skipped', lang)}\n")
                         run_state.leave_rest(bundle)
                         break
@@ -2419,20 +3519,49 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 def _render_event_screen() -> str:
                     return (
                         "\n" + "-" * term_width + "\n"
-                        + render_event(run_state, bundle, language=lang, width=term_width)
+                        + render_event(
+                            run_state,
+                            bundle,
+                            language=lang,
+                            width=term_width,
+                            asset_atlas=sprite_atlas,
+                            unicode_mode=config.unicode_mode,
+                        )
                         + "\n"
                     )
 
-                _print_to_term(_render_event_screen())
+                event_content = _render_event_screen()
 
                 choices = run_state.current_choices
                 if not choices:
+                    _print_to_term(event_content)
                     # No choices, just leave
                     run_state.choose_event(0, bundle)
                     continue
 
                 if args.auto:
+                    _print_to_term(event_content)
                     # Auto mode: choose first option
+                    if use_refresh and sys.stdout.isatty():
+                        _play_ui_animation_frames(
+                            term,
+                            build_choice_lock_animation_frames(
+                                event_content,
+                                selected_index=1,
+                                selected_label=_choice_summary_label(choices[0], bundle, lang),
+                                kind="event",
+                                language=lang,
+                                width=term_width,
+                                unicode_mode=config.unicode_mode,
+                            ),
+                            frame_delay,
+                            live_mode="event",
+                            provider_label=provider.name,
+                            seed=args.seed,
+                            language=lang,
+                            width=term_width,
+                            unicode_mode=config.unicode_mode,
+                        )
                     _print_to_term(f"\n{label('event_choice_confirmed', lang)}\n")
                     run_state.choose_event(0, bundle)
                     _try_save_codex_progress(
@@ -2444,11 +3573,43 @@ def _cmd_run(args: argparse.Namespace) -> int:
                     continue
 
                 while True:
-                    raw = _read_input(f"\n{label('event_prompt', lang)}: ")
+                    _render_choice_wait(
+                        event_content,
+                        mode="event",
+                        prompt_text=label("event_prompt", lang),
+                        option_count=len(choices),
+                        focus_index=1,
+                        focus_label=_choice_summary_label(choices[0], bundle, lang) if choices else None,
+                    )
+                    raw = _read_term_input(_choice_input_prompt(label("event_prompt", lang)))
+
+                    if raw.lower() in {"q", "quit"}:
+                        sys.stderr.write("\nAborted.\n")
+                        raise CliAbort()
 
                     if raw.isdigit():
                         choice_idx = int(raw) - 1
                         if 0 <= choice_idx < len(choices):
+                            if use_refresh and sys.stdout.isatty():
+                                _play_ui_animation_frames(
+                                    term,
+                                    build_choice_lock_animation_frames(
+                                        event_content,
+                                        selected_index=choice_idx + 1,
+                                        selected_label=_choice_summary_label(choices[choice_idx], bundle, lang),
+                                        kind="event",
+                                        language=lang,
+                                        width=term_width,
+                                        unicode_mode=config.unicode_mode,
+                                    ),
+                                    frame_delay,
+                                    live_mode="event",
+                                    provider_label=provider.name,
+                                    seed=args.seed,
+                                    language=lang,
+                                    width=term_width,
+                                    unicode_mode=config.unicode_mode,
+                                )
                             _print_to_term(f"\n{label('event_choice_confirmed', lang)}\n")
                             run_state.choose_event(choice_idx, bundle)
                             _try_save_codex_progress(
@@ -2471,7 +3632,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
         # Run complete or dead
         run_summary = (
             "\n" + "=" * term_width + "\n"
-            + render_run_summary(run_state, bundle, language=lang, width=term_width)
+            + render_run_summary(
+                run_state,
+                bundle,
+                language=lang,
+                width=term_width,
+                asset_atlas=sprite_atlas,
+                unicode_mode=config.unicode_mode,
+            )
             + "\n"
             + "=" * term_width + "\n"
         )
@@ -2485,9 +3653,11 @@ def _cmd_run(args: argparse.Namespace) -> int:
             storage_warnings,
         )
         if archive_path is not None:
-            _print_to_term(f"Run Archive: {archive_path}\n")
+            archive_label = "运行归档" if lang == "zh" else "Run Archive"
+            _print_to_term(f"{archive_label}: {archive_path}\n")
         if death_path is not None:
-            _print_to_term(f"Death History: {death_path}\n")
+            death_label = "陨落历史" if lang == "zh" else "Death History"
+            _print_to_term(f"{death_label}: {death_path}\n")
 
         if isinstance(provider, FallbackOnErrorProvider) and provider.error:
             _print_to_term(

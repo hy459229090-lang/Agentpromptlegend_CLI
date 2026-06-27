@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: ui_status_shield_badge
+candidate_id: cand_ui_status_shield_001
+work_order_id: wo_ui_status_shield_badge
+source_brief: shield_status_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 69
+  - 149
+  - 486
+  - 569
+  visible_pixels: 90157
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_shield.badge
+- frame_id: applied
+  path: applied.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 48
+  - 133
+  - 494
+  - 578
+  visible_pixels: 102849
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_shield.applied
+- frame_id: ticking
+  path: ticking.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 37
+  - 137
+  - 498
+  - 578
+  visible_pixels: 107781
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_shield.ticking
+- frame_id: expire
+  path: expire.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 62
+  - 156
+  - 478
+  - 565
+  visible_pixels: 100622
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_shield.expire

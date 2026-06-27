@@ -24,6 +24,19 @@ Expected preflight properties:
 - output includes `network : not called`,
 - no API key value is printed or written.
 
+## Safe Preflight Record
+
+2026-06-18 agent-side preflight was rerun without marking live-provider
+sign-off:
+
+| Command | Return | Evidence |
+| --- | ---: | --- |
+| `venv312/bin/python scripts/provider_smoke.py --provider openai --model gpt-test --api-key-env OPENAI_API_KEY` | `3` | `env value : MISSING`, `network : not called`, `status : NOT READY`; no API key value printed |
+| `env OURO_API_KEY=redacted-test-key venv312/bin/python scripts/provider_smoke.py --provider openai-compatible --model smoke-test --api-key-env OURO_API_KEY --base-url https://example.invalid` | `0` | `env value : set (hidden)`, `network : not called`, `status : READY`; redacted placeholder only |
+
+This proves the preflight helper avoids network calls and hides configured env
+values. It does not satisfy the live-provider sign-off below.
+
 ## Live Smoke Command
 
 After setting the real provider key in the shell, run a command like:

@@ -1,0 +1,54 @@
+schema_version: '0.1'
+records:
+- asset_id: skill_sinking_veil_effect_sheet
+  candidate_id: cand_skill_sinking_veil_001
+  work_order_id: wo_skill_sinking_veil_effect_sheet
+  source_brief: sinking_veil_mire_guard
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_skill_sinking_veil_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:14:35Z'
+  runtime_target_path: runtime/skill_sinking_veil_effect_sheet/cand_skill_sinking_veil_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    frame_delta: true
+    lane_readable: true
+    hit_stop_visible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: veil_rise
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.veil_rise
+  - frame_id: wrap
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.wrap
+  - frame_id: sink
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.sink
+  - frame_id: shield_pop
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.shield_pop
+  - frame_id: settle
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.settle
+  - frame_id: recover
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_sinking_veil.recover

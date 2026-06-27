@@ -14,12 +14,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 STAGE_PLAN_COMMAND = "venv312/bin/python scripts/release_scope.py --stage-plan"
 ACCEPTANCE_COMMANDS = (
+    "venv312/bin/ouro try --lang en --seed 1 --content-dir content",
     "venv312/bin/ouro demo --lang en --seed 1 --content-dir content",
+    "venv312/bin/ouro doctor graphics --lang en --content-dir content",
+    "venv312/bin/ouro doctor graphics --lang en --graphics bitmap --probe-image --content-dir content",
+    (
+        "venv312/bin/ouro --lang en play --mock --seed 2 --graphics auto "
+        "--color always --no-animation --no-trace --content-dir content"
+    ),
+    "venv312/bin/python scripts/release_check.py --combat-stage-only",
     (
         "env OURO_AGENT_HOME=/private/tmp/ouro_user_acceptance_seed7_20260601 "
         "venv312/bin/ouro --lang en run --mock --seed 7 --no-animation --auto "
         "--no-trace --content-dir content"
     ),
+    (
+        "env OURO_AGENT_HOME=/private/tmp/ouro_user_acceptance_seed7_20260601 "
+        "venv312/bin/ouro run-report --lang en --content-dir content"
+    ),
+    "venv312/bin/ouro try --lang zh --seed 1 --content-dir content",
+    "venv312/bin/ouro demo --lang zh --seed 1 --content-dir content",
+    "venv312/bin/ouro status --lang zh --content-dir content",
+    "venv312/bin/ouro codex --lang zh --content-dir content",
+    "venv312/bin/ouro run-report --lang zh --content-dir content",
     "venv312/bin/python scripts/completion_audit.py --json",
 )
 

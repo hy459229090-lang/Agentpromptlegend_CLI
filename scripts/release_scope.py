@@ -18,6 +18,7 @@ RELEASE_EXACT = {
     "AGENTS.md",
     "CHANGELOG.md",
     "CLAUDE.md",
+    "LICENSE",
     "README.md",
     "README.zh.md",
     "pyproject.toml",

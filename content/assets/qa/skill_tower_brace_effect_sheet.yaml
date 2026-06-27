@@ -1,0 +1,54 @@
+schema_version: '0.1'
+records:
+- asset_id: skill_tower_brace_effect_sheet
+  candidate_id: cand_skill_tower_brace_001
+  work_order_id: wo_skill_tower_brace_effect_sheet
+  source_brief: tower_brace_shield_flare
+  qa_status: qa_passed
+  candidate_ref: generated-cache://cand_skill_tower_brace_001
+  reviewer: Codex asset QA
+  reviewed_at: '2026-06-17T17:14:35Z'
+  runtime_target_path: runtime/skill_tower_brace_effect_sheet/cand_skill_tower_brace_001/cut_metadata.yaml
+  checks:
+    transparent_background: true
+    frame_delta: true
+    lane_readable: true
+    hit_stop_visible: true
+    mit_safe: true
+  frame_metadata:
+  - frame_id: idle
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.idle
+  - frame_id: brace
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.brace
+  - frame_id: shield_flare
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.shield_flare
+  - frame_id: impact_stop
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.impact_stop
+  - frame_id: counter_spark
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.counter_spark
+  - frame_id: settle
+    anchor:
+    - 80
+    - 32
+    duration_ms: 80
+    fallback_cell_id: cell.skill_tower_brace.settle

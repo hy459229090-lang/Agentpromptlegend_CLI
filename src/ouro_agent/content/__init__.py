@@ -19,6 +19,28 @@ from ouro_agent.content.schema import (
 )
 from ouro_agent.content.loader import ContentError, load_content_bundle
 from ouro_agent.content.paths import default_content_dir, resolve_content_dir
+from ouro_agent.content.assets import (
+    AssetEntry,
+    AssetBriefCatalog,
+    AssetFrame,
+    AssetManifest,
+    AssetManifestReport,
+    AssetPipelineReport,
+    AssetQARecord,
+    AssetQAReport,
+    AssetQATemplate,
+    AssetWorkOrder,
+    SourceBriefAlias,
+    SourceBriefFamily,
+    build_asset_pipeline_report,
+    build_asset_work_orders,
+    build_asset_qa_template,
+    iter_asset_pipeline_gaps,
+    load_asset_brief_catalog,
+    load_asset_manifest,
+    validate_asset_qa_records,
+    validate_asset_manifest,
+)
 
 __all__ = [
     "HeroData",
@@ -41,4 +63,24 @@ __all__ = [
     "ContentError",
     "default_content_dir",
     "resolve_content_dir",
+    "AssetEntry",
+    "AssetBriefCatalog",
+    "AssetFrame",
+    "AssetManifest",
+    "AssetManifestReport",
+    "AssetPipelineReport",
+    "AssetQARecord",
+    "AssetQAReport",
+    "AssetQATemplate",
+    "AssetWorkOrder",
+    "SourceBriefAlias",
+    "SourceBriefFamily",
+    "build_asset_pipeline_report",
+    "build_asset_work_orders",
+    "build_asset_qa_template",
+    "iter_asset_pipeline_gaps",
+    "load_asset_brief_catalog",
+    "load_asset_manifest",
+    "validate_asset_qa_records",
+    "validate_asset_manifest",
 ]

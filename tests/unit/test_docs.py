@@ -23,9 +23,17 @@ def test_readme_covers_install_mock_provider_and_privacy():
         "examples/ouro-readme-screenshot-wall.svg",
         "examples/ouro-weapon-gallery.svg",
         "examples/ouro-battle-canvas.svg",
+        "examples/ouro-animation-filmstrip.svg",
+        "examples/ouro-motion-evidence.svg",
         "examples/ouro-after-action.svg",
     )
     battle_media = (ROOT / "examples/ouro-battle-canvas.svg").read_text(encoding="utf-8")
+    animation_media = (
+        ROOT / "examples/ouro-animation-filmstrip.svg"
+    ).read_text(encoding="utf-8")
+    motion_evidence_media = (
+        ROOT / "examples/ouro-motion-evidence.svg"
+    ).read_text(encoding="utf-8")
     storefront_showcase = (
         ROOT / "examples/ouro-readme-storefront-showcase.svg"
     ).read_text(encoding="utf-8")
@@ -41,259 +49,117 @@ def test_readme_covers_install_mock_provider_and_privacy():
     english_intro = text.split("## Quickstart", 1)[0]
     zh_intro = zh_text.split("## 快速开始", 1)[0]
 
-    assert "Storefront Hero / 商店页封面" in text
-    assert "商店页封面 / Storefront Hero" in zh_text
-    assert "Player Start Panel / 玩家入口面板" in text
-    assert "玩家入口面板 / Player Start Panel" in zh_text
-    assert "Language Switch / 语言切换" in text
-    assert "语言切换 / Language" in zh_text
-    assert "English (current)" in text
-    assert "Store page first, engineering later" in text
-    assert "先像游戏页，再像工程文档" in zh_text
-    assert "ENTER THE RUN" in text
-    assert "WATCH THE GAME" in text
-    assert "进入地牢" in zh_text
-    assert "先看画面" in zh_text
-    assert "Steam-style promise:" in text
-    assert "Steam 式玩家承诺：" in zh_text
-    assert "Gameplay Screens / 先看游戏画面" in text
-    assert "先看游戏画面 / Gameplay Screens" in zh_text
-    assert "Play Now / 立即试玩" in text
-    assert "立即试玩 / Play Now" in zh_text
-    assert "30-Second Demo" in text
-    assert "30 秒试玩" in zh_text
-    assert "中文 / English" in text
-    assert "中文 / English" in zh_text
-    assert "切到中文介绍" in text
-    assert "当前中文介绍页" in zh_text
-    assert "Ouro Agent storefront showcase with language switch" in text
-    assert "暗影代理首屏主视觉：语言切换、试玩入口和图形化 TUI 战斗" in zh_text
-    assert "PLAY DEMO" in text
-    assert "WATCH BATTLE" in text
-    assert "BROWSE BUILD" in text
-    assert "查看构筑" in zh_text
-    assert "观看战斗" in zh_text
-    assert "The terminal is not a log. It is the arena." in text
-    assert "终端不是日志，而是竞技场。" in zh_text
+    assert "Start Here / 玩家入口" in text
+    assert "入口 / Start Here" in zh_text
+    assert "The Pitch / 游戏一句话" in text
+    assert "一句话介绍 / The Pitch" in zh_text
+    assert "First Look / 第一眼" in text
+    assert "第一眼 / First Look" in zh_text
+    assert "Train one AI hero. Send it into a dark terminal dungeon." in text
+    assert "训练一个 AI 英雄，把它放进黑暗终端地牢" in zh_text
+    assert "Prompt is part of the build" in text
+    assert "Prompt 是构筑的一部分" in zh_text
+    assert "You do not play the hero turn by turn." in text
+    assert "你不是逐回合操控英雄的人" in zh_text
+    assert "Model chooses. Local Judge decides." in text
+    assert "模型选择行动，本地裁判结算" in zh_text
+    assert "Try it in 30 seconds" in text
+    assert "中文 30 秒试玩" in zh_text
+    assert "Gameplay wall / 玩法画面墙" in text
+    assert "玩法画面墙 / Gameplay wall" in zh_text
+    assert "Player promise" in text
+    assert "玩家承诺" in zh_text
+    assert "The Prompt is your build." in text
+    assert "Prompt 就是你的 Build。" in zh_text
+    assert "The terminal is the arena." in text
+    assert "终端就是竞技场。" in zh_text
     assert "The AI can choose, but it cannot cheat." in text
     assert "AI 能选择，但不能作弊。" in zh_text
-    assert "Game tags:" in text
-    assert "游戏标签：" in zh_text
-    assert "What you see first" in text
-    assert "第一眼会看到什么" in zh_text
-    assert "Store Page Capsule:" in text
-    assert "商店页胶囊：" in zh_text
-    assert "Store Page Pitch" in text
-    assert "Steam 商店页式卖点" in zh_text
-    assert "Watch the run before reading the docs." in text
-    assert "先看画面，再看工程说明。" in zh_text
-    assert "Steam-Style Front Page / Steam 风格首页" in text
-    assert "Steam 风格首页 / Steam-Style Front Page" in zh_text
-    assert "Playable now in mock mode: no network, no API key, deterministic seeds." in text
-    assert "现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。" in zh_text
-    assert "Media first. Rules second. Engineering third." in text
-    assert "Media first. Rules second. Engineering third." in zh_text
-    assert "You do not pilot the hero turn by turn. You design the mind it carries into the dungeon." in text
-    assert "你不是逐回合操控英雄的人。你是在设计它带进地牢的那颗脑子。" in zh_text
-    assert "CLI Language Toggle" in text
-    assert "CLI 语言切换" in zh_text
-    assert "Best First Screen" in text
-    assert "先看最佳画面" in zh_text
-    assert "A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing." in text
-    assert "暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。" in zh_text
-    assert "Model chooses. Local Judge decides." in text
-    assert "Model chooses. Local Judge decides." in zh_text
-    assert "Play in 30 seconds" in text
-    assert "中文 30 秒开局" in text
-    assert "中文 30 秒开局" in zh_text
-    assert "English 30-second start" in zh_text
-    assert "Media Gallery / 先看游戏画面" in text
-    assert "Media Gallery / 先看游戏画面" in zh_text
-    assert "HP / MP / ATB / risk rail" in text
-    assert "HP / MP / ATB / 风险条" in zh_text
-    assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in text
-    assert "Echo Cost / Read Echo / Spoken Echo / Ritual Time" in zh_text
-    assert text.count('src="examples/ouro-readme-storefront-showcase.svg"') == 1
-    assert zh_text.count('src="examples/ouro-readme-storefront-showcase.svg"') == 1
-    assert text.count('src="examples/ouro-readme-storefront.svg"') == 1
-    assert zh_text.count('src="examples/ouro-readme-storefront.svg"') == 1
-    assert text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
-    assert zh_text.count('src="examples/ouro-readme-screenshot-wall.svg"') == 1
-    assert text.index("Train one AI hero. Watch it survive your Prompt.") < text.index("Storefront Hero / 商店页封面")
-    assert zh_text.index("训练一个 AI 英雄，让它带着你的 Prompt 下地牢。") < zh_text.index("商店页封面 / Storefront Hero")
-    assert text.index("Player Start Panel / 玩家入口面板") < text.index("Storefront Hero / 商店页封面")
-    assert zh_text.index("玩家入口面板 / Player Start Panel") < zh_text.index("商店页封面 / Storefront Hero")
-    assert text.index("ENTER THE RUN") < text.index('src="examples/ouro-readme-storefront.svg"')
-    assert zh_text.index("进入地牢") < zh_text.index('src="examples/ouro-readme-storefront.svg"')
-    assert text.index("WATCH THE GAME") < text.index('src="examples/ouro-readme-storefront.svg"')
-    assert zh_text.index("先看画面") < zh_text.index('src="examples/ouro-readme-storefront.svg"')
-    assert text.index('src="examples/ouro-readme-storefront.svg"') < text.index("Steam-Style Front Page / Steam 风格首页")
-    assert zh_text.index('src="examples/ouro-readme-storefront.svg"') < zh_text.index("Steam 风格首页 / Steam-Style Front Page")
-    assert text.index("Play in 30 seconds") < text.index('src="examples/ouro-readme-screenshot-wall.svg"')
-    assert zh_text.index("中文 30 秒开局") < zh_text.index('src="examples/ouro-readme-screenshot-wall.svg"')
-    assert text.index("<details>") < text.index("What a Steam page would show first")
-    assert zh_text.index("<details>") < zh_text.index("好的 Steam 页面会先展示什么")
-    assert text.index("What a Steam page would show first") < text.index("</details>")
-    assert zh_text.index("好的 Steam 页面会先展示什么") < zh_text.index("</details>")
-    assert text.index("Storefront Hero / 商店页封面") < text.index("Screenshots: Build, Fight, Learn")
-    assert text.index("Screenshots: Build, Fight, Learn") < text.index("## Core Loop")
-    assert text.index("## Core Loop") < text.index("## Play Now")
-    assert text.index("## Play Now") < text.index("## Current Playable Content")
-    assert text.index("## Current Playable Content") < text.index("## Languages")
-    assert zh_text.index("商店页封面 / Storefront Hero") < zh_text.index(
-        "## 先看游戏画面"
-    )
-    assert zh_text.index("## 先看游戏画面") < zh_text.index("## 每局你会做什么")
-    assert zh_text.index("## 每局你会做什么") < zh_text.index("## 立即试玩")
-    assert zh_text.index("## 立即试玩") < zh_text.index("## 当前可玩内容")
-    assert zh_text.index("## 当前可玩内容") < zh_text.index("## 双语机制")
-    assert "完整中文文档 / Full Chinese README" in text
-    assert "English Store Page" in text
-    assert "game first, docs later" in text
-    assert "双语首页 / Bilingual README" in zh_text
-    assert "Choose Your Page / 选择介绍页" in text
-    assert "选择介绍页 / Choose Your Page" in zh_text
-    assert "Hero Capsule" in text
-    assert "首屏胶囊图" in zh_text
-    assert "Steam-style screenshot wall" in text
-    assert "商店式截图墙" in zh_text
-    assert "Game Capsule / 游戏胶囊" in text
-    assert "游戏胶囊 / Game Capsule" in zh_text
-    assert "A CLI AI roguelike with a real local judge." in text
-    assert "一款命令行 AI 肉鸽，胜负由本地裁判结算。" in zh_text
-    assert "Why one more run" in text
-    assert "为什么再开一局" in zh_text
-    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT" in text
-    assert "MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT" in zh_text
-    assert "What a Steam page would show first" in text
-    assert "好的 Steam 页面会先展示什么" in zh_text
-    assert "Feature proof, not promises" in text
-    assert "用画面证明，不只写承诺" in zh_text
-    assert "Build / Weapon Gallery / 武器图鉴" in text
-    assert "Build / 武器图鉴 / Weapon Gallery" in zh_text
-    assert 'src="examples/ouro-weapon-gallery.svg"' in text
-    assert 'src="examples/ouro-weapon-gallery.svg"' in zh_text
-    assert "Storefront Snapshot / 游戏速览" in text
-    assert "游戏速览 / Storefront Snapshot" in zh_text
-    assert "Language / 语言" in text
-    assert "语言切换 / Language" in zh_text
-    assert "CLI 语言切换" in text
-    assert "CLI 语言切换" in zh_text
-    assert "Train one AI hero. Watch it survive your Prompt." in text
-    assert "训练一个 AI 英雄，让它带着你的 Prompt 下地牢。" in zh_text
-    assert "You are the builder behind the Agent." in text
+    assert "Every failure becomes evidence." in text
+    assert "每次失败都留下证据。" in zh_text
     assert "About This Game" in text
     assert "关于这个游戏" in zh_text
-    assert "商店页速览" in zh_text
-    assert "See the fight, not a scroll of logs." in text
-    assert "CLI is treated as a low-resolution game screen" in text
-    assert "CLI 被当作低分辨率游戏画面使用" in zh_text
-    assert "Visual Target" in text
-    assert "Playable State" in text
-    assert "试玩状态" in zh_text
-    assert "Core Loop / 每局你会做什么" in text
-    assert "每局你会做什么" in zh_text
-    assert "Why It Plays / Key Features / 为什么它值得试玩" in text
-    assert "关键特色" in zh_text
-    assert "Mock, offline, no API key" in text
-    assert "Play Now: No Network, No API Key" in text
-    assert "立即试玩：无网络，无 API key" in zh_text
-    assert "Current Playable Content / 当前可玩内容" in text
-    assert "当前可玩内容" in zh_text
-    assert "Guided first run" in text
-    assert "Journey console and command map" in text
-    assert "玩家旅程控制台与命令地图" in zh_text
-    assert "ouro menu --lang en" in text
-    assert "ouro menu --lang zh" in zh_text
-    assert "Hero cards, weapon gallery, and Build planning" in text
-    assert "英雄卡、武器图鉴和 Build 配置" in zh_text
-    assert "ouro weapons --unicode" in text
-    assert "ouro weapons --unicode" in zh_text
-    assert "完整副本：路线、商店、休息、奖励和 Boss" in zh_text
+    assert "It cannot invent damage" in text
+    assert "它不能虚构伤害" in zh_text
     assert "Recent Development" not in english_intro
     assert "近期开发" not in zh_intro
-    assert "模型永远不决定伤害、掉落、胜负。" in zh_text
     assert "像 Steam 页面一样先说清楚" not in text
     assert "像 Steam 页面一样先说清楚" not in zh_text
-    assert "Player Promise" in text
-    assert "玩家期待" in zh_text
+    assert "Store page first, engineering later" not in text
+    assert "先像游戏页，再像工程文档" not in zh_text
+
     assert "Screenshots below are captured from reproducible CLI output" in text
     assert "下面的画面来自可复现的 CLI 输出" in zh_text
     assert "Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘" in text
-    assert "画面：构筑、战斗、复盘" in zh_text
+    assert "先看游戏画面：构筑、战斗、复盘" in zh_text
     assert "Reproducible CLI Capture" in text
     assert "可复现终端片段" in zh_text
-    assert "Real TUI Captures" in text
     assert "Graphical Battle Stage" in text
-    assert "After-Action Report" in text
     assert "战后复盘屏" in zh_text
-    assert "Play Now" in text
-    assert "One command gets you from install to a guided first run" in text
-    assert "一条命令从安装进入引导式首局" in zh_text
+    assert "Motion Preview / 动画节奏预览" in text
+    assert "Motion Evidence / 动效证据墙" in text
+    assert "Motion Preview / 动画节奏预览" in zh_text
+    assert "Motion Evidence / 动效证据墙" in zh_text
     for media_file in media_files:
         assert media_file in text
         assert media_file in zh_text
         assert (ROOT / media_file).is_file()
         assert "<svg" in (ROOT / media_file).read_text(encoding="utf-8")
+
+    live_auto_command = (
+        "ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content"
+    )
+    bitmap_command = (
+        "ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content"
+    )
+    unicode_command = (
+        "ouro --lang en play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content"
+    )
+    ascii_static_command = (
+        "ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content"
+    )
+    probe_command = "ouro doctor graphics --graphics bitmap --probe-image --content-dir content"
+    for command in (
+        live_auto_command,
+        bitmap_command,
+        unicode_command,
+        ascii_static_command,
+        probe_command,
+    ):
+        assert command in text
+        assert command in zh_text
+
+    assert "THE ECHO ALTAR / IMPACT" in battle_media
+    assert "SCENE CANDLE/ASH/BROKEN ARCH" in battle_media
+    assert "HIT FLASH -16HP" in battle_media
+    assert "PULSE ████▓░░ HIT hit" in battle_media
+    assert "CAMERA █SHAKE█ hit stop" in battle_media
+    assert "WINDOW PRESSURE ANSWERED" in battle_media
+    assert "TTY PARTIAL REFRESH" in battle_media
     assert "CINEMATIC BEAT" in battle_media
-    assert "FLOAT -16 HP | SLN" in battle_media
-    assert "░▒▓▓██==&gt;" in battle_media
-    assert "░░▓▓XX▓▓░" in battle_media
-    assert "▓▓ SLN ▓▓" not in battle_media
+    assert "OURO AGENT :: ANIMATION FILMSTRIP" in animation_media
+    assert "OURO AGENT :: MOTION EVIDENCE WALL" in motion_evidence_media
     assert "MAIN MENU CONSOLE" in screenshot_wall
     assert "ENCOUNTER BRIEFING" in screenshot_wall
-    assert "MINI STAGE" in screenshot_wall
-    assert "THREAT RAIL" in screenshot_wall
-    assert "WINDOW RAIL" in screenshot_wall
-    assert "THE ECHO ALTAR" in screenshot_wall
-    assert "DECISION FOCUS" in screenshot_wall
-    assert "WINDOW PRESSURE" in screenshot_wall
     assert "AFTER-ACTION REPORT" in screenshot_wall
-    assert "Model chooses. Local Judge decides." in screenshot_wall
-    assert "Reproduce: ouro demo --lang en --seed 1." in screenshot_wall
-    assert "PLAY NOW  ouro demo --lang en" in storefront_media
-    assert "VOX [INTERRUPT]" in storefront_media
-    assert "ENM [HIT]" in storefront_media
-    assert "VOX [INTERRUPT]" in screenshot_wall
-    assert "ENM [HIT]" in screenshot_wall
-    assert "Build, Fight, Learn before the engineering notes begin" in screenshot_wall
-    assert "HERO SHOWCASE" not in storefront_showcase
     assert "PLAYER FANTASY" in storefront_showcase
     assert "LANGUAGE  ENGLISH / 中文" in storefront_showcase
     assert "PLAY DEMO  ouro demo --lang en" in storefront_showcase
-    assert "BUILD &gt; FIGHT &gt; LEARN" in storefront_showcase
-    assert "No network. No API key." in storefront_showcase
-    assert "Model chooses." in storefront_showcase
-    assert "Local Judge decides damage" in storefront_showcase
-    assert "DECISION FOCUS" in battle_media
-    assert "WINDOW answered | JUDGE VALID | Echo Cost 0" in battle_media
-    assert "STRIP [WIND]" in text
-    assert "STRIP [WIND]" in zh_text
-    assert "STRIP [WIND]" in battle_media
     assert "#====[ BATTLE RESULT BOARD ]====#" in after_action_media
-    assert "+....[ BATTLE TURN MAP ]....+" in after_action_media
-    assert "&gt;==[ PLAY NEXT BOARD ]==&lt;" in after_action_media
     assert "STRIP windup" not in text
     assert "STRIP windup" not in zh_text
-    assert "STRIP windup" not in battle_media
-    assert "windup ->" not in text
-    assert "windup ->" not in zh_text
-    assert "windup -&gt;" not in battle_media
-    assert "README media captures" in examples_readme
-    assert "storefront showcase" in examples_readme
-    assert "screenshot wall" in examples_readme
-    assert "decision focus HUD" in examples_readme
-    assert "storefront-friendly" in examples_readme
-    assert "RUN READY BOARD" in text
-    assert "THE ECHO ALTAR / COUNTER WINDOW" in text
-    assert "BATTLE RESULT BOARD" in text
-    assert "[FIRST HERO] Hex Seal" in text
     assert "skill_hex_seal" not in text
     assert "skill_hex_seal" not in zh_text
-    assert "游戏画面" in zh_text
+
+    assert "Current Playable Content / 当前可玩内容" in text
+    assert "当前可玩内容" in zh_text
+    assert "Guided first run" in text
+    assert "引导式首局试玩" in zh_text
     assert "pip install -e ." in text
     assert "pipx install git+https://github.com" in text
     assert "ouro --version" in text
+    assert "ouro try --lang en --seed 1" in text
+    assert "ouro try --lang zh --seed 1" in zh_text
     assert "ouro demo --lang en --seed 1" in text
     assert "ouro play --mock" in text
     assert "The first play does not need a real model." in text
@@ -306,7 +172,9 @@ def test_readme_covers_install_mock_provider_and_privacy():
     assert "set (hidden)" in text
     assert "Mock requires no network and no API key" in text
     assert "Trace files never contain a key" in text
-
+    assert "README media captures" in examples_readme
+    assert "animation filmstrip" in examples_readme
+    assert "motion evidence wall" in examples_readme
 
 def test_required_layout_directories_have_readmes_and_rules():
     """REQ-DIST-004: product-owned directories declare ownership and local rules."""
@@ -342,10 +210,13 @@ def test_release_handoff_covers_tag_install_smoke_and_privacy():
 
     assert "## 0.1.0 - 2026-06-01" in changelog
     assert "venv312/bin/python -m pytest" in changelog
-    assert "400 passed" in changelog
+    assert "464 passed" in changelog
     assert "share/ouro-agent/content" in changelog
     assert "API keys are never stored" in changelog
     assert "scripts/acceptance_check.py" in changelog
+    assert "graphics doctor, combat-stage parity" in changelog
+    assert "asset_hard_gates.ready: true" in changelog
+    assert "strict asset hard gates" in changelog
 
     assert "Recommended tag: `v0.1.0`" in handoff
     assert "pipx install \"git+https://github.com/<owner>/<repo>.git@v0.1.0\"" in handoff
@@ -400,10 +271,19 @@ def test_final_product_audit_tracks_evidence_and_remaining_risks():
     assert "Provider 与隐私" in audit
     assert "安装与发布" in audit
     assert "venv312/bin/python -m pytest" in audit
-    assert "400 passed" in audit
+    assert "464 passed" in audit
+    assert "七步 PASS" in audit
+    assert "graphics doctor" in audit
+    assert "combat-stage parity" in audit
+    assert "VISUAL ANCHORS" in audit
+    assert "release_check.py --combat-stage-only" in audit
+    assert "asset_status_report.py --content-dir content --require-all-runtime" in audit
+    assert "asset pipeline strict gate: OK" in audit
+    assert "asset_manifest_check.py --content-dir content" in audit
+    assert "runtime policy: development-only ImageGen, local QA-passed assets only" in audit
     assert "用户满意度确认仍未完成" in audit
     assert "25_人工试玩记录_20260601.md" in audit
-    assert "License 仍待决策" in audit
+    assert "License 已落地" in audit
     assert "真实 Provider 联通 smoke" in audit
     assert "24_最终产品验收审计_20260601.md" in readme
     assert "v0.4 release candidate" in roadmap
@@ -441,6 +321,8 @@ def test_manual_playtest_note_records_full_run_observations():
     assert "Floor reached: 4" in note
     assert "Run Archive:" in note
     assert "Death History:" in note
+    assert "scripts/release_check.py --combat-stage-only" in note
+    assert "Combat stage evidence OK: bitmap, Unicode, and ASCII filmstrips verified." in note
     assert "结论：pass" in note
     assert "用户满意度确认仍未完成" in note
 
@@ -462,7 +344,7 @@ def test_changeset_manifest_defines_release_boundary_and_local_excludes():
     assert "CHANGELOG.md" in manifest
     assert "git status --short" in manifest
     assert "scripts/release_scope.py --stage-plan" in manifest
-    assert "User satisfaction and License decision remain explicit release sign-off items" in manifest
+    assert "License decision is recorded as MIT" in manifest
     assert ".obsidian/" in manifest
     assert "venv312/" in manifest
     assert "venv*/" in gitignore
@@ -490,10 +372,18 @@ def test_signoff_check_reports_external_pending_items():
     assert "scripts/release_scope.py --stage-plan" in script_text
     assert "ACCEPTANCE_COMMANDS" in script_text
     assert "ouro_user_acceptance_seed7_20260601" in script_text
+    assert "doctor graphics --lang en --content-dir content" in script_text
+    assert "--graphics auto " in script_text
+    assert "--color always --no-animation --no-trace --content-dir content" in script_text
+    assert "scripts/release_check.py --combat-stage-only" in script_text
+    assert "ouro run-report --lang zh --content-dir content" in script_text
+    assert "post-run visual report" in signoff
+    assert "release_check.py --combat-stage-only" in signoff
     assert "signoff_check.py --strict" in signoff
     assert "signoff_check.py --json" in signoff
     assert "release scope summary" in signoff
     assert "acceptance command" in signoff
+    assert "optional Chinese" in signoff
     assert "scripts/release_scope.py --stage-plan" in signoff
     assert "USER_ACCEPTANCE_20260601.md" in signoff
     assert "LICENSE_DECISION_20260601.md" in signoff
@@ -524,19 +414,47 @@ def test_signoff_check_reports_external_pending_items():
     assert result.returncode == 0, result.stderr
     assert "OURO RELEASE SIGN-OFF" in result.stdout
     assert "[PENDING] satisfaction" in result.stdout
-    assert "[PENDING] license" in result.stdout
+    assert "[READY] license" in result.stdout
     assert "[PENDING] live-provider" in result.stdout
     assert "[PENDING] git-boundary" in result.stdout
+    assert "acceptance command: venv312/bin/ouro try --lang en --seed 1 --content-dir content" in (
+        result.stdout
+    )
     assert "acceptance command: venv312/bin/ouro demo --lang en --seed 1 --content-dir content" in (
         result.stdout
     )
     assert "ouro_user_acceptance_seed7_20260601" in result.stdout
+    assert "acceptance command: venv312/bin/ouro doctor graphics --lang en --content-dir content" in (
+        result.stdout
+    )
+    assert (
+        "acceptance command: venv312/bin/ouro doctor graphics --lang en --graphics bitmap "
+        "--probe-image --content-dir content"
+    ) in result.stdout
+    assert "acceptance command: venv312/bin/ouro --lang en play --mock --seed 2 --graphics auto" in (
+        result.stdout
+    )
+    assert "acceptance command: venv312/bin/python scripts/release_check.py --combat-stage-only" in (
+        result.stdout
+    )
+    assert "acceptance command: env OURO_AGENT_HOME=/private/tmp/ouro_user_acceptance_seed7_20260601 venv312/bin/ouro run-report --lang en --content-dir content" in (
+        result.stdout
+    )
+    assert "acceptance command: venv312/bin/ouro status --lang zh --content-dir content" in (
+        result.stdout
+    )
+    assert "acceptance command: venv312/bin/ouro codex --lang zh --content-dir content" in (
+        result.stdout
+    )
+    assert "acceptance command: venv312/bin/ouro run-report --lang zh --content-dir content" in (
+        result.stdout
+    )
     assert "acceptance command: venv312/bin/python scripts/completion_audit.py --json" in (
         result.stdout
     )
     assert "scope boundary: release-bound=" in result.stdout
     assert "staging plan: venv312/bin/python scripts/release_scope.py --stage-plan" in result.stdout
-    assert "Pending sign-offs: 4/4" in result.stdout
+    assert "Pending sign-offs: 3/4" in result.stdout
 
     strict = subprocess.run(
         [sys.executable, str(script), "--strict"],
@@ -548,7 +466,7 @@ def test_signoff_check_reports_external_pending_items():
     )
 
     assert strict.returncode == 3, strict.stderr
-    assert "Pending sign-offs: 4/4" in strict.stdout
+    assert "Pending sign-offs: 3/4" in strict.stdout
 
     json_result = subprocess.run(
         [sys.executable, str(script), "--json"],
@@ -561,19 +479,24 @@ def test_signoff_check_reports_external_pending_items():
 
     assert json_result.returncode == 0, json_result.stderr
     report = json.loads(json_result.stdout)
-    assert report["pending_count"] == 4
+    assert report["pending_count"] == 3
     assert report["total"] == 4
     assert report["all_ready"] is False
     statuses = {item["key"]: item["status"] for item in report["items"]}
     assert statuses == {
         "satisfaction": "PENDING",
-        "license": "PENDING",
+        "license": "READY",
         "live-provider": "PENDING",
         "git-boundary": "PENDING",
     }
     satisfaction = next(item for item in report["items"] if item["key"] == "satisfaction")
+    assert any("ouro try --lang en --seed 1 --content-dir content" in detail for detail in satisfaction["details"])
     assert any("ouro demo --lang en --seed 1 --content-dir content" in detail for detail in satisfaction["details"])
+    assert any("doctor graphics --lang en --content-dir content" in detail for detail in satisfaction["details"])
+    assert any("--probe-image --content-dir content" in detail for detail in satisfaction["details"])
+    assert any("release_check.py --combat-stage-only" in detail for detail in satisfaction["details"])
     assert any("ouro_user_acceptance_seed7_20260601" in detail for detail in satisfaction["details"])
+    assert any("ouro run-report --lang zh --content-dir content" in detail for detail in satisfaction["details"])
     assert any("scripts/completion_audit.py --json" in detail for detail in satisfaction["details"])
     git_boundary = next(item for item in report["items"] if item["key"] == "git-boundary")
     assert "scripts/release_scope.py --stage-plan" in git_boundary["action"]
@@ -585,13 +508,19 @@ def test_acceptance_check_runs_review_commands_without_signing_off():
     script = ROOT / "scripts/acceptance_check.py"
     signoff_file = ROOT / "docs/engineering/USER_ACCEPTANCE_20260601.md"
     script_text = script.read_text(encoding="utf-8")
+    signoff_text = signoff_file.read_text(encoding="utf-8")
 
     assert script.is_file()
     assert "OURO USER ACCEPTANCE CHECK" in script_text
     assert "SIGN-OFF: accepted" in script_text
     assert "marks_signoff" in script_text
     assert "completion_audit.py" in script_text
+    assert "_completion_audit_missing_json_markers" in script_text
+    assert "asset_hard_gates.ready true" in script_text
+    assert "asset_hard_gates.ready:" in script_text
     assert "expected_returncodes=(3,)" in script_text
+    assert "ouro run-report --lang zh --content-dir content" in signoff_text
+    assert "asset_hard_gates.ready" in signoff_text
 
     dry_run = subprocess.run(
         [sys.executable, str(script), "--dry-run"],
@@ -605,6 +534,13 @@ def test_acceptance_check_runs_review_commands_without_signing_off():
     assert dry_run.returncode == 0, dry_run.stderr
     assert "OURO USER ACCEPTANCE CHECK - DRY RUN" in dry_run.stdout
     assert "[DRY-RUN] guided-demo:" in dry_run.stdout
+    assert "--lang en try --seed 1 --content-dir content" in dry_run.stdout
+    assert "[DRY-RUN] try-storage-fallback:" in dry_run.stdout
+    assert "OURO_AGENT_HOME=<blocked-file>" in dry_run.stdout
+    assert "[DRY-RUN] graphics-doctor:" in dry_run.stdout
+    assert "doctor graphics --lang en --graphics bitmap --probe-image --content-dir content" in dry_run.stdout
+    assert "[DRY-RUN] combat-stage-parity:" in dry_run.stdout
+    assert "scripts/release_check.py' --combat-stage-only" in dry_run.stdout
     assert "[DRY-RUN] fixed-seed-run:" in dry_run.stdout
     assert "[DRY-RUN] completion-audit:" in dry_run.stdout
 
@@ -626,12 +562,52 @@ def test_acceptance_check_runs_review_commands_without_signing_off():
     assert report["ok"] is True
     assert report["marks_signoff"] is False
     steps = {step["key"]: step for step in report["steps"]}
-    assert set(steps) == {"guided-demo", "fixed-seed-run", "completion-audit"}
+    assert set(steps) == {
+        "guided-demo",
+        "try-storage-fallback",
+        "graphics-doctor",
+        "combat-stage-parity",
+        "fixed-seed-run",
+        "post-run-report",
+        "completion-audit",
+    }
+    assert steps["guided-demo"]["title"] == "Guided try/demo"
+    assert "try" in steps["guided-demo"]["command"]
     assert steps["guided-demo"]["missing_markers"] == []
     assert "OURO DEMO :: FIRST ECHO" in steps["guided-demo"]["summary"]
+    assert steps["try-storage-fallback"]["title"] == "Try storage fallback"
+    assert steps["try-storage-fallback"]["home_mode"] == "blocked-file"
+    assert steps["try-storage-fallback"]["missing_markers"] == []
+    assert "DEMO STORAGE" in steps["try-storage-fallback"]["summary"]
+    assert any("[TEMP]" in line for line in steps["try-storage-fallback"]["summary"])
+    assert any("[KEEP]" in line for line in steps["try-storage-fallback"]["summary"])
+    assert steps["graphics-doctor"]["title"] == "Graphics preflight"
+    assert steps["graphics-doctor"]["missing_markers"] == []
+    assert any("GRAPHICS PREFLIGHT" in line for line in steps["graphics-doctor"]["summary"])
+    assert any("IMAGE PROBE" in line for line in steps["graphics-doctor"]["summary"])
+    assert any(
+        "Runtime image generation: disabled" in line
+        for line in steps["graphics-doctor"]["summary"]
+    )
+    assert steps["combat-stage-parity"]["title"] == "Combat stage parity"
+    assert steps["combat-stage-parity"]["missing_markers"] == []
+    assert any("Combat stage evidence OK" in line for line in steps["combat-stage-parity"]["summary"])
     assert "YOU DIED" in steps["fixed-seed-run"]["summary"]
+    assert any("[RESULT] BMP hero defeat" in line for line in steps["fixed-seed-run"]["summary"])
+    assert steps["post-run-report"]["title"] == "Post-run visual report"
+    assert steps["post-run-report"]["missing_markers"] == []
+    assert any("RUN REPORT :: LAST ECHO" in line for line in steps["post-run-report"]["summary"])
+    assert any("VISUAL ANCHORS" in line for line in steps["post-run-report"]["summary"])
     assert steps["completion-audit"]["returncode"] == 3
     assert any("goal_complete_ready" in line for line in steps["completion-audit"]["summary"])
+    assert any("asset_hard_gates" in line for line in steps["completion-audit"]["summary"])
+    assert "asset_hard_gates.ready: true" in steps["completion-audit"]["summary"]
+    assert "asset-status-strict.ready: true" in steps["completion-audit"]["summary"]
+    assert "asset-qa.ready: true" in steps["completion-audit"]["summary"]
+    assert "asset-manifest.ready: true" in steps["completion-audit"]["summary"]
+    assert any("asset-status-strict" in line for line in steps["completion-audit"]["summary"])
+    assert any("asset-qa" in line for line in steps["completion-audit"]["summary"])
+    assert any("asset-manifest" in line for line in steps["completion-audit"]["summary"])
 
 
 def test_signoff_templates_exist_but_do_not_fake_ready():
@@ -646,6 +622,7 @@ def test_signoff_templates_exist_but_do_not_fake_ready():
     assert "SIGN-OFF: pending" in acceptance_text
     assert "SIGN-OFF: accepted" in acceptance_text
     assert "venv312/bin/python scripts/release_check.py" in acceptance_text
+    assert "venv312/bin/ouro try --lang en --seed 1" in acceptance_text
     assert "venv312/bin/ouro demo --lang en --seed 1" in acceptance_text
     assert "Mock mode is playable without network or API keys." in acceptance_text
     assert "SIGN-OFF: pending" in provider_text
@@ -669,22 +646,29 @@ def test_signoff_templates_exist_but_do_not_fake_ready():
     assert statuses["live-provider"] == "PENDING"
 
 
-def test_license_decision_template_guides_policy_without_marking_ready():
-    """REQ-REL-015: License template guides the decision without making it."""
+def test_mit_license_decision_is_recorded_and_ready():
+    """REQ-REL-015: MIT License decision is recorded and machine-checkable."""
     template = ROOT / "docs/engineering/LICENSE_DECISION_20260601.md"
     script = ROOT / "scripts/signoff_check.py"
+    license_file = ROOT / "LICENSE"
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     readme_zh = (ROOT / "README.zh.md").read_text(encoding="utf-8")
 
     text = template.read_text(encoding="utf-8")
 
-    assert "SIGN-OFF: pending" in text
-    assert "MIT" in text
-    assert "Apache-2.0" in text
-    assert "Private distribution only" in text
+    assert license_file.is_file()
+    assert "MIT License" in license_file.read_text(encoding="utf-8")
+    assert pyproject["project"]["license"]["text"] == "MIT"
+    assert "SIGN-OFF: selected" in text
+    assert "Selected License or policy: MIT License" in text
     assert "pyproject.toml" in text
     assert "README.zh" in text
-    assert "template alone is not enough" in text
+    assert "`LICENSE` file" in text
+    assert "MIT License. See [LICENSE](LICENSE)." in readme
+    assert "本项目使用 MIT License，详见 [LICENSE](LICENSE)。" in readme_zh
+    assert "License is not selected yet" not in readme
+    assert "License 待定" not in readme_zh
     assert "LICENSE_DECISION_20260601.md" in readme
     assert "LICENSE_DECISION_20260601.md" in readme_zh
 
@@ -700,8 +684,10 @@ def test_license_decision_template_guides_policy_without_marking_ready():
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
     license_item = next(item for item in report["items"] if item["key"] == "license")
-    assert license_item["status"] == "PENDING"
-    assert "LICENSE_DECISION_20260601.md" in license_item["action"]
+    assert license_item["status"] == "READY"
+    assert license_item["evidence"] == "LICENSE file exists"
+    assert license_item["action"] == "No action required."
+    assert any("license='MIT'" in detail for detail in license_item["details"])
 
 
 def test_signoff_check_detects_ready_markers_and_license_policy(tmp_path):
@@ -750,10 +736,14 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     provider_smoke_text = provider_smoke.read_text(encoding="utf-8")
     release_scope = ROOT / "scripts/release_scope.py"
     release_scope_text = release_scope.read_text(encoding="utf-8")
+    tui_shell_spike = ROOT / "scripts/tui_shell_spike.py"
+    tui_shell_spike_text = tui_shell_spike.read_text(encoding="utf-8")
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert script.is_file()
     assert provider_smoke.is_file()
     assert release_scope.is_file()
+    assert tui_shell_spike.is_file()
     assert "subprocess.run" in script_text
     assert "PYTHONPATH" in script_text
     assert '("git", "diff", "--check")' in script_text
@@ -768,18 +758,42 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert "--acceptance-only" in script_text
     assert "acceptance-path" in script_text
     assert "acceptance_check.py" in script_text
+    assert "--asset-status-only" in script_text
+    assert "--asset-status-strict" in script_text
+    assert "--skip-asset-status" in script_text
+    assert "asset-status" in script_text
+    assert "asset_status_report.py" in script_text
+    assert "--combat-stage-only" in script_text
+    assert "--skip-combat-stage" in script_text
+    assert "combat-stage-evidence" in script_text
+    assert "record_combat_stage.py" in script_text
+    assert "--timeline-coverage-only" in script_text
+    assert "--skip-timeline-coverage" in script_text
+    assert "timeline-coverage" in script_text
+    assert "timeline_coverage_report.py" in script_text
     assert "release_scope.py" in script_text
     assert "RELEASE SCOPE CHECK" in release_scope_text
     assert "RELEASE STAGE PLAN" in release_scope_text
     assert "--stage-plan" in release_scope_text
     assert "--collect-only" in script_text
-    assert '"demo"' in script_text
+    assert '"try"' in script_text
     assert "OURO DEMO :: FIRST ECHO" in script_text
-    assert "guided demo did not finish battle" in script_text
+    assert "guided try did not finish battle" in script_text
     assert "REAL PROVIDER SMOKE PREFLIGHT" in provider_smoke_text
     assert "--live" in provider_smoke_text
     assert "provider fell back to mock" in provider_smoke_text
     assert "temporary OURO_AGENT_HOME" in provider_smoke_text
+    assert "OURO TUI SHELL SPIKE" in tui_shell_spike_text
+    assert "current-ansi-renderer" in tui_shell_spike_text
+    assert "rich-live" in tui_shell_spike_text
+    assert "textual-app-shell" in tui_shell_spike_text
+    assert "importlib.util.find_spec" in tui_shell_spike_text
+    assert "ShellAdapter.close() restores cursor/screen and never mutates RunState" in (
+        tui_shell_spike_text
+    )
+    base_deps = [dependency.lower() for dependency in pyproject["project"]["dependencies"]]
+    assert all(not dependency.startswith("rich") for dependency in base_deps)
+    assert all(not dependency.startswith("textual") for dependency in base_deps)
     assert '"run"' in script_text
     assert '"--auto"' in script_text
     assert "Run Summary" in script_text
@@ -812,8 +826,25 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert "--stage-plan" in scripts_readme
     assert "acceptance path" in scripts_readme
     assert "--acceptance-only" in scripts_readme
+    assert "graphics doctor, combat-stage parity" in scripts_readme
+    assert "post-run visual report" in scripts_readme
+    assert "asset_hard_gates.ready: true" in scripts_readme
+    assert "asset status" in scripts_readme
+    assert "--asset-status-only" in scripts_readme
+    assert "--asset-status-strict" in scripts_readme
+    assert "informational by default" in scripts_readme
+    assert "combat-stage graphics evidence" in scripts_readme
+    assert "--combat-stage-only" in scripts_readme
+    assert "iTerm2/Kitty/SIXEL bitmap filmstrips" in scripts_readme
+    assert "skill timeline coverage" in scripts_readme
+    assert "--timeline-coverage-only" in scripts_readme
+    assert "timeline_coverage_report.py" in scripts_readme
     assert "provider_smoke.py" in scripts_readme
     assert "fails if the CLI falls back to mock" in scripts_readme
+    assert "tui_shell_spike.py" in scripts_readme
+    assert "optional Rich/Textual shell evaluation helper" in scripts_readme
+    assert "dependency-free ANSI renderer as the default" in scripts_readme
+    assert "graphics auto play, combat-stage parity" in scripts_readme
     assert "install smoke" in scripts_readme
     assert "Codex readback" in scripts_readme
     assert "status overview" in scripts_readme
@@ -822,16 +853,34 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert "venv312/bin/python scripts/release_check.py --dry-run" in handoff
     assert "venv312/bin/python scripts/release_check.py --install-smoke-only" in handoff
     assert "venv312/bin/python scripts/release_check.py --evidence-only" in handoff
+    assert "venv312/bin/python scripts/release_check.py --combat-stage-only" in handoff
+    assert "venv312/bin/python scripts/release_check.py --timeline-coverage-only" in handoff
     assert "venv312/bin/python scripts/release_check.py --acceptance-only" in handoff
+    assert (
+        "venv312/bin/python scripts/asset_status_report.py --content-dir content --require-all-runtime"
+        in handoff
+    )
+    assert "venv312/bin/python scripts/asset_qa_check.py --content-dir content" in handoff
+    assert "venv312/bin/python scripts/asset_manifest_check.py --content-dir content" in handoff
+    assert "asset pipeline strict gate: OK" in handoff
+    assert "development-only ImageGen plus local QA-passed assets" in handoff
     assert "venv312/bin/python scripts/release_scope.py" in handoff
     assert "venv312/bin/python scripts/release_scope.py --stage-plan" in handoff
     assert "venv312/bin/python scripts/provider_smoke.py" in handoff
+    assert "venv312/bin/python scripts/tui_shell_spike.py" in handoff
+    assert "TUI shell spike is optional and non-invasive" in handoff
+    assert "rich-live" in handoff
+    assert "textual-app-shell" in handoff
     assert "Live provider smoke OK." in handoff
     assert "repo-root release gate runner" in manifest
     assert "scripts/release_scope.py" in manifest
     assert "scripts/release_scope.py --stage-plan" in manifest
     assert "Scope OK" in manifest
     assert "privacy-scan" in manifest
+    assert "combat-stage-evidence" in manifest
+    assert "simulated iTerm2/Kitty/SIXEL bitmap filmstrips" in manifest
+    assert "timeline-coverage" in manifest
+    assert "all 18 MVP skills" in manifest
     assert "PASS: doctor" in manifest
     assert "install smoke" in manifest
 
@@ -855,6 +904,12 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert "[DRY-RUN] scope-boundary:" in result.stdout
     assert "--acceptance-only" in result.stdout
     assert "[DRY-RUN] acceptance-path:" in result.stdout
+    assert "--asset-status-only" in result.stdout
+    assert "[DRY-RUN] asset-status:" in result.stdout
+    assert "--combat-stage-only" in result.stdout
+    assert "[DRY-RUN] combat-stage-evidence:" in result.stdout
+    assert "--timeline-coverage-only" in result.stdout
+    assert "[DRY-RUN] timeline-coverage:" in result.stdout
     assert "-m ouro_agent.cli.main validate-content" in result.stdout
     assert "git diff --check" in result.stdout
     assert "--privacy-scan-only" in result.stdout
@@ -871,6 +926,151 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert install_dry_run.returncode == 0, install_dry_run.stderr
     assert "[DRY-RUN] install-smoke:" in install_dry_run.stdout
     assert "--install-smoke-only" in install_dry_run.stdout
+
+    asset_status_result = subprocess.run(
+        [sys.executable, str(script), "--asset-status-only"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert asset_status_result.returncode == 0, asset_status_result.stderr
+    assert "asset pipeline status: OK" in asset_status_result.stdout
+    assert "asset pipeline strict gate: not requested" in asset_status_result.stdout
+
+    asset_status_strict_result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/asset_status_report.py"),
+            "--content-dir",
+            "content",
+            "--require-all-runtime",
+        ],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert asset_status_strict_result.returncode == 0, asset_status_strict_result.stderr
+    assert "assets: 82" in asset_status_strict_result.stdout
+    assert "candidate_assets: 82/82" in asset_status_strict_result.stdout
+    assert "cut_metadata_assets: 82/82" in asset_status_strict_result.stdout
+    assert "qa_passed_assets: 82/82" in asset_status_strict_result.stdout
+    assert "runtime_enabled_assets: 82/82" in asset_status_strict_result.stdout
+    assert "asset pipeline strict gate: OK" in asset_status_strict_result.stdout
+
+    asset_qa_result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/asset_qa_check.py"),
+            "--content-dir",
+            "content",
+        ],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert asset_qa_result.returncode == 0, asset_qa_result.stderr
+    assert "asset QA records: OK" in asset_qa_result.stdout
+    assert "records: 82" in asset_qa_result.stdout
+    assert "qa_passed: 82" in asset_qa_result.stdout
+    assert "candidate storage: no generated images are stored in runtime assets before QA" in (
+        asset_qa_result.stdout
+    )
+
+    asset_manifest_result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/asset_manifest_check.py"),
+            "--content-dir",
+            "content",
+        ],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert asset_manifest_result.returncode == 0, asset_manifest_result.stderr
+    assert "asset manifest: OK" in asset_manifest_result.stdout
+    assert "assets: 82" in asset_manifest_result.stdout
+    assert "skill: 18" in asset_manifest_result.stdout
+    assert "coverage: full current MVP content" in asset_manifest_result.stdout
+    assert "runtime policy: development-only ImageGen, local QA-passed assets only" in (
+        asset_manifest_result.stdout
+    )
+
+    combat_stage_result = subprocess.run(
+        [sys.executable, str(script), "--combat-stage-only"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert combat_stage_result.returncode == 0, combat_stage_result.stderr
+    assert "combat stage record: OK" in combat_stage_result.stdout
+    assert "bitmap_iterm2_filmstrip" in combat_stage_result.stdout
+    assert "Combat stage evidence OK" in combat_stage_result.stdout
+
+    timeline_coverage_result = subprocess.run(
+        [sys.executable, str(script), "--timeline-coverage-only"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert timeline_coverage_result.returncode == 0, timeline_coverage_result.stderr
+    assert "timeline coverage: OK" in timeline_coverage_result.stdout
+    assert "skills: 18/18" in timeline_coverage_result.stdout
+    assert "- skill_hex_seal: beats=12" in timeline_coverage_result.stdout
+
+    tui_spike_result = subprocess.run(
+        [sys.executable, str(tui_shell_spike)],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert tui_spike_result.returncode == 0, tui_spike_result.stderr
+    assert "OURO TUI SHELL SPIKE" in tui_spike_result.stdout
+    assert "KEEP current-ansi-renderer as default" in tui_spike_result.stdout
+    assert "DEFER textual-app-shell" in tui_spike_result.stdout
+    assert "ShellAdapter.close() restores cursor/screen and never mutates RunState" in (
+        tui_spike_result.stdout
+    )
+
+    tui_spike_json = subprocess.run(
+        [sys.executable, str(tui_shell_spike), "--json"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert tui_spike_json.returncode == 0, tui_spike_json.stderr
+    tui_spike_data = json.loads(tui_spike_json.stdout)
+    assert tui_spike_data["ok"] is True
+    probe_names = {probe["name"] for probe in tui_spike_data["probes"]}
+    assert probe_names == {"current-ansi-renderer", "rich-live", "textual-app-shell"}
+    decisions = {probe["name"]: probe["default_path"] for probe in tui_spike_data["probes"]}
+    assert decisions["current-ansi-renderer"] == "keep"
+    assert decisions["rich-live"] == "defer"
+    assert decisions["textual-app-shell"] == "defer"
 
     doctor_result = subprocess.run(
         [sys.executable, str(script), "--doctor-only"],
@@ -925,6 +1125,8 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     assert acceptance_result.returncode == 0, acceptance_result.stderr
     assert "OURO USER ACCEPTANCE CHECK" in acceptance_result.stdout
     assert "[PASS] guided-demo" in acceptance_result.stdout
+    assert "[PASS] try-storage-fallback" in acceptance_result.stdout
+    assert "DEMO STORAGE" in acceptance_result.stdout
     assert "[PASS] fixed-seed-run" in acceptance_result.stdout
     assert "[PASS] completion-audit" in acceptance_result.stdout
     assert "User satisfaction sign-off remains manual." in acceptance_result.stdout
@@ -939,7 +1141,7 @@ def test_release_check_script_documents_and_dry_runs_repo_root_gates():
     )
 
     assert evidence_result.returncode == 0, evidence_result.stderr
-    assert "Evidence counts OK: 400 tests collected; 247 release-bound text files." in (
+    assert "Evidence counts OK: 464 tests collected; 777 release-bound text files." in (
         evidence_result.stdout
     )
 
@@ -1061,6 +1263,7 @@ def test_release_scope_classifies_manifest_paths_and_rejects_local_noise(tmp_pat
     assert scope.classify_path("docs/product/23_QA证据与固定Seed试玩记录_20260601.md") == "release-bound"
     assert scope.classify_path("scripts/release_check.py") == "release-bound"
     assert scope.classify_path(".gitignore") == "release-bound"
+    assert scope.classify_path("LICENSE") == "release-bound"
     assert scope.classify_path(".obsidian/workspace.json") == "local-only"
     assert scope.classify_path("venv312/bin/python") == "local-only"
     assert scope.classify_path(".env") == "local-only"
@@ -1192,14 +1395,28 @@ def test_completion_audit_reports_release_scope_and_signoff_without_marking_comp
     assert "OURO COMPLETION AUDIT" in script_text
     assert "goal_complete_ready" in script_text
     assert "release_check.py" in script_text
+    assert "asset_status_report.py" in script_text
+    assert "--require-all-candidates" in script_text
+    assert "--require-all-cut-metadata" in script_text
+    assert "--require-all-qa-passed" in script_text
+    assert "--require-all-runtime" in script_text
+    assert "asset_qa_check.py" in script_text
+    assert "asset_manifest_check.py" in script_text
+    assert "asset_hard_gates" in script_text
     assert "release_scope.py" in script_text
     assert "signoff_check.py" in script_text
     assert "pending_items" in script_text
     assert "Required sign-offs" in script_text
     assert "completion_audit.py" in scripts_readme
+    assert "strict asset hard gates" in scripts_readme
+    assert "Even with `--skip-release-check`, it still runs asset status strict mode" in (
+        scripts_readme
+    )
     assert "completion_audit.py --json --skip-release-check" in handoff
+    assert "asset_hard_gates.ready" in handoff
     assert "pending_items" in handoff
     assert "completion_audit.py --json --skip-release-check" in audit
+    assert "asset_hard_gates.ready: true" in audit
     assert "Required sign-offs" in audit
 
     dry_run = subprocess.run(
@@ -1213,6 +1430,12 @@ def test_completion_audit_reports_release_scope_and_signoff_without_marking_comp
 
     assert dry_run.returncode == 0, dry_run.stderr
     assert "[DRY-RUN] release:" in dry_run.stdout
+    assert "[DRY-RUN] asset-status-strict:" in dry_run.stdout
+    assert "--require-all-candidates --require-all-cut-metadata --require-all-qa-passed --require-all-runtime" in (
+        dry_run.stdout
+    )
+    assert "[DRY-RUN] asset-qa:" in dry_run.stdout
+    assert "[DRY-RUN] asset-manifest:" in dry_run.stdout
     assert "[DRY-RUN] scope:" in dry_run.stdout
     assert "[DRY-RUN] signoff:" in dry_run.stdout
 
@@ -1230,22 +1453,34 @@ def test_completion_audit_reports_release_scope_and_signoff_without_marking_comp
     assert report["goal_complete_ready"] is False
     assert report["release_check"]["skipped"] is True
     assert report["release_check"]["ready"] is True
+    assert report["asset_hard_gates"]["ready"] is True
+    asset_commands = {
+        command["key"]: command for command in report["asset_hard_gates"]["commands"]
+    }
+    assert asset_commands["asset-status-strict"]["ready"] is True
+    assert asset_commands["asset-status-strict"]["marker"] == "asset pipeline strict gate: OK"
+    assert asset_commands["asset-qa"]["ready"] is True
+    assert asset_commands["asset-qa"]["marker"] == "asset QA records: OK"
+    assert asset_commands["asset-manifest"]["ready"] is True
+    assert asset_commands["asset-manifest"]["marker"] == "asset manifest: OK"
     assert report["scope"]["ready"] is True
     assert report["signoff"]["ready"] is False
     assert set(report["signoff"]["pending_keys"]) == {
         "satisfaction",
-        "license",
         "live-provider",
         "git-boundary",
     }
     pending_items = {item["key"]: item for item in report["signoff"]["pending_items"]}
     assert set(pending_items) == {
         "satisfaction",
-        "license",
         "live-provider",
         "git-boundary",
     }
     assert "USER_ACCEPTANCE_20260601.md" in pending_items["satisfaction"]["action"]
+    assert any(
+        "ouro try --lang en --seed 1 --content-dir content" in detail
+        for detail in pending_items["satisfaction"]["details"]
+    )
     assert any(
         "ouro demo --lang en --seed 1 --content-dir content" in detail
         for detail in pending_items["satisfaction"]["details"]
@@ -1254,7 +1489,10 @@ def test_completion_audit_reports_release_scope_and_signoff_without_marking_comp
         "ouro_user_acceptance_seed7_20260601" in detail
         for detail in pending_items["satisfaction"]["details"]
     )
-    assert "LICENSE_DECISION_20260601.md" in pending_items["license"]["action"]
+    assert any(
+        "ouro run-report --lang zh --content-dir content" in detail
+        for detail in pending_items["satisfaction"]["details"]
+    )
     assert "provider_smoke.py --live" in pending_items["live-provider"]["action"]
     assert "scripts/release_scope.py --stage-plan" in pending_items["git-boundary"]["action"]
 
@@ -1268,6 +1506,7 @@ def test_completion_audit_reports_release_scope_and_signoff_without_marking_comp
     )
 
     assert text_result.returncode == 3, text_result.stderr
+    assert "asset gates   : READY" in text_result.stdout
     assert "Required sign-offs:" in text_result.stdout
     assert "satisfaction: User plays" in text_result.stdout
     assert "git-boundary: Run venv312/bin/python scripts/release_scope.py --stage-plan" in (

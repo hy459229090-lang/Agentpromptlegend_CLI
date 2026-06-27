@@ -1,56 +1,36 @@
 # License Decision - Ouro Agent v0.1.0
 
-> Status: pending user decision.
-> This file is intentionally not selected yet.
+> Status: selected.
+> Decision: MIT License.
 
-The release candidate is technically ready for mock-first review, but public
-distribution still needs an explicit License or private/internal distribution
-policy. This decision must come from the project owner; implementation work
-must not silently choose a License.
+The project owner selected MIT on 2026-06-11. This record keeps the release
+policy explicit so packaging metadata, README copy, release handoff, and
+`signoff_check.py` all agree.
 
-## Options To Choose From
+## Decision
 
-Common public options:
-
-- MIT: short permissive license, easy for examples and small tools.
-- Apache-2.0: permissive license with explicit patent language.
-
-Private/internal options:
-
-- Private distribution only: document that the repository/package is not for
-  public redistribution.
-- Internal-only distribution: document who may install and share the package.
-
-## Files To Update After Decision
-
-For a public open-source License:
-
-1. Add a root `LICENSE` file with the selected License text.
-2. Update `pyproject.toml` `[project].license`.
-3. Replace the README and README.zh pending License text.
-4. Update `docs/engineering/RELEASE_HANDOFF_20260601.md`.
-5. Run `venv312/bin/python scripts/signoff_check.py --json`.
-
-For private/internal distribution:
-
-1. Keep or set `pyproject.toml` to an explicit private policy text.
-2. Replace the README and README.zh pending License text with the policy.
-3. Update `docs/engineering/RELEASE_HANDOFF_20260601.md`.
-4. Run `venv312/bin/python scripts/signoff_check.py --json`.
-
-## Decision Record
-
-- Decision owner:
-- Date:
-- Selected License or policy:
-- Rationale:
+- Decision owner: project owner / RicHe
+- Date: 2026-06-11
+- Selected License or policy: MIT License
+- Rationale: short permissive open-source license, straightforward for a CLI
+  game, examples, packaging, and downstream experiments.
 - Files updated:
-- Follow-up issues:
+  - `LICENSE`
+  - `pyproject.toml`
+  - `README.md`
+  - `README.zh.md`
+  - `docs/engineering/RELEASE_HANDOFF_20260601.md`
+  - `docs/engineering/RELEASE_SIGNOFF_20260601.md`
+  - `docs/product/24_最终产品验收审计_20260601.md`
+  - `scripts/release_check.py`
+  - `scripts/release_scope.py`
+- Follow-up issues: none for License. User satisfaction, live-provider smoke,
+  and git-boundary sign-offs remain separate release items.
 
 ## Sign-Off
 
-Leave the following line as `pending` until the project owner chooses a License
-or private/internal distribution policy and updates the files above. This
-template alone is not enough for `signoff_check.py` to mark License ready.
+`signoff_check.py` marks License ready when pending License language is removed
+from release metadata and either a root `LICENSE` file or a documented private
+distribution policy exists.
 
-SIGN-OFF: pending
+SIGN-OFF: selected

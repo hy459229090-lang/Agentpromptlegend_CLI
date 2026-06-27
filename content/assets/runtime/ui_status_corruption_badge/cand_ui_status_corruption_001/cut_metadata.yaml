@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: ui_status_corruption_badge
+candidate_id: cand_ui_status_corruption_001
+work_order_id: wo_ui_status_corruption_badge
+source_brief: corruption_status_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 92
+  - 153
+  - 496
+  - 571
+  visible_pixels: 98127
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_corruption.badge
+- frame_id: applied
+  path: applied.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 57
+  - 116
+  - 495
+  - 601
+  visible_pixels: 119977
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_corruption.applied
+- frame_id: ticking
+  path: ticking.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 30
+  - 116
+  - 543
+  - 603
+  visible_pixels: 121074
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_corruption.ticking
+- frame_id: expire
+  path: expire.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 0
+  - 129
+  - 426
+  - 598
+  visible_pixels: 102243
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_corruption.expire

@@ -24,6 +24,7 @@ class AcceptanceStep:
     command: tuple[str, ...]
     expected_returncodes: tuple[int, ...]
     markers: tuple[str, ...]
+    home_mode: str = "isolated"
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,7 @@ class StepResult:
             "missing_markers": list(self.missing_markers),
             "summary": list(self.summary),
             "command": list(self.step.command),
+            "home_mode": self.step.home_mode,
         }
 
 
@@ -84,14 +86,14 @@ def acceptance_steps(python_bin: str) -> tuple[AcceptanceStep, ...]:
     return (
         AcceptanceStep(
             key="guided-demo",
-            title="Guided demo",
+            title="Guided try/demo",
             command=(
                 python_bin,
                 "-m",
                 "ouro_agent.cli.main",
                 "--lang",
                 "en",
-                "demo",
+                "try",
                 "--seed",
                 "1",
                 "--content-dir",
@@ -103,6 +105,75 @@ def acceptance_steps(python_bin: str) -> tuple[AcceptanceStep, ...]:
                 "STEP 5: Continue from here",
                 "BATTLE COMPLETE",
                 "CODEX :: MONSTER ARCHIVE",
+            ),
+        ),
+        AcceptanceStep(
+            key="try-storage-fallback",
+            title="Try storage fallback",
+            command=(
+                python_bin,
+                "-m",
+                "ouro_agent.cli.main",
+                "--lang",
+                "en",
+                "try",
+                "--seed",
+                "1",
+                "--content-dir",
+                "content",
+            ),
+            expected_returncodes=(0,),
+            markers=(
+                "DEMO STORAGE",
+                "[TEMP] Temporary progress active for this guided try.",
+                "[KEEP] Set OURO_AGENT_HOME to a writable folder to keep progress.",
+                "BATTLE COMPLETE",
+                "CODEX :: MONSTER ARCHIVE",
+                "STEP 5: Continue from here",
+            ),
+            home_mode="blocked-file",
+        ),
+        AcceptanceStep(
+            key="graphics-doctor",
+            title="Graphics preflight",
+            command=(
+                python_bin,
+                "-m",
+                "ouro_agent.cli.main",
+                "doctor",
+                "graphics",
+                "--lang",
+                "en",
+                "--graphics",
+                "bitmap",
+                "--probe-image",
+                "--content-dir",
+                "content",
+            ),
+            expected_returncodes=(0,),
+            markers=(
+                "GRAPHICS PREFLIGHT",
+                "selected     :",
+                "fallback     :",
+                "Runtime image generation: disabled",
+                "IMAGE PROBE",
+            ),
+        ),
+        AcceptanceStep(
+            key="combat-stage-parity",
+            title="Combat stage parity",
+            command=(
+                python_bin,
+                str(ROOT / "scripts/release_check.py"),
+                "--combat-stage-only",
+            ),
+            expected_returncodes=(0,),
+            markers=(
+                "combat stage record: OK",
+                "bitmap_iterm2_filmstrip",
+                "unicode_filmstrip",
+                "ascii_filmstrip",
+                "Combat stage evidence OK: bitmap, Unicode, and ASCII filmstrips verified.",
             ),
         ),
         AcceptanceStep(
@@ -125,7 +196,37 @@ def acceptance_steps(python_bin: str) -> tuple[AcceptanceStep, ...]:
                 "content",
             ),
             expected_returncodes=(0,),
-            markers=("YOU DIED", "Run Summary", "Run Archive:", "Death History:"),
+            markers=(
+                "YOU DIED",
+                "Run Summary",
+                "[RESULT] BMP hero defeat",
+                "[STAGE] BMP dungeon background",
+                "Run Archive:",
+                "Death History:",
+            ),
+        ),
+        AcceptanceStep(
+            key="post-run-report",
+            title="Post-run visual report",
+            command=(
+                python_bin,
+                "-m",
+                "ouro_agent.cli.main",
+                "--lang",
+                "en",
+                "run-report",
+                "--content-dir",
+                "content",
+            ),
+            expected_returncodes=(0,),
+            markers=(
+                "RUN REPORT :: LAST ECHO",
+                "VISUAL ANCHORS",
+                "[RESULT] BMP hero defeat",
+                "[STAGE] BMP dungeon background",
+                "NEXT RUN LOADOUT",
+                "Retry: ouro run --mock",
+            ),
         ),
         AcceptanceStep(
             key="completion-audit",
@@ -139,6 +240,10 @@ def acceptance_steps(python_bin: str) -> tuple[AcceptanceStep, ...]:
             expected_returncodes=(3,),
             markers=(
                 '"goal_complete_ready": false',
+                '"asset_hard_gates"',
+                '"asset-status-strict"',
+                '"asset-qa"',
+                '"asset-manifest"',
                 '"pending_items"',
                 '"satisfaction"',
                 '"git-boundary"',
@@ -149,11 +254,12 @@ def acceptance_steps(python_bin: str) -> tuple[AcceptanceStep, ...]:
 
 def _run_steps(steps: tuple[AcceptanceStep, ...]) -> tuple[StepResult, ...]:
     with tempfile.TemporaryDirectory(prefix="ouro_acceptance_check_") as home:
-        env = os.environ.copy()
-        env["OURO_AGENT_HOME"] = home
-        env["PYTHONIOENCODING"] = "utf-8"
+        base_env = os.environ.copy()
+        base_env["OURO_AGENT_HOME"] = home
+        base_env["PYTHONIOENCODING"] = "utf-8"
         results = []
         for step in steps:
+            env = _step_environment(base_env, Path(home), step)
             completed = subprocess.run(
                 step.command,
                 cwd=ROOT,
@@ -164,15 +270,67 @@ def _run_steps(steps: tuple[AcceptanceStep, ...]) -> tuple[StepResult, ...]:
                 check=False,
             )
             missing = tuple(marker for marker in step.markers if marker not in completed.stdout)
+            if step.key == "completion-audit":
+                missing = missing + _completion_audit_missing_json_markers(completed.stdout)
+            summary = _summarize_output(completed.stdout, step.markers)
+            if step.key == "completion-audit":
+                summary = _merge_summary(
+                    summary,
+                    _completion_audit_summary_lines(completed.stdout),
+                )
             results.append(
                 StepResult(
                     step=step,
                     returncode=completed.returncode,
                     missing_markers=missing,
-                    summary=_summarize_output(completed.stdout, step.markers),
+                    summary=summary,
                 )
             )
         return tuple(results)
+
+
+def _completion_audit_missing_json_markers(output: str) -> tuple[str, ...]:
+    try:
+        report = json.loads(output)
+    except json.JSONDecodeError:
+        return ("completion audit JSON",)
+    asset_hard_gates = report.get("asset_hard_gates", {})
+    if not isinstance(asset_hard_gates, dict) or asset_hard_gates.get("ready") is not True:
+        return ("asset_hard_gates.ready true",)
+    return ()
+
+
+def _completion_audit_summary_lines(output: str) -> tuple[str, ...]:
+    try:
+        report = json.loads(output)
+    except json.JSONDecodeError:
+        return ()
+    asset_hard_gates = report.get("asset_hard_gates", {})
+    if not isinstance(asset_hard_gates, dict):
+        return ()
+    lines = [f"asset_hard_gates.ready: {str(asset_hard_gates.get('ready')).lower()}"]
+    commands = asset_hard_gates.get("commands", [])
+    if isinstance(commands, list):
+        for command in commands:
+            if isinstance(command, dict):
+                key = command.get("key")
+                ready = command.get("ready")
+                if key:
+                    lines.append(f"{key}.ready: {str(ready).lower()}")
+    return tuple(lines)
+
+
+def _step_environment(
+    base_env: dict[str, str],
+    home: Path,
+    step: AcceptanceStep,
+) -> dict[str, str]:
+    env = dict(base_env)
+    if step.home_mode == "blocked-file":
+        blocked_home = home / f"{step.key}-home"
+        blocked_home.write_text("not a directory\n", encoding="utf-8")
+        env["OURO_AGENT_HOME"] = str(blocked_home)
+    return env
 
 
 def _build_report(results: tuple[StepResult, ...]) -> dict[str, Any]:
@@ -203,11 +361,20 @@ def _summarize_output(output: str, markers: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(summary[:16])
 
 
+def _merge_summary(base: tuple[str, ...], extra: tuple[str, ...]) -> tuple[str, ...]:
+    summary = list(base)
+    for line in extra:
+        if line and line not in summary:
+            summary.append(line)
+    return tuple(summary[:16])
+
+
 def _print_dry_run(steps: tuple[AcceptanceStep, ...]) -> None:
     print("OURO USER ACCEPTANCE CHECK - DRY RUN")
     print("This script does not write SIGN-OFF: accepted.")
     for step in steps:
-        print(f"[DRY-RUN] {step.key}: {_format_command(step.command)}")
+        prefix = "OURO_AGENT_HOME=<blocked-file> " if step.home_mode == "blocked-file" else ""
+        print(f"[DRY-RUN] {step.key}: {prefix}{_format_command(step.command)}")
 
 
 def _print_report(report: dict[str, Any]) -> None:

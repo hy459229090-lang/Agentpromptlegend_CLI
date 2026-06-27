@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_omen_vial_effect_sheet
+candidate_id: cand_skill_omen_vial_001
+work_order_id: wo_skill_omen_vial_effect_sheet
+source_brief: omen_vial_crack_mute
+runtime_promoted: true
+frames:
+- frame_id: raise
+  path: raise.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 26023
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.raise
+- frame_id: throw
+  path: throw.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 27116
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.throw
+- frame_id: arc
+  path: arc.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 19589
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.arc
+- frame_id: shatter
+  path: shatter.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 47536
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.shatter
+- frame_id: omen_cloud
+  path: omen_cloud.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 93973
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.omen_cloud
+- frame_id: settle
+  path: settle.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 444
+  visible_pixels: 54258
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_omen_vial.settle

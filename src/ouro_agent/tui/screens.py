@@ -15,6 +15,7 @@ import re
 
 from ouro_agent.art.battle_assets import enemy_sprite as asset_enemy_sprite
 from ouro_agent.art.battle_assets import hero_sprite as asset_hero_sprite
+from ouro_agent.art.sprite_atlas import SpriteAtlas
 from ouro_agent.art.block_sprites import (
     block_effect_rows as _asset_block_effect_rows,
     enemy_block_sprite,
@@ -55,7 +56,25 @@ from ouro_agent.tui.frame_builder import (
     format_status_short,
 )
 from ouro_agent.tui.ansi import color_enabled, paint, strip_ansi
+from ouro_agent.tui.asset_cards import (
+    render_codex_asset_art,
+    render_codex_gallery_asset_line,
+    render_choice_asset_art,
+    render_hero_asset_art,
+    render_rest_asset_art,
+    render_reward_asset_art,
+    render_route_asset_art,
+    render_run_record_asset_art,
+)
 from ouro_agent.tui.canvas import Surface
+from ouro_agent.tui.components import (
+    TuiChip,
+    TuiTab,
+    render_chip_rail,
+    render_command_rail,
+    render_meter,
+    render_tab_bar,
+)
 from ouro_agent.tui.glyphs import get_glyph_set
 from ouro_agent.tui.layout import fit_text
 from ouro_agent.tui.pixel_skin import pixel_panel, pixel_rule
@@ -83,6 +102,7 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
     "next": {"en": "NEXT", "zh": "下一步"},
     "window": {"en": "WINDOW", "zh": "窗口"},
     "window_pressure": {"en": "WINDOW PRESSURE", "zh": "窗口压力"},
+    "camera": {"en": "CAMERA", "zh": "镜头"},
     "stack": {"en": "STACK", "zh": "队列"},
     "skill": {"en": "SKILL", "zh": "技能"},
     "wound": {"en": "WOUND", "zh": "伤口"},
@@ -98,6 +118,7 @@ _CANVAS_LABELS: dict[str, dict[str, str]] = {
 _HERO_VOICE_CUE_TAGS: dict[str, dict[str, str]] = {
     "intro": {"en": "OPENING", "zh": "开场"},
     "advantage": {"en": "ADVANTAGE", "zh": "优势"},
+    "kill_confirmed": {"en": "FINISH", "zh": "收束"},
     "low_hp": {"en": "LOW HP", "zh": "低血"},
     "mp_low": {"en": "MP LOW", "zh": "低蓝"},
     "interrupt_success": {"en": "INTERRUPT", "zh": "打断"},
@@ -120,10 +141,34 @@ _ENEMY_VOICE_CUE_TAGS: dict[str, dict[str, str]] = {
     "watch": {"en": "WATCH", "zh": "观测"},
 }
 
+_ANIMATION_PHASES = {"select", "windup", "travel", "impact", "judge"}
+
+_ANIMATION_PHASE_LABELS: dict[str, dict[str, str]] = {
+    "select": {"en": "SELECT", "zh": "选定"},
+    "windup": {"en": "WINDUP", "zh": "起势"},
+    "travel": {"en": "TRAVEL", "zh": "飞行"},
+    "impact": {"en": "IMPACT", "zh": "命中"},
+    "judge": {"en": "JUDGE", "zh": "裁判"},
+}
+
 
 def _canvas_label(key: str, lang: str) -> str:
     values = _CANVAS_LABELS.get(key, {})
     return values.get(lang, values.get("en", key.upper()))
+
+
+def _normalize_animation_phase(animation_phase: str | None) -> str | None:
+    if animation_phase is None:
+        return None
+    normalized = animation_phase.strip().lower()
+    return normalized if normalized in _ANIMATION_PHASES else None
+
+
+def _animation_phase_label(animation_phase: str | None, lang: str) -> str:
+    if animation_phase is None:
+        return ""
+    values = _ANIMATION_PHASE_LABELS.get(animation_phase, {})
+    return values.get(lang, values.get("en", animation_phase.upper()))
 
 
 def render_battle_screen(
@@ -141,8 +186,10 @@ def render_battle_screen(
     build: ResolvedBuild | None = None,
     scene_text: str | None = None,
     color_mode: str = "never",
+    animation_phase: str | None = None,
 ) -> str:
     frame = build_battle_frame(state, last_record)
+    animation_phase = _normalize_animation_phase(animation_phase)
     lang = language or state.language or DEFAULT_LANGUAGE
     floor = floor_label or label("floor_label_default", lang)
     speed_word = label("speed", lang)
@@ -176,6 +223,7 @@ def render_battle_screen(
                 unicode_mode=unicode_mode,
                 enhanced_bars=enhanced_bars,
                 build=build,
+                animation_phase=animation_phase,
             )
         )
     else:
@@ -191,6 +239,7 @@ def render_battle_screen(
                 color_mode=color_mode,
                 scene_text=scene,
                 build=build,
+                animation_phase=animation_phase,
             )
         )
     lines.append("")
@@ -211,6 +260,7 @@ def render_battle_screen(
             width=width,
             lang=lang,
             unicode_mode=unicode_mode,
+            animation_phase=animation_phase,
         )
     )
     lines.extend(
@@ -254,11 +304,16 @@ def _render_compact_duel_panel(
     unicode_mode: bool,
     enhanced_bars: bool = False,
     build: ResolvedBuild | None = None,
+    animation_phase: str | None = None,
 ) -> list[str]:
     target = _screen_target(state, last_record)
-    hero_sprite = _hero_sprite(state.hero, last_record)[:3]
-    enemy_sprite = _enemy_sprite(target, last_record)[:3] if target else ["", "", ""]
-    effect = _effect_lane(last_record)
+    hero_sprite = _hero_sprite(state.hero, last_record, animation_phase=animation_phase)[:3]
+    enemy_sprite = (
+        _enemy_sprite(target, last_record, animation_phase=animation_phase)[:3]
+        if target
+        else ["", "", ""]
+    )
+    effect = _effect_lane(last_record, animation_phase=animation_phase)
     effect_text = next((line.strip() for line in effect if line.strip()), "...")
 
     left_name = f"{state.hero.short_tag} {state.hero.name}"[:28]
@@ -337,6 +392,7 @@ def _render_duel_panel(
     color_mode: str = "never",
     scene_text: str | None = None,
     build: ResolvedBuild | None = None,
+    animation_phase: str | None = None,
 ) -> list[str]:
     if unicode_mode:
         return _render_canvas_duel_panel(
@@ -348,12 +404,17 @@ def _render_duel_panel(
             color_mode=color_mode,
             scene_text=scene_text,
             build=build,
+            animation_phase=animation_phase,
         )
 
     target = _screen_target(state, last_record)
-    effect = _effect_lane(last_record)
-    hero_sprite = _hero_sprite(state.hero, last_record)
-    enemy_sprite = _enemy_sprite(target, last_record) if target else ["", "", "", ""]
+    effect = _effect_lane(last_record, animation_phase=animation_phase)
+    hero_sprite = _hero_sprite(state.hero, last_record, animation_phase=animation_phase)
+    enemy_sprite = (
+        _enemy_sprite(target, last_record, animation_phase=animation_phase)
+        if target
+        else ["", "", "", ""]
+    )
     hero_lines = _actor_card_lines(
         title=f"{state.hero.short_tag} {state.hero.name}",
         sprite=hero_sprite,
@@ -410,18 +471,22 @@ def _render_canvas_duel_panel(
     color_mode: str = "never",
     scene_text: str | None = None,
     build: ResolvedBuild | None = None,
+    animation_phase: str | None = None,
 ) -> list[str]:
     """Render the main duel as a low-resolution terminal canvas."""
     target = _screen_target(state, last_record)
     glyphs = get_glyph_set("unicode")
-    height = 17
+    height = 18
     surface = Surface(width, height)
     surface.draw_box(0, 0, width, height, glyphs)
 
     title = _canvas_label("canvas_title", lang)
     event = _stage_event_title(frame, lang)
+    phase_label = _animation_phase_label(animation_phase, lang)
+    if phase_label:
+        event = phase_label
     surface.draw_text(3, 0, f" {title} / {event} ")
-    _draw_canvas_beat_badge(surface, width, frame, lang=lang)
+    _draw_canvas_beat_badge(surface, width, frame, lang=lang, animation_phase=animation_phase)
 
     side_w = 24 if width <= 88 else 30
     left_w = side_w
@@ -436,13 +501,13 @@ def _render_canvas_duel_panel(
         surface.put(separator_b, row, glyphs.v)
     _draw_canvas_scene_texture(surface, center_x + 1, 2, center_w - 2, scene_text, lang=lang)
 
-    hero_pose = _actor_pose(state.hero.id, last_record)
+    hero_pose = _actor_pose(state.hero.id, last_record, animation_phase=animation_phase)
     if state.hero.hp / max(1, state.hero.max_hp) < 0.3 and hero_pose not in ("hit", "death"):
         hero_pose = "low"
     hero_art = hero_block_sprite(state.hero.id, hero_pose)
     enemy_art: list[str] = [""] * 4
     if target is not None:
-        enemy_pose = _actor_pose(target.id, last_record)
+        enemy_pose = _actor_pose(target.id, last_record, animation_phase=animation_phase)
         if not target.is_alive:
             if frame.event_banner in {"KILL CONFIRMED", "BOSS DOWN"}:
                 enemy_pose = "codex_reveal"
@@ -562,6 +627,7 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
         lang=lang,
+        animation_phase=animation_phase,
     )
     surface.draw_text(
         center_x + 1,
@@ -586,6 +652,17 @@ def _render_canvas_duel_panel(
         last_record,
         frame,
         lang=lang,
+        animation_phase=animation_phase,
+    )
+    _draw_canvas_impact_flash(
+        surface,
+        center_x + 1,
+        8,
+        center_w - 2,
+        last_record,
+        frame,
+        lang=lang,
+        animation_phase=animation_phase,
     )
     _draw_canvas_damage_rail(
         surface,
@@ -598,7 +675,23 @@ def _render_canvas_duel_panel(
         frame,
         lang=lang,
     )
-    _draw_canvas_plan_ribbon(surface, center_x + 1, 11, center_w - 2, frame, lang=lang)
+    _draw_canvas_phase_pulse(
+        surface,
+        center_x + 1,
+        10,
+        center_w - 2,
+        lang=lang,
+        animation_phase=animation_phase,
+    )
+    _draw_canvas_camera_line(
+        surface,
+        center_x + 1,
+        11,
+        center_w - 2,
+        lang=lang,
+        animation_phase=animation_phase,
+    )
+    _draw_canvas_plan_ribbon(surface, center_x + 1, 12, center_w - 2, frame, lang=lang)
     action = fit_text(
         _canvas_action_label(
             frame,
@@ -610,11 +703,11 @@ def _render_canvas_duel_panel(
         center_w - 2,
     )
     judge = fit_text(f"{_canvas_label('judge', lang)}  {_canvas_judge_label(frame.judge_label, lang=lang)}", center_w - 2)
-    surface.draw_text(center_x + 1, 12, action)
-    surface.draw_text(center_x + 1, 13, judge)
+    surface.draw_text(center_x + 1, 13, action)
+    surface.draw_text(center_x + 1, 14, judge)
     surface.draw_text(
         center_x + 1,
-        14,
+        15,
         _canvas_window_pressure_line(
             frame,
             state,
@@ -627,7 +720,7 @@ def _render_canvas_duel_panel(
     _draw_canvas_delta_ribbon(
         surface,
         center_x + 1,
-        15,
+        16,
         center_w - 2,
         frame,
         state,
@@ -985,6 +1078,227 @@ def _draw_canvas_damage_rail(
         surface.draw_text(x, y, fit_text(_canvas_pain_label(hero, record, lang=lang), width))
     elif target is not None:
         surface.draw_text(x, y, fit_text(_canvas_wound_label(target, record, lang=lang), width))
+
+
+def _draw_canvas_impact_flash(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    lang: str,
+    animation_phase: str | None = None,
+) -> None:
+    if width < 20:
+        return
+    label_text = _canvas_impact_flash_label(record, frame, lang=lang, animation_phase=animation_phase)
+    if not label_text:
+        return
+    glyphs = get_glyph_set("unicode")
+    surface.fill_rect(x, y, width, 1, glyphs.mid)
+    surface.draw_text(x, y, fit_text(_center_canvas_text(label_text, width), width))
+
+
+def _canvas_impact_flash_label(
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    *,
+    lang: str,
+    animation_phase: str | None = None,
+) -> str | None:
+    if _normalize_animation_phase(animation_phase) != "impact":
+        return None
+    damage = _canvas_flash_damage(record, frame)
+    if not damage:
+        return None
+    if record is not None and record.side == "enemy":
+        return f"▓▓ 痛闪 -{damage}生命 <<< ▓▓" if lang == "zh" else f"▓▓ PAIN FLASH -{damage}HP <<< ▓▓"
+    return f"▓▓ 命中闪光 -{damage}生命 >>> ▓▓" if lang == "zh" else f"▓▓ HIT FLASH -{damage}HP >>> ▓▓"
+
+
+def _canvas_flash_damage(record: TurnRecord | None, frame: BattleFrame) -> int:
+    if record is None:
+        return 0
+    if record.side == "enemy":
+        return int((record.enemy_action or {}).get("damage", 0) or 0)
+    if record.judge is not None and record.judge.damage > 0:
+        return int(record.judge.damage)
+    for value in frame.floating_numbers:
+        if "HP" not in value:
+            continue
+        digits = "".join(char for char in value if char.isdigit())
+        if digits:
+            return int(digits)
+    return 0
+
+
+def _draw_canvas_phase_pulse(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    *,
+    lang: str,
+    animation_phase: str | None = None,
+) -> None:
+    phase = _normalize_animation_phase(animation_phase)
+    if phase is None or width < 20:
+        return
+    label_text = _canvas_phase_pulse_label(phase, width, lang=lang)
+    surface.fill_rect(x, y, width, 1, " ")
+    surface.draw_text(x, y, fit_text(_center_canvas_text(label_text, width), width))
+
+
+def _draw_canvas_camera_line(
+    surface: Surface,
+    x: int,
+    y: int,
+    width: int,
+    *,
+    lang: str,
+    animation_phase: str | None = None,
+) -> None:
+    phase = _normalize_animation_phase(animation_phase)
+    if phase is None or width < 18:
+        return
+    label_text = _canvas_camera_label(phase, width, lang=lang)
+    surface.fill_rect(x, y, width, 1, " ")
+    surface.draw_text(x, y, fit_text(_center_canvas_text(label_text, width), width))
+
+
+def _canvas_camera_label(phase: str, width: int, *, lang: str) -> str:
+    label = _canvas_label("camera", lang)
+    if lang == "zh":
+        full_status = {
+            "select": "░锁定░ 目标入框",
+            "windup": "▒推近▒ 起手压前",
+            "travel": "▓平移▓ 追踪弹道",
+            "impact": "█震动█ 命中停顿",
+            "judge": "░稳定░ 结果停留",
+        }.get(phase, phase)
+        short_status = {
+            "select": "░锁定░ 目标",
+            "windup": "▒推近▒ 起手",
+            "travel": "▓平移▓ 弹道",
+            "impact": "█震动█ 命中",
+            "judge": "░稳定░ 结果",
+        }.get(phase, phase)
+        candidates = (
+            f"{label} {full_status}",
+            f"{label} {short_status}",
+            f"{label} {_canvas_phase_short_label(phase, lang)}",
+        )
+        return _first_fit(candidates, width)
+    full_status = {
+        "select": "░LOCK░ reticle on target",
+        "windup": "▒PUSH▒ windup lean",
+        "travel": "▓PAN▓ effect lane tracks",
+        "impact": "█SHAKE█ hit stop",
+        "judge": "░SETTLE░ result hold",
+    }.get(phase, phase)
+    short_status = {
+        "select": "░LOCK░ target",
+        "windup": "▒PUSH▒ windup",
+        "travel": "▓PAN▓ lane",
+        "impact": "█SHAKE█ hit",
+        "judge": "░SETTLE░ judge",
+    }.get(phase, phase)
+    candidates = (
+        f"{label} {full_status}",
+        f"CAM {short_status}",
+        f"CAM {_canvas_phase_short_label(phase, lang)}",
+    )
+    return _first_fit(candidates, width)
+
+
+def _canvas_phase_pulse_label(phase: str, width: int, *, lang: str) -> str:
+    bar = _canvas_phase_pulse_bar(phase, width)
+    if lang == "zh":
+        full_status = {
+            "select": "锁定目标",
+            "windup": "蓄势",
+            "travel": "穿过裂隙",
+            "impact": "命中回闪",
+            "judge": "本地裁判",
+        }.get(phase, phase)
+        short_status = {
+            "select": "锁定",
+            "windup": "蓄势",
+            "travel": "飞行",
+            "impact": "命中",
+            "judge": "裁判",
+        }.get(phase, phase)
+        candidates = (
+            f"回声脉冲 {bar} {_animation_phase_label(phase, lang)} {full_status}",
+            f"脉冲 {bar} {_canvas_phase_short_label(phase, lang)} {short_status}",
+            f"脉冲 {bar} {_canvas_phase_short_label(phase, lang)}",
+        )
+        return _first_fit(candidates, width)
+    full_status = {
+        "select": "target lock",
+        "windup": "charge rising",
+        "travel": "rift transit",
+        "impact": "hit return",
+        "judge": "local judge",
+    }.get(phase, phase)
+    short_status = {
+        "select": "lock",
+        "windup": "charge",
+        "travel": "transit",
+        "impact": "hit",
+        "judge": "judge",
+    }.get(phase, phase)
+    candidates = (
+        f"ECHO PULSE {bar} {_animation_phase_label(phase, lang)} {full_status}",
+        f"PULSE {bar} {_canvas_phase_short_label(phase, lang)} {short_status}",
+        f"PULSE {bar} {_canvas_phase_short_label(phase, lang)}",
+    )
+    return _first_fit(candidates, width)
+
+
+def _first_fit(candidates: tuple[str, ...], width: int) -> str:
+    for candidate in candidates:
+        if visual_width(candidate) <= width:
+            return candidate
+    return fit_text(candidates[-1], width)
+
+
+def _canvas_phase_short_label(phase: str, lang: str) -> str:
+    if lang == "zh":
+        return {
+            "select": "选",
+            "windup": "势",
+            "travel": "飞",
+            "impact": "击",
+            "judge": "裁",
+        }.get(phase, phase[:1])
+    return {
+        "select": "SEL",
+        "windup": "WND",
+        "travel": "FLY",
+        "impact": "HIT",
+        "judge": "JDG",
+    }.get(phase, phase[:3].upper())
+
+
+def _canvas_phase_pulse_bar(phase: str, width: int) -> str:
+    glyphs = get_glyph_set("unicode")
+    order = ("select", "windup", "travel", "impact", "judge")
+    try:
+        active = order.index(phase)
+    except ValueError:
+        active = 0
+    size = 5 if width < 30 else 7
+    chars: list[str] = []
+    for idx in range(size):
+        if idx <= active:
+            chars.append(glyphs.solid)
+        elif idx == active + 1:
+            chars.append(glyphs.mid)
+        else:
+            chars.append(glyphs.light)
+    return "".join(chars)
 
 
 def _canvas_wound_label(target: Enemy, record: TurnRecord | None, *, lang: str) -> str:
@@ -1484,25 +1798,41 @@ def _canvas_action_token(value: str) -> str:
     return "".join(word[:1].upper() for word in words)[:8]
 
 
-def _draw_canvas_beat_badge(surface: Surface, width: int, frame: BattleFrame, lang: str) -> None:
-    label_text = _canvas_beat_badge_label(frame, lang=lang)
+def _draw_canvas_beat_badge(
+    surface: Surface,
+    width: int,
+    frame: BattleFrame,
+    lang: str,
+    animation_phase: str | None = None,
+) -> None:
+    label_text = _canvas_beat_badge_label(frame, lang=lang, animation_phase=animation_phase)
     x = max(3, width - visual_width(label_text) - 3)
     surface.draw_text(x, 0, label_text)
 
 
-def _canvas_beat_badge_label(frame: BattleFrame, lang: str) -> str:
+def _canvas_beat_badge_label(
+    frame: BattleFrame,
+    lang: str,
+    *,
+    animation_phase: str | None = None,
+) -> str:
+    phase_label = _animation_phase_label(animation_phase, lang)
     if lang == "zh":
         phase = {
             "model_waiting": "等待",
             "hero_action": "英雄",
             "enemy_action": "敌方",
         }.get(frame.phase, frame.phase)
+        if phase_label:
+            return f" 节拍 T{frame.tick:03d} {phase} {phase_label} "
         return f" 节拍 T{frame.tick:03d} {phase} "
     phase = {
         "model_waiting": "WAIT",
         "hero_action": "HERO",
         "enemy_action": "ENEMY",
     }.get(frame.phase, frame.phase.upper()[:5])
+    if phase_label:
+        return f" BEAT T{frame.tick:03d} {phase} {phase_label} "
     return f" BEAT T{frame.tick:03d} {phase} "
 
 
@@ -1986,11 +2316,12 @@ def _draw_canvas_effect_lane(
     record: TurnRecord | None,
     frame: BattleFrame,
     lang: str,
+    animation_phase: str | None = None,
 ) -> None:
     glyphs = get_glyph_set("unicode")
     surface.fill_rect(x, y, width, 3, " ")
     surface.fill_rect(x, y + 2, width, 1, glyphs.light)
-    lane = _block_effect_lane(record, frame, width, lang=lang)
+    lane = _block_effect_lane(record, frame, width, lang=lang, animation_phase=animation_phase)
     for idx, row in enumerate(lane[:6]):
         surface.draw_text(x, y + idx, fit_text(row, width))
 
@@ -2003,14 +2334,15 @@ def _draw_canvas_beat_strip(
     record: TurnRecord | None,
     frame: BattleFrame,
     lang: str,
+    animation_phase: str | None = None,
 ) -> None:
     glyphs = get_glyph_set("unicode")
-    labels = _canvas_beat_labels(record, frame, lang)
+    labels = _canvas_beat_labels(record, frame, lang, animation_phase=animation_phase)
     segment_gap = 1
-    segment_width = max(7, (width - segment_gap * 2) // 3)
+    segment_width = max(5, (width - segment_gap * (len(labels) - 1)) // len(labels))
     for idx, label_text in enumerate(labels):
         left = x + idx * (segment_width + segment_gap)
-        fill = _canvas_beat_fill(idx, record, frame, glyphs)
+        fill = _canvas_beat_fill(idx, record, frame, glyphs, animation_phase=animation_phase)
         surface.fill_rect(left, y, segment_width, 1, fill)
         surface.draw_text(left + 1, y, fit_text(label_text, segment_width - 2))
 
@@ -2226,7 +2558,17 @@ def _canvas_skill_code(skill) -> str:
     return source[:3].upper()
 
 
-def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame, lang: str) -> tuple[str, str, str]:
+def _canvas_beat_labels(
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    lang: str,
+    *,
+    animation_phase: str | None = None,
+) -> tuple[str, ...]:
+    if animation_phase is not None:
+        if lang == "zh":
+            return ("选定", "起势", "飞行", "命中", "裁判")
+        return ("SELECT", "WIND", "TRAVEL", "IMPACT", "JUDGE")
     judge = _canvas_label("judge", lang)
     if lang == "zh":
         if record is None:
@@ -2249,7 +2591,22 @@ def _canvas_beat_labels(record: TurnRecord | None, frame: BattleFrame, lang: str
     return ("SELECT", "IMPACT", judge)
 
 
-def _canvas_beat_fill(idx: int, record: TurnRecord | None, frame: BattleFrame, glyphs) -> str:
+def _canvas_beat_fill(
+    idx: int,
+    record: TurnRecord | None,
+    frame: BattleFrame,
+    glyphs,
+    *,
+    animation_phase: str | None = None,
+) -> str:
+    if animation_phase is not None:
+        phase_order = ("select", "windup", "travel", "impact", "judge")
+        active_idx = phase_order.index(animation_phase)
+        if idx == active_idx:
+            return glyphs.solid
+        if idx < active_idx:
+            return glyphs.mid
+        return glyphs.light
     if record is None and idx > 0:
         return glyphs.light
     if frame.counter_hint and "[MISSED]" in frame.counter_hint:
@@ -2273,7 +2630,9 @@ def _block_effect_lane(
     frame: BattleFrame,
     width: int,
     lang: str = "en",
+    animation_phase: str | None = None,
 ) -> list[str]:
+    animation_phase = _normalize_animation_phase(animation_phase)
     if record is None:
         return block_effect_rows(
             "wait",
@@ -2281,6 +2640,8 @@ def _block_effect_lane(
             width,
             lang=lang,
         )
+    if animation_phase is not None and animation_phase != "judge":
+        return _animation_block_effect_lane(record, frame, width, lang=lang, animation_phase=animation_phase)
     damage = 0
     if record.judge is not None:
         damage = record.judge.damage
@@ -2325,6 +2686,107 @@ def _block_effect_lane(
         text = f"技能 -{damage} HP" if lang == "zh" else f"SKILL -{damage} HP"
         return block_effect_rows("skill", text, width, lang=lang)
     return block_effect_rows("wait", "待机" if lang == "zh" else "PENDING", width, lang=lang)
+
+
+def _animation_block_effect_lane(
+    record: TurnRecord,
+    frame: BattleFrame,
+    width: int,
+    *,
+    lang: str,
+    animation_phase: str,
+) -> list[str]:
+    effect_key = _animation_effect_key(record, frame, animation_phase)
+    label_text = _animation_block_label(record, frame, lang=lang, animation_phase=animation_phase)
+    return block_effect_rows(effect_key, label_text, width, lang=lang)
+
+
+def _animation_effect_key(record: TurnRecord, frame: BattleFrame, animation_phase: str) -> str:
+    if animation_phase == "select":
+        return "observe"
+    if animation_phase == "windup":
+        return "wait"
+    if animation_phase == "impact" and (frame.counter_hint or _record_breaks_target(record)):
+        return "break"
+    if animation_phase == "impact" and frame.event_banner in {"CLIMAX HIT", "KILL CONFIRMED", "BOSS DOWN"}:
+        return "climax"
+    if record.side == "enemy":
+        kind = (record.enemy_action or {}).get("type", "attack")
+        if kind == "chant_release":
+            return "chant"
+        if kind == "chant_charge":
+            return "counter"
+        if kind == "silenced":
+            return "break"
+        return "enemy_strike"
+    if record.action is None:
+        return "wait"
+    if record.action.type == "basic_attack":
+        return "strike"
+    if record.action.type in {"defend", "observe"}:
+        return "guard" if record.action.type == "defend" else "observe"
+    skill = record.action.skill_id or ""
+    if "hex" in skill or "silent" in skill:
+        return "seal"
+    if "sting" in skill or "corrupted" in skill:
+        return "shadow"
+    if "mire" in skill or "omen" in skill:
+        return "poison"
+    if "ember" in skill or "burial" in skill:
+        return "fire"
+    return "skill"
+
+
+def _animation_block_label(
+    record: TurnRecord,
+    frame: BattleFrame,
+    *,
+    lang: str,
+    animation_phase: str,
+) -> str:
+    phase = _animation_phase_label(animation_phase, lang)
+    if animation_phase == "select":
+        action = _animation_action_token(record, lang=lang)
+        return f"{phase} {action}"
+    if animation_phase == "windup":
+        actor = "敌方" if lang == "zh" and record.side == "enemy" else "ENEMY" if record.side == "enemy" else "英雄" if lang == "zh" else "HERO"
+        return f"{phase} {actor}"
+    if animation_phase == "travel":
+        lane = _director_text(frame.effect_glyph, lang) if lang == "zh" else frame.effect_glyph
+        return f"{phase} {lane}"
+    if animation_phase == "impact":
+        impact = _canvas_impact_label(frame.impact_line, lang=lang) if frame.impact_line else ""
+        if not impact and frame.floating_numbers:
+            impact = " ".join(_display_floating_number(value, lang=lang) for value in frame.floating_numbers)
+        return f"{phase} {impact or _animation_action_token(record, lang=lang)}"
+    judge = _canvas_judge_label(frame.judge_label, lang=lang)
+    return f"{phase} {judge}"
+
+
+def _animation_action_token(record: TurnRecord, *, lang: str) -> str:
+    if record.side == "enemy":
+        action_type = str((record.enemy_action or {}).get("type", "attack"))
+        if lang == "zh":
+            return {
+                "chant_charge": "蓄力",
+                "chant_release": "释放",
+                "silenced": "沉默",
+                "attack": "攻击",
+                "basic_attack": "攻击",
+            }.get(action_type, action_type)
+        return _canvas_action_token(action_type)
+    if record.action is None:
+        return "待机" if lang == "zh" else "WAIT"
+    if record.action.type == "cast_skill" and record.action.skill_id:
+        token = _canvas_action_token(record.action.skill_id.removeprefix("skill_"))
+        return token if lang != "zh" else _director_text(token, lang)
+    if lang == "zh":
+        return {
+            "basic_attack": "普攻",
+            "defend": "防御",
+            "observe": "观察",
+        }.get(record.action.type, record.action.type)
+    return _canvas_action_token(record.action.type)
 
 
 def _battle_visual_tone(state: BattleState, frame: BattleFrame) -> str:
@@ -2986,15 +3448,15 @@ def _decision_focus_align(frame: BattleFrame, *, lang: str) -> str:
     if lang != "zh":
         return frame.align
     replacements = {
-        "Prompt pending": "Prompt 待机",
+        "Prompt pending": "提示词待机",
         "Counter window": "反制窗口",
         "Local AI": "本地敌方 AI",
-        "Prompt missed": "Prompt 失手",
-        "Prompt: Control hit | Build: shadow/control": "Prompt 控制命中 | Build 暗影/控制",
-        "Prompt: Guarded hit | Build: survival": "Prompt 防守命中 | Build 生存",
-        "Prompt: damage tempo | Build skill": "Prompt 伤害节奏 | Build 技能",
-        "Prompt: fallback/basic": "Prompt 降级/普攻",
-        "Prompt alignment unknown": "Prompt 对齐未知",
+        "Prompt missed": "提示词失手",
+        "Prompt: Control hit | Build: shadow/control": "提示词控制命中 | 构筑 暗影/控制",
+        "Prompt: Guarded hit | Build: survival": "提示词防守命中 | 构筑 生存",
+        "Prompt: damage tempo | Build skill": "提示词伤害节奏 | 构筑 技能",
+        "Prompt: fallback/basic": "提示词降级/普攻",
+        "Prompt alignment unknown": "提示词对齐未知",
     }
     return replacements.get(frame.align, _director_text(frame.align, lang))
 
@@ -3122,6 +3584,7 @@ def _render_cinematic_beat_panel(
     width: int,
     lang: str,
     unicode_mode: bool,
+    animation_phase: str | None = None,
 ) -> list[str]:
     title = "CINEMATIC BEAT" if lang == "en" else "战斗分镜"
     max_text = max(24, width - 10)
@@ -3139,7 +3602,13 @@ def _render_cinematic_beat_panel(
     )
     enm_raw = _select_enemy_line(state, last_record, frame, lang=lang, width=max_text)
     float_raw = _build_cinematic_float(frame, width=max_text, lang=lang)
-    strip_raw = _build_cinematic_strip(frame, lang=lang, width=max_text, unicode_mode=unicode_mode)
+    strip_raw = _build_cinematic_strip(
+        frame,
+        lang=lang,
+        width=max_text,
+        unicode_mode=unicode_mode,
+        animation_phase=animation_phase,
+    )
     log_lines = _build_cinematic_logs(state.log[-2:], lang=lang, width=max_text)
     script_lines = _turn_script_lines(state, last_record, frame, width=max_text, lang=lang)
     vox_cue = _hero_voice_cue_tag(
@@ -3287,7 +3756,31 @@ def _build_cinematic_strip(
     lang: str,
     width: int,
     unicode_mode: bool = False,
+    animation_phase: str | None = None,
 ) -> str:
+    if animation_phase is not None:
+        labels = _canvas_beat_labels(None, frame, lang, animation_phase=animation_phase)
+        active = {
+            "select": 0,
+            "windup": 1,
+            "travel": 2,
+            "impact": 3,
+            "judge": 4,
+        }[animation_phase]
+        chips: list[str] = []
+        for idx, label_text in enumerate(labels):
+            if unicode_mode:
+                if idx == active:
+                    chips.append(f"█{label_text}█")
+                elif idx < active:
+                    chips.append(f"▓{label_text}▓")
+                else:
+                    chips.append(f"░{label_text}░")
+            else:
+                marker = ">" if idx == active else "=" if idx < active else "-"
+                chips.append(f"[{marker}{label_text}]")
+        return fit_text(" ".join(chips), width, ellipsis="")
+
     windup = "WIND" if lang == "en" else "起势"
     lane = _cinematic_lane_token(frame.effect_glyph or frame.effect_kind, lang=lang)
     impact = (
@@ -3959,12 +4452,21 @@ def _basic_attack_lethal(hero: Hero, enemy: Enemy) -> bool:
     return enemy.hp <= damage
 
 
-def _actor_pose(actor_id: str, record: TurnRecord | None) -> str:
+def _actor_pose(
+    actor_id: str,
+    record: TurnRecord | None,
+    *,
+    animation_phase: str | None = None,
+) -> str:
     """Determine the appropriate pose for an actor based on the turn record.
 
     Returns:
         A pose string like "idle", "attack", "skill_shadow", "defend", "hit", etc.
     """
+    animation_phase = _normalize_animation_phase(animation_phase)
+    if animation_phase is not None and animation_phase != "judge":
+        return _animation_actor_pose(actor_id, record, animation_phase)
+
     if record is None:
         return "idle"
 
@@ -4029,13 +4531,100 @@ def _actor_pose(actor_id: str, record: TurnRecord | None) -> str:
     return "idle"
 
 
-def _effect_lane(record: TurnRecord | None) -> list[str]:
+def _animation_actor_pose(actor_id: str, record: TurnRecord | None, animation_phase: str) -> str:
+    if record is None:
+        return "observe" if actor_id.startswith("hero_") and animation_phase in {"select", "windup"} else "idle"
+
+    if animation_phase == "select":
+        if record.actor_id == actor_id:
+            return "observe" if record.side == "hero" else "idle"
+        return "idle"
+
+    if animation_phase in {"windup", "travel"}:
+        if record.actor_id == actor_id:
+            return _record_actor_action_pose(record)
+        return "idle"
+
+    if animation_phase == "impact":
+        if _record_targets_actor(record, actor_id):
+            if record.side == "enemy" and actor_id.startswith("hero_"):
+                return "hit"
+            if record.side == "hero" and record.actor_id == actor_id:
+                return _record_actor_action_pose(record)
+            if record.side == "hero":
+                return "break" if _record_breaks_target(record) else "hit"
+        if record.actor_id == actor_id and record.side == "enemy":
+            return _record_actor_action_pose(record)
+        return "idle"
+
+    return "idle"
+
+
+def _record_targets_actor(record: TurnRecord, actor_id: str) -> bool:
+    if record.side == "enemy" and actor_id.startswith("hero_"):
+        return int((record.enemy_action or {}).get("damage", 0) or 0) > 0
+    if record.action is not None and actor_id in record.action.targets:
+        return True
+    if record.judge is not None and actor_id in record.judge.target_ids:
+        return True
+    return False
+
+
+def _record_breaks_target(record: TurnRecord) -> bool:
+    if record.judge is not None and record.judge.skill_id:
+        return any(token in record.judge.skill_id for token in ("hex", "silent", "seal", "stagger"))
+    if record.action is not None and record.action.skill_id:
+        return any(token in record.action.skill_id for token in ("hex", "silent", "seal", "stagger"))
+    return False
+
+
+def _record_actor_action_pose(record: TurnRecord) -> str:
+    if record.side == "enemy":
+        action_type = (record.enemy_action or {}).get("type", "attack")
+        if action_type == "silenced":
+            return "break"
+        if action_type in {"chant_charge", "chant_release"}:
+            return "skill"
+        return "attack"
+
+    if record.action is None:
+        return "observe"
+    if record.action.type == "basic_attack":
+        return "attack"
+    if record.action.type == "defend":
+        return "defend"
+    if record.action.type == "observe":
+        return "observe"
+    if record.action.type != "cast_skill":
+        return "skill"
+
+    skill = record.action.skill_id or ""
+    if "sting" in skill or "hex" in skill or "corrupted" in skill:
+        return "skill_shadow"
+    if "ember" in skill or "burial" in skill:
+        return "skill_fire"
+    if "pierce" in skill or "hook" in skill or "grave" in skill:
+        return "skill_physical"
+    if "silent" in skill or "returning" in skill:
+        return "skill_holy"
+    if "mire" in skill or "omen" in skill:
+        return "skill_poison"
+    if "tower" in skill or "eclipse" in skill or "sinking" in skill or "crank" in skill or "bell" in skill:
+        return "defend"
+    return "skill"
+
+
+def _effect_lane(record: TurnRecord | None, *, animation_phase: str | None = None) -> list[str]:
     """Generate the effect lane animation for a turn.
 
     Shows attack direction, skill type, damage numbers, and status effects.
     """
+    animation_phase = _normalize_animation_phase(animation_phase)
     if record is None:
         return ["", "     ...", "", ""]
+
+    if animation_phase is not None and animation_phase != "judge":
+        return _animation_effect_lane(record, animation_phase)
 
     # Enemy turn
     if record.side == "enemy":
@@ -4173,9 +4762,55 @@ def _effect_lane(record: TurnRecord | None) -> list[str]:
     return ["", "   ...", "", ""]
 
 
-def _hero_sprite(hero: Hero, record: TurnRecord | None) -> list[str]:
+def _animation_effect_lane(record: TurnRecord, animation_phase: str) -> list[str]:
+    direction = "<==" if record.side == "enemy" else "-->"
+    if animation_phase == "select":
+        label_text = "SELECT"
+        marker = "[*]"
+    elif animation_phase == "windup":
+        label_text = "WINDUP"
+        marker = "[>]"
+    elif animation_phase == "travel":
+        label_text = "TRAVEL"
+        marker = direction
+    else:
+        label_text = "IMPACT"
+        marker = _animation_impact_marker(record)
+    return ["", f"{marker} {label_text}", _animation_effect_payload(record, animation_phase), ""]
+
+
+def _animation_effect_payload(record: TurnRecord, animation_phase: str) -> str:
+    if animation_phase in {"select", "windup", "travel"}:
+        if record.side == "enemy":
+            return "enemy cue"
+        if record.action is None:
+            return "action cue"
+        if record.action.type == "cast_skill" and record.action.skill_id:
+            return record.action.skill_id.removeprefix("skill_")[:16]
+        return record.action.type[:16]
+    if record.side == "enemy":
+        damage = int((record.enemy_action or {}).get("damage", 0) or 0)
+        return f"-{damage} HP" if damage else "resolved"
+    damage = record.judge.damage if record.judge is not None else 0
+    return f"-{damage} HP" if damage else "resolved"
+
+
+def _animation_impact_marker(record: TurnRecord) -> str:
+    if record.side == "enemy":
+        return "<!!"
+    if _record_breaks_target(record):
+        return "--x"
+    return "--*"
+
+
+def _hero_sprite(
+    hero: Hero,
+    record: TurnRecord | None,
+    *,
+    animation_phase: str | None = None,
+) -> list[str]:
     """Generate the hero sprite based on current pose and state."""
-    state = _actor_pose(hero.id, record)
+    state = _actor_pose(hero.id, record, animation_phase=animation_phase)
 
     # Check for low HP state (overrides other poses except hit and death)
     if hero.hp / max(1, hero.max_hp) < 0.3 and state not in ("hit", "death"):
@@ -4183,9 +4818,14 @@ def _hero_sprite(hero: Hero, record: TurnRecord | None) -> list[str]:
     return asset_hero_sprite(hero.id, state)
 
 
-def _enemy_sprite(enemy: Enemy, record: TurnRecord | None) -> list[str]:
+def _enemy_sprite(
+    enemy: Enemy,
+    record: TurnRecord | None,
+    *,
+    animation_phase: str | None = None,
+) -> list[str]:
     """Generate the enemy sprite based on current pose and state."""
-    state = _actor_pose(enemy.id, record)
+    state = _actor_pose(enemy.id, record, animation_phase=animation_phase)
 
     # Check for death state
     if not enemy.is_alive:
@@ -4269,7 +4909,7 @@ def render_main_menu(
     lines.append("")
     lines.extend(
         pixel_panel(
-            "STATUS HUD" if lang == "en" else "状态 HUD",
+            "STATUS HUD" if lang == "en" else "状态面板",
             [
                 f"{label('menu_provider', lang)} : {view['provider']}    {label('menu_model', lang)}: {view['model']}    {label('menu_key', lang)}: {key_state}",
                 f"{label('menu_language', lang)} : {lang}      {label('menu_visual', lang)}: {visual}",
@@ -4297,15 +4937,15 @@ def render_main_menu(
 def _render_main_menu_header(provider: str, *, lang: str) -> list[str]:
     if lang == "zh":
         provider_hint = (
-            "Mock Path : mock-ready / 离线试玩始终可用"
+            "离线试玩 : mock-ready / 始终可用"
             if provider != "mock"
-            else "Mock Path : mock-ready / 当前就是离线试玩模式"
+            else "离线试玩 : mock-ready / 当前就是离线试玩模式"
         )
         return [
             label("menu_title", lang),
-            "[NEXT] 建议先跑: ouro demo --seed 1",
+            "[下一步] 建议先跑: ouro try --seed 1",
             provider_hint,
-            "[FULL] 完整一局: ouro run --mock",
+            "[完整] 完整一局: ouro run --mock",
         ]
     provider_hint = (
         "Mock Path : mock-ready / offline play is always available"
@@ -4314,7 +4954,7 @@ def _render_main_menu_header(provider: str, *, lang: str) -> list[str]:
     )
     return [
         label("menu_title", lang),
-        "[NEXT] Recommended: ouro demo --seed 1",
+        "[NEXT] Recommended: ouro try --seed 1",
         provider_hint,
         "[FULL] Full run: ouro run --mock",
     ]
@@ -4322,17 +4962,17 @@ def _render_main_menu_header(provider: str, *, lang: str) -> list[str]:
 
 def _render_main_menu_journey(lang: str, *, width: int = 100) -> list[str]:
     if lang == "zh":
-        title = "PLAYER JOURNEY BOARD :: 玩家旅程"
+        title = "玩家旅程"
         body = [
-            "[START] 引导试玩 -> ouro demo --seed 1",
-            "[BUILD] 选英雄/武器 -> ouro list-heroes / ouro weapons",
-            "[RUN] 完整运行 -> ouro run --mock",
-            "[LEARN] 复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report",
+            "[试玩] 快速试玩 -> ouro try --seed 1 / ouro demo --seed 1",
+            "[构筑] 选英雄/武器 -> ouro list-heroes / ouro weapons",
+            "[运行] 完整运行 -> ouro run --mock",
+            "[复盘] 复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report",
         ]
     else:
         title = "PLAYER JOURNEY BOARD"
         body = [
-            "[START] Guided demo -> ouro demo --seed 1",
+            "[START] Try first -> ouro try --seed 1 / ouro demo --seed 1",
             "[BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons",
             "[RUN] Full run -> ouro run --mock",
             "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report",
@@ -4343,25 +4983,25 @@ def _render_main_menu_journey(lang: str, *, width: int = 100) -> list[str]:
 def _render_main_menu_entries(lang: str) -> list[str]:
     if lang == "zh":
         return [
-            "[PLAY] 新运行          ouro run --mock",
-            "[PLAY] 引导试玩        ouro demo --seed 1",
-            "[FIGHT] 快速战斗       ouro play --mock --no-animation",
-            "[BUILD] 英雄/武器      ouro list-heroes / ouro weapons / ouro hero-card <英雄>",
-            "[BUILD] 咒语风格       ouro prompt-templates",
-            "[LEARN] 状态总览       ouro status",
-            "[LEARN] 图鉴           ouro codex",
-            "[LEARN] 运行归档       ouro runs --limit 5",
-            "[LEARN] 运行报告       ouro run-report",
-            "[LEARN] 陨落历史       ouro history --limit 5",
-            "[TOOLS] 回放           ouro replay <追踪>",
-            "[TOOLS] 诊断           ouro doctor",
-            "[TOOLS] 配置           ouro config setup",
-            "[QUIT] 退出            q",
+            "[运行] 新运行          ouro run --mock",
+            "[试玩] 快速试玩        ouro try --seed 1 / ouro demo --seed 1",
+            "[战斗] 快速战斗        ouro play --mock --unicode",
+            "[构筑] 英雄/武器       ouro list-heroes / ouro weapons / ouro hero-card <英雄>",
+            "[构筑] 咒语风格        ouro prompt-templates",
+            "[复盘] 状态总览        ouro status",
+            "[复盘] 图鉴            ouro codex",
+            "[复盘] 运行归档        ouro runs --limit 5",
+            "[复盘] 运行报告        ouro run-report",
+            "[复盘] 陨落历史        ouro history --limit 5",
+            "[工具] 回放            ouro replay <追踪>",
+            "[工具] 诊断            ouro doctor",
+            "[工具] 配置            ouro config setup",
+            "[退出] 退出            q",
         ]
     return [
         "[PLAY] New Run        ouro run --mock",
-        "[PLAY] Guided Demo    ouro demo --seed 1",
-        "[FIGHT] Quick Battle  ouro play --mock --no-animation",
+        "[PLAY] Try / Demo     ouro try --seed 1 / ouro demo --seed 1",
+        "[FIGHT] Quick Battle  ouro play --mock --unicode",
         "[BUILD] Hero/Weapon   ouro list-heroes / ouro weapons / ouro hero-card <hero>",
         "[BUILD] Prompt Style  ouro prompt-templates",
         "[LEARN] Status        ouro status",
@@ -4394,7 +5034,7 @@ def render_progress_status(
     lang = language
     width = max(60, width)
     view = redacted_view(config, language=lang)
-    title = "OURO STATUS :: ECHO LEDGER" if lang == "en" else "OURO STATUS :: 回响总览"
+    title = "OURO STATUS :: ECHO LEDGER" if lang == "en" else "OURO :: 回响总览"
     provider_title = "PROFILE" if lang == "en" else "档案"
     storage_title = "LOCAL FILES" if lang == "en" else "本地文件"
     progress_title = "PROGRESS" if lang == "en" else "进度"
@@ -4405,38 +5045,60 @@ def render_progress_status(
 
     key_state = "mock-ready"
     if config.provider != "mock":
-        key_state = (
-            "set (hidden)"
-            if config.api_key_env and os.environ.get(config.api_key_env)
-            else "MISSING"
-        )
+        if config.api_key_env and os.environ.get(config.api_key_env):
+            key_state = "set (hidden)" if lang == "en" else "已设置(隐藏)"
+        else:
+            key_state = "MISSING" if lang == "en" else "缺失"
     visual = "unicode" if config.unicode_mode else "ascii"
     codex_counts = _codex_summary_counts(bundle, codex_progress)
     total_runs = len(archives)
     complete_runs = sum(1 for item in archives if str(item.get("result", "")) == "complete")
     dead_runs = sum(1 for item in archives if str(item.get("result", "")) == "dead")
 
-    profile_body = [
-        f"Provider: {view['provider']}  Model: {view['model']}  Key: {key_state}",
-        f"Language: {lang}  Visual: {visual}",
-    ]
-    storage_body = [
-        f"Config: {config_path}",
-        f"Codex: {codex_save_path}",
-        f"Run Archives: {run_archive_path}",
-        f"Death History: {death_history_save_path}",
-    ]
-    progress_body = [
-        (
-            "Codex: "
-            f"Observed {codex_counts['observed']}/{codex_counts['total']}  "
-            f"Familiar {codex_counts['familiar']}/{codex_counts['total']}  "
-            f"Mastered {codex_counts['mastered']}/{codex_counts['total']}  "
-            f"Hunted {codex_counts['hunted']}/{codex_counts['total']}"
-        ),
-        f"Runs: {total_runs} total  {complete_runs} complete  {dead_runs} dead",
-        f"Fallen Runs: {len(deaths)}",
-    ]
+    if lang == "zh":
+        profile_body = [
+            f"供应商: {view['provider']}  模型: {view['model']}  密钥: {key_state}",
+            f"语言: {lang}  视觉: {visual}",
+        ]
+        storage_body = [
+            f"配置: {config_path}",
+            f"图鉴: {codex_save_path}",
+            f"运行归档: {run_archive_path}",
+            f"陨落历史: {death_history_save_path}",
+        ]
+        progress_body = [
+            (
+                "图鉴: "
+                f"已观察 {codex_counts['observed']}/{codex_counts['total']}  "
+                f"已熟悉 {codex_counts['familiar']}/{codex_counts['total']}  "
+                f"已掌握 {codex_counts['mastered']}/{codex_counts['total']}  "
+                f"已追猎 {codex_counts['hunted']}/{codex_counts['total']}"
+            ),
+            f"运行: {total_runs} 次  通关 {complete_runs}  陨落 {dead_runs}",
+            f"陨落记录: {len(deaths)}",
+        ]
+    else:
+        profile_body = [
+            f"Provider: {view['provider']}  Model: {view['model']}  Key: {key_state}",
+            f"Language: {lang}  Visual: {visual}",
+        ]
+        storage_body = [
+            f"Config: {config_path}",
+            f"Codex: {codex_save_path}",
+            f"Run Archives: {run_archive_path}",
+            f"Death History: {death_history_save_path}",
+        ]
+        progress_body = [
+            (
+                "Codex: "
+                f"Observed {codex_counts['observed']}/{codex_counts['total']}  "
+                f"Familiar {codex_counts['familiar']}/{codex_counts['total']}  "
+                f"Mastered {codex_counts['mastered']}/{codex_counts['total']}  "
+                f"Hunted {codex_counts['hunted']}/{codex_counts['total']}"
+            ),
+            f"Runs: {total_runs} total  {complete_runs} complete  {dead_runs} dead",
+            f"Fallen Runs: {len(deaths)}",
+        ]
     if archives:
         last_run_body = _render_status_last_run(archives[0], bundle, lang)
     else:
@@ -4463,7 +5125,7 @@ def render_progress_status(
     if lang == "zh":
         command_rows = (
             ("继续运行", run_command),
-            ("引导试玩", "ouro demo --seed 1"),
+            ("快速试玩", "ouro try --seed 1"),
             ("状态总览", "ouro status --lang zh"),
             ("运行报告", "ouro run-report --lang zh"),
             ("查看图鉴", "ouro codex --lang zh"),
@@ -4474,7 +5136,7 @@ def render_progress_status(
     else:
         command_rows = (
             ("Continue", run_command),
-            ("Guided Demo", "ouro demo --seed 1"),
+            ("Try", "ouro try --seed 1"),
             ("Status", "ouro status --lang en"),
             ("Run Report", "ouro run-report --lang en"),
             ("Codex", "ouro codex --lang en"),
@@ -4527,12 +5189,12 @@ def _render_legend_progress_map(
     ready_bar = bar(ready_score, 3, width=10, unicode_mode=False)
     if lang == "zh":
         body = [
-            f"[CODEX] {codex_bar} mastered {mastered}/{total_codex} / hunted {hunted}/{total_codex}",
-            f"[RUNS]  {run_bar} complete {complete_runs}/{total_runs or 0} / dead {dead_runs}",
-            f"[RISK]  {pressure_bar} fall pressure {dead_runs}/{total_runs or 0}",
-            f"[READY] {ready_bar} next-run signals {ready_score}/3",
+            f"[图鉴] {codex_bar} 已掌握 {mastered}/{total_codex} / 已追猎 {hunted}/{total_codex}",
+            f"[运行] {run_bar} 通关 {complete_runs}/{total_runs or 0} / 陨落 {dead_runs}",
+            f"[风险] {pressure_bar} 陨落压力 {dead_runs}/{total_runs or 0}",
+            f"[准备] {ready_bar} 下局信号 {ready_score}/3",
         ]
-        return list(pixel_panel("LEGEND PROGRESS MAP :: 传奇进度地图", [fit_text(line, width - 4) for line in body], width, tone="counter").lines)
+        return list(pixel_panel("传奇进度地图", [fit_text(line, width - 4) for line in body], width, tone="counter").lines)
     body = [
         f"[CODEX] {codex_bar} mastered {mastered}/{total_codex} / hunted {hunted}/{total_codex}",
         f"[RUNS]  {run_bar} complete {complete_runs}/{total_runs or 0} / dead {dead_runs}",
@@ -4596,6 +5258,15 @@ def _render_status_last_run(entry: dict, bundle: ContentBundle, lang: str) -> li
     )
     build_name = str(build.get("archetype", "-"))
     build_badge = str(build.get("stage_badge", ""))
+    if lang == "zh":
+        return [
+            f"  {run_id}",
+            f"  种子: {seed}  结果: {_status_outcome_display(result, lang)}  阶段: {_status_outcome_display(phase, lang)}",
+            f"  英雄: {hero_name}  副本: {dungeon_name}",
+            f"  战斗: {wins}胜/{losses}负  节点: {len(node_ids)}  金币: {gold}  XP: {xp}",
+            f"  资源: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}",
+            f"  构筑: {_status_build_display(build_name, lang)} {build_badge}".rstrip(),
+        ]
     lines = [
         f"  {run_id}",
         f"  Seed: {seed}  Result: {result}  Phase: {phase}",
@@ -4605,6 +5276,32 @@ def _render_status_last_run(entry: dict, bundle: ContentBundle, lang: str) -> li
         f"  Build: {build_name} {build_badge}".rstrip(),
     ]
     return lines
+
+
+def _status_outcome_display(value: str, lang: str) -> str:
+    if lang != "zh":
+        return value
+    return {
+        "dead": "陨落",
+        "complete": "通关",
+        "victory": "胜利",
+        "defeat": "失败",
+        "timeout": "超时",
+        "running": "进行中",
+    }.get(value, value)
+
+
+def _status_build_display(value: str, lang: str) -> str:
+    if lang != "zh":
+        return value
+    return {
+        "Black Candle Interrupt": "黑烛打断",
+        "Iron Wall Counter": "铁壁反击",
+        "Bleed Execute": "流血处决",
+        "Poison Attrition": "毒沼消耗",
+        "Engine Trap": "机关陷阱",
+        "Echo Ward": "回声护壁",
+    }.get(value, value)
 
 
 def _render_status_next_run_plan(
@@ -4623,12 +5320,12 @@ def _render_status_next_run_plan(
     if not archives:
         if lang == "zh":
             return [
-                "[1] 先跑引导试玩：ouro demo --seed 1",
+                "[1] 先跑快速试玩：ouro try --seed 1",
                 f"[2] 开第一局：{run_command} --seed 7",
                 f"[3] 打完后回看：ouro status {lang_flag}",
             ]
         return [
-            "[1] Start guided: ouro demo --seed 1",
+            "[1] Start fast: ouro try --seed 1",
             f"[2] First run: {run_command} --seed 7",
             f"[3] After battle: ouro status {lang_flag}",
         ]
@@ -4644,7 +5341,7 @@ def _render_status_next_run_plan(
             return [
                 f"[1] 复盘陨落 #{len(deaths)}：ouro history {lang_flag} --limit 3",
                 f"[2] 降低节奏风险：{run_command} --prompt-style control --seed {next_seed}",
-                f"[3] 补图鉴缺口 {codex_gap} 个：ouro codex {lang_flag}；Boss 前优先休整/商店",
+                f"[3] 补图鉴缺口 {codex_gap} 个：ouro codex {lang_flag}；首领前优先休整/商店",
             ]
         return [
             f"[1] Review fall #{len(deaths)}: ouro history {lang_flag} --limit 3",
@@ -4691,10 +5388,10 @@ def _render_status_next_run_control(
     if not archives:
         if lang == "zh":
             return [
-                "[PROMPT] default / 建立第一份基线",
-                f"[SEED] 7 / 首局样本",
-                f"[CODEX] {codex_gap} 个未知家族",
-                f"[RUN] {run_command} --seed 7",
+                "[提示词] default / 建立第一份基线",
+                f"[种子] 7 / 首局样本",
+                f"[图鉴] {codex_gap} 个未知家族",
+                f"[运行] {run_command} --seed 7",
             ]
         return [
             "[PROMPT] default / establish first baseline",
@@ -4711,10 +5408,10 @@ def _render_status_next_run_control(
     if result == "dead" or phase == "dead":
         if lang == "zh":
             return [
-                "[PROMPT] control / 降低敌方节奏",
-                f"[SEED] {next_seed} / 固定重试样本",
-                f"[CODEX] 补 {codex_gap} 个缺口",
-                "[ROUTE] Boss 前找休整/商店",
+                "[提示词] control / 降低敌方节奏",
+                f"[种子] {next_seed} / 固定重试样本",
+                f"[图鉴] 补 {codex_gap} 个缺口",
+                "[路线] 首领前找休整/商店",
             ]
         return [
             "[PROMPT] control / reduce enemy tempo",
@@ -4725,10 +5422,10 @@ def _render_status_next_run_control(
     if result == "complete" or phase == "complete":
         if lang == "zh":
             return [
-                "[PROMPT] guarded / 压力验证",
-                f"[SEED] {next_seed} / 新压力样本",
-                f"[CODEX] 追 {codex_gap} 个缺口",
-                "[ROUTE] 精英/事件贪心路线",
+                "[提示词] guarded / 压力验证",
+                f"[种子] {next_seed} / 新压力样本",
+                f"[图鉴] 追 {codex_gap} 个缺口",
+                "[路线] 精英/事件贪心路线",
             ]
         return [
             "[PROMPT] guarded / pressure validation",
@@ -4738,10 +5435,10 @@ def _render_status_next_run_control(
         ]
     if lang == "zh":
         return [
-            "[PROMPT] current / 保持样本稳定",
-            f"[SEED] {next_seed} / 继续样本",
-            f"[CODEX] 回读 {codex_gap} 个缺口",
-            "[ROUTE] 按上一局风险调整",
+            "[提示词] current / 保持样本稳定",
+            f"[种子] {next_seed} / 继续样本",
+            f"[图鉴] 回读 {codex_gap} 个缺口",
+            "[路线] 按上一局风险调整",
         ]
     return [
         "[PROMPT] current / keep sample stable",
@@ -4783,7 +5480,7 @@ def render_start_screen(
         ]
         if lang == "en"
         else [
-            "新运行：先选英雄与 Prompt 预设，再进入副本。",
+            "新运行：先选英雄与提示词预设，再进入副本。",
             "Mock 模式无需 API key，且固定 seed 可复现。",
             "战斗中你会看到决策、读条、命中、裁判与日志。",
         ]
@@ -4826,6 +5523,8 @@ def render_run_setup_screen(
     provider_label: str,
     prompt_style: str | None,
     language: str = DEFAULT_LANGUAGE,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     lang = language
     hero_name = hero.display_name.get(lang)
@@ -4844,6 +5543,16 @@ def render_run_setup_screen(
         "",
         label("setup_prompt", lang),
     ]
+    hero_asset_lines = render_hero_asset_art(
+        hero,
+        asset_atlas,
+        language=lang,
+        unicode_mode=unicode_mode,
+    )
+    if hero_asset_lines is not None:
+        lines.append("")
+        lines.extend(hero_asset_lines)
+        lines.append("")
     for line in _wrap_text(style_text, 92)[:6]:
         lines.append(f"  {line}")
     lines.append("")
@@ -5208,7 +5917,7 @@ def _render_run_ready_board(
 
 
 def render_prompt_templates(*, language: str = DEFAULT_LANGUAGE) -> str:
-    title = "PROMPT STRATEGY TEMPLATES" if language == "en" else "PROMPT 策略预设"
+    title = "PROMPT STRATEGY TEMPLATES" if language == "en" else "咒语策略预设"
     lines = [title, ""]
     lines.extend(_render_prompt_pilot_board(language))
     lines.append("")
@@ -5221,19 +5930,22 @@ def render_prompt_templates(*, language: str = DEFAULT_LANGUAGE) -> str:
             lines.append(f"  {wrapped}")
         lines.append("")
     lines.append("")
-    lines.append("Use: ouro play --mock --prompt-style control")
+    if language == "zh":
+        lines.append("使用: ouro play --mock --prompt-style control")
+    else:
+        lines.append("Use: ouro play --mock --prompt-style control")
     return "\n".join(lines)
 
 
 def _render_prompt_pilot_board(lang: str) -> list[str]:
     if lang == "zh":
         lines = [
-            "PROMPT PILOT BOARD :: Agent 驾驶模式",
-            "  [aggressive] BURST  | 高风险 | 适配 execute / damage",
-            "  [guarded]    STABLE | 低风险 | 适配 shield / sustain",
-            "  [control]    DENY   | 中风险 | 适配 interrupt / silence",
-            "  [attrition]  GRIND  | 中风险 | 适配 poison / bleed",
-            "  RUN: ouro run --mock --prompt-style <name>",
+            "Agent 驾驶面板",
+            "  [aggressive] 爆发 | 风险 高 | 适配 处决 / 伤害",
+            "  [guarded]    稳守 | 风险 低 | 适配 护盾 / 续航",
+            "  [control]    压制 | 风险 中 | 适配 打断 / 沉默",
+            "  [attrition]  消耗 | 风险 中 | 适配 毒素 / 流血",
+            "  运行: ouro run --mock --prompt-style <name>",
         ]
     else:
         lines = [
@@ -5250,12 +5962,12 @@ def _render_prompt_pilot_board(lang: str) -> list[str]:
 def _render_prompt_scenario_board(lang: str) -> list[str]:
     if lang == "zh":
         return [
-            "PROMPT SCENARIO BOARD :: 战况偏置",
-            "  [CHANT] control -> 先打断高 ATB / guarded -> 先护盾承伤",
-            "  [LOW HP] guarded -> 防御或护盾 / attrition -> 保留续航价值",
-            "  [EXECUTE] aggressive -> 收割低血 / control -> 先确认窗口",
-            "  [BOSS] control -> 管蓄力 / guarded -> 保血线 / aggressive -> 只在破防后爆发",
-            "  PICK: boss/chant 选 control；低血选 guarded；短战收割选 aggressive",
+            "战况偏置面板",
+            "  [吟唱] control -> 先打断高 ATB / guarded -> 先护盾承伤",
+            "  [低血] guarded -> 防御或护盾 / attrition -> 保留续航价值",
+            "  [处决] aggressive -> 收割低血 / control -> 先确认窗口",
+            "  [首领] control -> 管蓄力 / guarded -> 保血线 / aggressive -> 只在破防后爆发",
+            "  推荐: boss/吟唱 选 control；低血选 guarded；短战收割选 aggressive",
         ]
     return [
         "PROMPT SCENARIO BOARD",
@@ -6286,7 +6998,7 @@ def render_hero_list(
         if build:
             progress = build.calculate_progress(bundle)
             stage_badge = f" {progress.stage.badge}"
-        tags = " / ".join(hero.tags[:3]) or "-"
+        tags = " / ".join(_display_build_tag(tag, lang) for tag in hero.tags[:3]) or "-"
         desc = hero.description.get(lang)
         cards.append(
             _hero_select_card(
@@ -6331,13 +7043,18 @@ def _render_hero_roster_board(bundle: ContentBundle, *, lang: str) -> list[str]:
             risk = HERO_RISK_LEVELS.get(hero.id, "normal")
             stage = "[SEED]"
         prompt_style = _hero_default_prompt_style(hero.id)
-        core_tags = " / ".join(HERO_CORE_TAGS.get(hero.id, ())[:2]) or "-"
+        core_tags = (
+            " / ".join(
+                _display_build_tag(tag, lang) for tag in HERO_CORE_TAGS.get(hero.id, ())[:2]
+            )
+            or "-"
+        )
         opener = _hero_loadout_opener(hero.id, prompt_style=prompt_style, lang=lang)
         name = hero.display_name.get(lang) or hero.display_name.get("en", hero.id)
         if lang == "zh":
             line = (
-                f"  [{idx}] {name} {stage} | Prompt {prompt_style} | "
-                f"风险 {risk} | {core_tags} | {opener}"
+                f"  [{idx}] {name} {stage} | 提示词 {_prompt_style_display(prompt_style, lang)} | "
+                f"风险 {label(f'hero_card_risk_{risk}', lang) or risk} | {core_tags} | {opener}"
             )
         else:
             line = (
@@ -6363,7 +7080,11 @@ def _render_weapon_gallery_board(
         build = _safe_resolve_build(hero, bundle)
         progress = build.calculate_progress(bundle) if build else None
         stage = progress.stage.badge if progress else hero_weapon_card(hero.id)[1]
-        stage_name = progress.stage_name if progress else "Seed"
+        stage_name = (
+            _build_stage_display(progress.stage, progress.stage_name, lang=lang)
+            if progress
+            else ("Seed" if lang == "en" else "种子")
+        )
         card = hero_weapon_card_art(hero.id)
         weapon, _badge = hero_weapon_card(hero.id)
         art = card.unicode_art if unicode_mode else card.ascii_art
@@ -6373,8 +7094,8 @@ def _render_weapon_gallery_board(
                 f"  [{idx}] {weapon} {stage} | {name} | "
                 f"{stage_name}"
             )
-            build_line = f"      Build: {card.build_shift}"
-            ai_line = f"      AI: {card.ai_effect}"
+            build_line = f"      构筑: {_format_weapon_card_build_shift(card.build_shift, lang)}"
+            ai_line = f"      AI: {_weapon_gallery_ai_effect(hero.id, lang)}"
         else:
             line = (
                 f"  [{idx}] {weapon} {stage} | {stage_name} | "
@@ -6390,7 +7111,7 @@ def _render_weapon_gallery_board(
     next_line = (
         "Next: ouro weapons --unicode, then open hero-card for full Build plan"
         if lang == "en"
-        else "下一步: ouro weapons --unicode，然后打开 hero-card 查看完整 Build 计划"
+        else "下一步: ouro weapons --unicode，然后打开 hero-card 查看完整构筑计划"
     )
     lines.append(fit_text(next_line, 96))
     return lines
@@ -6408,7 +7129,7 @@ def render_weapon_gallery(
     subtitle = (
         "Compare silhouettes, Build tags, and AI behavior before choosing a hero."
         if lang == "en"
-        else "先比较武器轮廓、Build 标签和 AI 行为，再选择英雄。"
+        else "先比较武器轮廓、构筑标签和 Agent 行为，再选择英雄。"
     )
     cards = [
         _weapon_gallery_card(idx, hero, bundle, lang=lang, unicode_mode=unicode_mode, width=48)
@@ -6452,10 +7173,10 @@ def _weapon_gallery_card(
     title = fit_text(f"[{idx}] {card.icon} {name}", max(20, width - 4))
     if lang == "zh":
         body = [
-            *[f"ART {row.strip()}" for row in art[:3]],
+            *[f"[图] {row.strip()}" for row in art[:3]],
             f"[拥有] {name} / {cls}",
             f"[阶段] {stage} {tags}",
-            f"[AI] {_weapon_gallery_ai_effect(hero.id, lang)}",
+            f"[行为] {_weapon_gallery_ai_effect(hero.id, lang)}",
             f"[打开] ouro hero-card {_hero_command_alias(hero)}",
         ]
     else:
@@ -6500,9 +7221,9 @@ def _weapon_gallery_ai_effect(hero_id: str, lang: str) -> str:
 def _weapon_gallery_next_board(*, lang: str, width: int) -> list[str]:
     if lang == "zh":
         body = [
-            "[BUILD] ouro list-heroes --unicode",
-            "[DETAIL] ouro hero-card astia --unicode",
-            "[RUN] ouro run --mock --hero astia",
+            "[构筑] ouro list-heroes --unicode",
+            "[详情] ouro hero-card astia --unicode",
+            "[运行] ouro run --mock --hero astia",
         ]
         return list(pixel_panel("下一步武器路线", body, width, tone="counter").lines)
     body = [
@@ -6524,11 +7245,87 @@ def _hero_default_prompt_style(hero_id: str) -> str:
     }.get(hero_id, "guarded")
 
 
+def _prompt_style_display(style: str, lang: str) -> str:
+    if lang != "zh":
+        return style
+    return {
+        "aggressive": "猛攻",
+        "guarded": "稳守",
+        "control": "控制",
+        "attrition": "消耗",
+        "hero default": "英雄默认",
+    }.get(style, style)
+
+
 def _hero_command_alias(hero: HeroData) -> str:
     name = hero.display_name.get("en") or hero.id
     first = name.split()[0] if name else hero.id
     alias = re.sub(r"[^A-Za-z0-9]+", "", first).lower()
     return alias or hero.id
+
+
+def _render_hero_component_header(
+    hero: HeroData,
+    build: ResolvedBuild,
+    progress: BuildProgress,
+    *,
+    prompt_style: str | None,
+    lang: str,
+    width: int,
+) -> list[str]:
+    style = prompt_style or ("hero default" if lang == "en" else "英雄默认")
+    risk = build.risk_level()
+    command_alias = _hero_command_alias(hero)
+    core_tags = HERO_CORE_TAGS.get(hero.id, ())
+    core_text = " / ".join(_display_build_tag(tag, lang) for tag in core_tags) if core_tags else "-"
+    if lang == "zh":
+        nav_title = "构筑 TUI 导航"
+        focus_title = "构筑焦点轨"
+        command_title = "构筑命令轨"
+        tabs = [
+            TuiTab("开局", True, progress.stage.badge),
+            TuiTab("技能"),
+            TuiTab("提示词"),
+            TuiTab("运行"),
+        ]
+        chips = [
+            TuiChip("阶段", _build_stage_display(progress.stage, progress.stage_name, lang=lang), "hero"),
+            TuiChip("风险", label(f"hero_card_risk_{risk}", lang) or risk, "danger" if risk == "hard" else "quiet"),
+            TuiChip("提示词", style, "counter"),
+            TuiChip("核心", core_text, "hero"),
+        ]
+        commands = [
+            ("详情", f"ouro hero-card {command_alias} --unicode"),
+            ("试玩", f"ouro run --mock --hero {command_alias}"),
+            ("兵装", "ouro weapons --unicode"),
+        ]
+    else:
+        nav_title = "BUILD TUI NAV"
+        focus_title = "BUILD FOCUS RAIL"
+        command_title = "BUILD COMMAND RAIL"
+        tabs = [
+            TuiTab("Loadout", True, progress.stage.badge),
+            TuiTab("Skills"),
+            TuiTab("Prompt"),
+            TuiTab("Run"),
+        ]
+        chips = [
+            TuiChip("Stage", progress.stage_name, "hero"),
+            TuiChip("Risk", risk, "danger" if risk == "hard" else "quiet"),
+            TuiChip("Prompt", style, "counter"),
+            TuiChip("Core", core_text, "hero"),
+        ]
+        commands = [
+            ("DETAIL", f"ouro hero-card {command_alias} --unicode"),
+            ("TRY", f"ouro run --mock --hero {command_alias}"),
+            ("ARSENAL", "ouro weapons --unicode"),
+        ]
+
+    lines: list[str] = []
+    lines.extend(render_tab_bar(tabs, width=width, title=nav_title))
+    lines.extend(render_chip_rail(chips, width=width, title=focus_title))
+    lines.extend(render_command_rail(commands, width=width, title=command_title))
+    return lines
 
 
 def _hero_select_card(
@@ -6579,11 +7376,15 @@ def render_hero_card(
     prompt_style: str | None = None,
     width: int = 100,
     unicode_mode: bool = False,
+    asset_atlas: SpriteAtlas | None = None,
 ) -> str:
     lang = language
     name = hero.display_name.get(lang)
     cls = hero.class_name.get(lang)
-    tags = " / ".join(_dedupe_preserve(build.tags)) or label("hero_card_none", lang)
+    tags = (
+        " / ".join(_display_build_tag(tag, lang) for tag in _dedupe_preserve(build.tags))
+        or label("hero_card_none", lang)
+    )
 
     stats = (
         f"HP {build.hp}  MP {build.mp}  SPD {build.speed}  "
@@ -6599,24 +7400,45 @@ def render_hero_card(
     skills_lines = _render_action_kit_board(hero, bundle, build, lang)
 
     items_lines = [
-        f"  - {item.display_name.get(lang)} [{item.tier}] "
-        f"({', '.join(item.tags) or '-'})"
+        f"  - {item.display_name.get(lang)} [{_format_tier_label(item.tier, lang)}] "
+        f"({_format_tag_list(item.tags, lang) or '-'})"
         for item in build.items
     ] or [f"  {label('hero_card_none', lang)}"]
     affix_lines = [
-        f"  - {affix.display_name.get(lang)} ({', '.join(affix.tags) or '-'})"
+        f"  - {affix.display_name.get(lang)} ({_format_tag_list(affix.tags, lang) or '-'})"
         for affix in build.affixes
     ] or [f"  {label('hero_card_none', lang)}"]
     resonance_lines = [
-        f"  - {res.display_name.get(lang)} ({', '.join(res.required_tag_counts) or '-'})"
+        f"  - {res.display_name.get(lang)} "
+        f"({_format_tag_list(tuple(res.required_tag_counts), lang) or '-'})"
         for res in build.resonances
     ] or [f"  {label('hero_card_none', lang)}"]
 
     avatar = list(hero.avatar_ascii) or [""]
     header = f"{label('hero_card_title', lang)} :: {name} {hero.short_tag}"
     lines: list[str] = [header, ""]
+    lines.extend(
+        _render_hero_component_header(
+            hero,
+            build,
+            progress,
+            prompt_style=prompt_style,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
     lines.extend(avatar)
     lines.append("")
+    hero_asset_lines = render_hero_asset_art(
+        hero,
+        asset_atlas,
+        language=lang,
+        unicode_mode=unicode_mode,
+    )
+    if hero_asset_lines is not None:
+        lines.extend(hero_asset_lines)
+        lines.append("")
     lines.append(f"{label('hero_card_class', lang)}: {cls}")
     lines.append(f"{label('hero_card_build', lang)}: {build_name} {progress.stage.badge}")
     lines.append(f"{label('hero_card_weapon', lang)}: {weapon}")
@@ -6690,11 +7512,11 @@ def _render_hero_loadout_board(
     prompt_style: str | None,
     lang: str,
 ) -> list[str]:
-    style = prompt_style or "hero default"
+    style = prompt_style or ("hero default" if lang == "en" else "英雄默认")
     core_tags = HERO_CORE_TAGS.get(hero.id, ())
-    core_text = " / ".join(core_tags) if core_tags else "-"
+    core_text = " / ".join(_display_build_tag(tag, lang) for tag in core_tags) if core_tags else "-"
     risk = build.risk_level()
-    stage = f"{progress.stage.badge} {progress.stage_name}"
+    stage = f"{progress.stage.badge} {_build_stage_display(progress.stage, progress.stage_name, lang=lang)}"
     opener = _hero_loadout_opener(hero.id, prompt_style=prompt_style, lang=lang)
     command = f"ouro run --mock --hero {_hero_command_alias(hero)}"
     if prompt_style:
@@ -6702,13 +7524,13 @@ def _render_hero_loadout_board(
 
     if lang == "zh":
         return [
-            "HERO LOADOUT BOARD :: 英雄开局配置板",
-            f"  [PROMPT] {style} / Agent 行为倾向",
-            f"  [BUILD] {stage} / {build.archetype(lang)}",
-            f"  [CORE] {core_text}",
-            f"  [RISK] {label(f'hero_card_risk_{risk}', lang) or risk}",
-            f"  [OPENER] {opener}",
-            f"  [RUN] {command}",
+            "英雄开局配置板",
+            f"  [提示词] {style} / Agent 行为倾向",
+            f"  [构筑] {stage} / {build.archetype(lang)}",
+            f"  [核心] {core_text}",
+            f"  [风险] {label(f'hero_card_risk_{risk}', lang) or risk}",
+            f"  [开局] {opener}",
+            f"  [运行] {command}",
         ]
     return [
         "HERO LOADOUT BOARD",
@@ -6732,7 +7554,7 @@ def _render_build_map_board(
     width: int,
 ) -> list[str]:
     max_width = max(60, width)
-    title = "BUILD MAP BOARD" if lang == "en" else "BUILD MAP BOARD :: 构筑关系图"
+    title = "BUILD MAP BOARD" if lang == "en" else "构筑关系图"
     lines = [title]
 
     weapon_icon, _badge = _hero_card_icons(hero.id)
@@ -6871,7 +7693,7 @@ def _build_map_ai_bias(
     style = prompt_style or ("hero default" if lang == "en" else "英雄默认")
     opener = _hero_loadout_opener(hero.id, prompt_style=prompt_style, lang=lang)
     if lang == "zh":
-        return f"Prompt {style} + {build.archetype(lang)} -> {opener}"
+        return f"提示词 {style} + {build.archetype(lang)} -> {opener}"
     return f"prompt {style} + {build.archetype(lang)} -> {opener}"
 
 
@@ -6953,7 +7775,7 @@ def _render_build_progress_panel(
 
     stage_label = {
         "en": f"BUILD STAGE: {progress.stage_name}",
-        "zh": f"构筑阶段: {progress.stage_name}",
+        "zh": f"构筑阶段: {_build_stage_display(progress.stage, progress.stage_name, lang=lang)}",
     }.get(lang, f"BUILD STAGE: {progress.stage_name}")
 
     lines.append(f"{stage_label} {progress.stage.badge}")
@@ -6969,12 +7791,13 @@ def _render_build_progress_panel(
         count = progress.core_tags.get(tag, 0)
         filled = min(count, 3)
         bar_str = "[" + "#" * filled + "-" * (3 - filled) + "]"
+        tag_name = _display_build_tag(tag, lang)
         status_label = (
             label("hero_card_status_online", lang) if count >= 2
             else label("hero_card_status_active", lang) if count >= 1
             else label("hero_card_status_need", lang)
         )
-        lines.append(f"  {tag:12} {bar_str} {count}/3  {status_label}")
+        lines.append(f"  {tag_name:12} {bar_str} {count}/3  {status_label}")
 
     if progress.active_resonances:
         lines.append("")
@@ -6990,7 +7813,7 @@ def _render_build_progress_panel(
             missing_parts = []
             for miss in near["missing"]:
                 need_more = miss["need"] - miss["have"]
-                missing_parts.append(f"{miss['tag']} +{need_more}")
+                missing_parts.append(f"{_display_build_tag(miss['tag'], lang)} +{need_more}")
             missing_str = ", ".join(missing_parts)
             lines.append(f"  [ ] {name}  {label('hero_card_need', lang)}: {missing_str}")
 
@@ -7005,7 +7828,10 @@ def _render_build_progress_panel(
             seen.add(tag)
             need = pick["need"]
             res_name = pick["resonance_name"].get(lang) or pick["resonance_name"].get("en", "")
-            lines.append(f"  - {tag} +{need}  (for {res_name})")
+            if lang == "zh":
+                lines.append(f"  - {_display_build_tag(tag, lang)} +{need}  (对应 {res_name})")
+            else:
+                lines.append(f"  - {tag} +{need}  (for {res_name})")
 
     return lines
 
@@ -7247,7 +8073,7 @@ def _render_action_kit_board(
             f"{label('hero_card_cd', lang)} {skill_data.cooldown} | "
             f"{label('hero_card_positioning', lang)} {_action_kit_tactic_text(skill_data, lang)} | "
             f"{label('hero_card_use', lang)} {_action_kit_purpose(skill_data, lang)} | "
-            f"{label('hero_card_build_relation', lang)} {_action_kit_build_relation(skill_data, build, hero, lang)}"
+            f"{label('hero_card_build_relation', lang)} {_build_map_relation_text(skill_data, build, hero, lang)}"
         )
     return lines
 
@@ -7260,9 +8086,20 @@ def _render_weapon_card_art(hero_id: str, *, unicode_mode: bool, lang: str) -> l
     art = card.unicode_art if unicode_mode else card.ascii_art
     lines = [f"{title}: {card.icon} {card.badge}"]
     lines.extend(f"  {row}" for row in art)
-    lines.append(f"  {build_title}: {card.build_shift}")
-    lines.append(f"  {ai_title}: {card.ai_effect}")
+    lines.append(f"  {build_title}: {_format_weapon_card_build_shift(card.build_shift, lang)}")
+    ai_effect = _weapon_gallery_ai_effect(hero_id, lang) if lang == "zh" else card.ai_effect
+    lines.append(f"  {ai_title}: {ai_effect}")
     return lines
+
+
+def _format_weapon_card_build_shift(build_shift: str, lang: str) -> str:
+    if lang != "zh":
+        return build_shift
+    if "]" not in build_shift:
+        return _display_canvas_build_tags(build_shift, lang)
+    badge, tags = build_shift.split("]", 1)
+    localized_tags = _display_canvas_build_tags(tags.strip(), lang)
+    return f"{badge}] {localized_tags}".strip()
 
 
 def _node_type_label(node_type: str, lang: str) -> str:
@@ -7320,7 +8157,7 @@ def _route_decision_hint(node, bundle: ContentBundle, *, lang: str) -> str:
             parts.append(f"{elite_count} higher-tier threat; stronger reward pressure")
         return "Decision: " + ("; ".join(parts) if parts else "standard fight for tempo and build progress")
     if node.node_type == "shop":
-        return "决策: 花金币换稳定性或 Build 拼图" if lang == "zh" else "Decision: spend gold for stability or build pieces"
+        return "决策: 花金币换稳定性或构筑拼图" if lang == "zh" else "Decision: spend gold for stability or build pieces"
     if node.node_type == "rest":
         return "决策: 用节点机会换 HP/MP 安全线" if lang == "zh" else "Decision: trade a node for HP/MP safety"
     if node.node_type == "event":
@@ -7358,7 +8195,7 @@ def _route_reward_preview(node, bundle: ContentBundle, *, lang: str) -> str:
         if {"item", "affix"} & shop_types:
             parts.append("targeted tags" if lang == "en" else "定向标签")
         if "strategy" in shop_types:
-            parts.append("Prompt style" if lang == "en" else "Prompt 预设")
+            parts.append("Prompt style" if lang == "en" else "咒语预设")
         if "scout" in shop_types:
             parts.append("scouting" if lang == "en" else "侦察")
     elif node.node_type == "rest":
@@ -7438,7 +8275,7 @@ def _route_build_fit(state, node, bundle: ContentBundle, *, lang: str) -> str:
         reason = "flexible pivot node" if lang == "en" else "弹性转向节点"
     elif has_chant and tags.get("control", 0) >= 2 and mp_ratio > 0.35:
         fit = "synergy"
-        reason = "control build can answer chants" if lang == "en" else "控制 Build 可回应吟唱"
+        reason = "control build can answer chants" if lang == "en" else "控制构筑可回应吟唱"
     elif has_chant and mp_ratio <= 0.35:
         fit = "danger"
         reason = "chant fight while interrupt MP is low" if lang == "en" else "低打断 MP 进入吟唱战"
@@ -7447,13 +8284,23 @@ def _route_build_fit(state, node, bundle: ContentBundle, *, lang: str) -> str:
         reason = "elite pressure without survival tags" if lang == "en" else "缺少生存标签承接精英压力"
     else:
         fit = "neutral"
-        reason = "standard tempo for current build" if lang == "en" else "适合当前 Build 的标准节奏"
+        reason = "standard tempo for current build" if lang == "en" else "适合当前构筑的标准节奏"
 
     return (
         f"Build fit: {fit} - {reason}"
         if lang == "en"
-        else f"Build 适配: {fit} - {reason}"
+        else f"构筑适配: {_route_fit_display(fit, lang)} - {reason}"
     )
+
+
+def _route_fit_display(fit: str, lang: str) -> str:
+    if lang != "zh":
+        return fit
+    return {
+        "synergy": "协同",
+        "neutral": "中性",
+        "danger": "危险",
+    }.get(fit, fit)
 
 
 def _route_recommendation(state, node, bundle: ContentBundle, *, lang: str) -> str:
@@ -7472,14 +8319,14 @@ def _route_recommendation(state, node, bundle: ContentBundle, *, lang: str) -> s
         return "[SKIP?] healthy enough; tempo may matter more" if lang == "en" else "[可跳过] 状态健康，路线节奏可能更重要"
     if node.node_type == "shop":
         if state.gold >= 14:
-            return "[REC] gold can become build power here" if lang == "en" else "[推荐] 当前金币能转化为 Build 强度"
+            return "[REC] gold can become build power here" if lang == "en" else "[推荐] 当前金币能转化为构筑强度"
         return "[LOW VALUE] little gold; visit only for scouting" if lang == "en" else "[低收益] 金币不足，除非想侦察"
     if node.node_type == "event":
         return "[FLEX] best when you need healing, gold, or a missing tag" if lang == "en" else "[弹性] 适合补治疗、金币或缺失标签"
     if node.node_type in ("elite_combat", "boss", "mimic_chest") or risk == "high":
         if hp_ratio <= 0.6 or (has_chant and mp_ratio <= 0.35):
             return "[DANGER] recover before taking this fight" if lang == "en" else "[危险] 建议先恢复再挑战"
-        return "[GREED] high pressure, higher proof of build strength" if lang == "en" else "[贪心] 压力高，但最能验证 Build"
+        return "[GREED] high pressure, higher proof of build strength" if lang == "en" else "[贪心] 压力高，但最能验证构筑"
     if has_chant and mp_ratio <= 0.35:
         return "[RISK] chant fight while MP is low" if lang == "en" else "[风险] 低 MP 进入吟唱战"
     return "[REC] clean tempo fight" if lang == "en" else "[推荐] 节奏清晰的战斗节点"
@@ -7509,13 +8356,15 @@ def _choice_build_preview(
     )
     before = current.calculate_progress(bundle)
     after = projected.calculate_progress(bundle)
-    stats = _stat_delta_summary(current, projected)
-    tag_delta = _tag_delta_summary(current, projected)
+    stats = _stat_delta_summary(current, projected, lang=lang)
+    tag_delta = _tag_delta_summary(current, projected, lang=lang)
     cross_note = _cross_build_seed_note(state.hero_id, current, projected, lang=lang)
     ai_impact = _build_ai_impact(current, projected, lang=lang)
     if lang == "zh":
+        before_stage = _build_stage_display(before.stage, before.stage_name, lang=lang)
+        after_stage = _build_stage_display(after.stage, after.stage_name, lang=lang)
         lines = [
-            f"    Build 前后: {before.stage.badge} {before.stage_name} -> {after.stage.badge} {after.stage_name}",
+            f"    构筑前后: {before.stage.badge} {before_stage} -> {after.stage.badge} {after_stage}",
             f"    数值变化: {stats}",
             f"    标签变化: {tag_delta}",
         ]
@@ -7536,7 +8385,12 @@ def _choice_build_preview(
     return lines
 
 
-def _stat_delta_summary(current: ResolvedBuild, projected: ResolvedBuild) -> str:
+def _stat_delta_summary(
+    current: ResolvedBuild,
+    projected: ResolvedBuild,
+    *,
+    lang: str = "en",
+) -> str:
     pairs = [
         ("HP", projected.hp - current.hp),
         ("MP", projected.mp - current.mp),
@@ -7546,18 +8400,27 @@ def _stat_delta_summary(current: ResolvedBuild, projected: ResolvedBuild) -> str
         ("POW", projected.power - current.power),
     ]
     changes = [f"{name}{value:+d}" for name, value in pairs if value]
-    return ", ".join(changes) if changes else "no direct stat change"
+    if changes:
+        return ", ".join(changes)
+    return "无直接数值变化" if lang == "zh" else "no direct stat change"
 
 
-def _tag_delta_summary(current: ResolvedBuild, projected: ResolvedBuild) -> str:
+def _tag_delta_summary(
+    current: ResolvedBuild,
+    projected: ResolvedBuild,
+    *,
+    lang: str = "en",
+) -> str:
     before = current.tag_counts()
     after = projected.tag_counts()
     gained = [
-        f"{tag} {before.get(tag, 0)}->{after[tag]}"
+        f"{_display_build_tag(tag, lang)} {before.get(tag, 0)}->{after[tag]}"
         for tag in sorted(after)
         if after[tag] > before.get(tag, 0)
     ]
-    return ", ".join(gained[:6]) if gained else "no new tags"
+    if gained:
+        return ", ".join(gained[:6])
+    return "无新增标签" if lang == "zh" else "no new tags"
 
 
 def _cross_build_seed_note(
@@ -7576,9 +8439,9 @@ def _cross_build_seed_note(
     off_core = sorted(tag for tag in gained if tag not in core)
     if not off_core or len(off_core) < len(gained):
         return ""
-    tags = ", ".join(off_core[:4])
+    tags = ", ".join(_display_build_tag(tag, lang) for tag in off_core[:4])
     if lang == "zh":
-        return f"跨 Build 种子: {tags} 不属于当前核心标签；除非想转向，否则优先级较低。"
+        return f"跨构筑种子: {tags} 不属于当前核心标签；除非想转向，否则优先级较低。"
     return f"Cross-build seed: {tags} sits outside this hero core; take mainly for a pivot."
 
 
@@ -7598,48 +8461,48 @@ def _build_ai_impact(current: ResolvedBuild, projected: ResolvedBuild, *, lang: 
         return (
             "AI impact: reinforces interrupt and caster-control priority"
             if lang == "en"
-            else "AI 影响: 强化打断和施法者控制优先级"
+            else "模型影响: 强化打断和施法者控制优先级"
         )
     if gained_tags & {"guard", "armor", "shield"} or stat_gain["hp"] > 0 or stat_gain["defense"] > 0:
         return (
             "AI impact: raises survival value before risky fights"
             if lang == "en"
-            else "AI 影响: 提高高风险战前的生存权重"
+            else "模型影响: 提高高风险战前的生存权重"
         )
     if gained_tags & {"poison", "omen"}:
         return (
             "AI impact: leans toward attrition and delayed payoff"
             if lang == "en"
-            else "AI 影响: 更偏向消耗和延迟收益"
+            else "模型影响: 更偏向消耗和延迟收益"
         )
     if gained_tags & {"bleed", "hunter", "execute", "speed"} or stat_gain["speed"] > 0:
         return (
             "AI impact: improves kill-line and execute timing"
             if lang == "en"
-            else "AI 影响: 改善击杀线和处决时机"
+            else "模型影响: 改善击杀线和处决时机"
         )
     if gained_tags & {"gear", "trap", "retribution"} or stat_gain["attack"] > 0:
         return (
             "AI impact: supports setup turns and counter pressure"
             if lang == "en"
-            else "AI 影响: 支持铺设回合和反击压力"
+            else "模型影响: 支持铺设回合和反击压力"
         )
     if gained_tags & {"echo", "holy", "cleanse"}:
         return (
             "AI impact: favors cleanse, ward, and echo timing"
             if lang == "en"
-            else "AI 影响: 更重视净化、护壁和回声时机"
+            else "模型影响: 更重视净化、护壁和回声时机"
         )
     if stat_gain["mp"] > 0 or stat_gain["power"] > 0 or gained_tags & {"shadow", "corruption"}:
         return (
             "AI impact: improves MP-to-pressure spell turns"
             if lang == "en"
-            else "AI 影响: 强化用 MP 换压力的施法回合"
+            else "模型影响: 强化用 MP 换压力的施法回合"
         )
     return (
         "AI impact: flexible pick; choose for economy or future pivots"
         if lang == "en"
-        else "AI 影响: 弹性选择，偏经济或后续转向"
+        else "模型影响: 弹性选择，偏经济或后续转向"
     )
 
 
@@ -7657,7 +8520,14 @@ def _build_pick_advice(picks, *, stage: BuildStage, lang: str) -> str:
         BuildStage.LOCKED_IN: "PERFECT",
     }.get(stage, "NEXT")
     if lang == "zh":
-        return f"建议: 下一步找 {tag} +{need} 推进 {next_stage}"
+        next_stage = {
+            BuildStage.SEED: "成对",
+            BuildStage.PAIR: "在线",
+            BuildStage.ONLINE: "高光",
+            BuildStage.HIGH_ROLL: "锁定",
+            BuildStage.LOCKED_IN: "完美",
+        }.get(stage, "下一阶段")
+        return f"建议: 下一步找 {_display_build_tag(tag, lang)} +{need} 推进 {next_stage}"
     return f"Advice: next seek {tag} +{need} to push {next_stage}"
 
 
@@ -7669,7 +8539,7 @@ def _choice_decision_note(choice_type: str, lang: str) -> str:
         },
         "heal": {
             "en": "    Decision: take healing when next route has elite, boss, or chant pressure.",
-            "zh": "    决策: 下一路有精英、Boss 或吟唱压力时，治疗价值更高。",
+            "zh": "    决策: 下一路有精英、首领或吟唱压力时，治疗价值更高。",
         },
         "strategy": {
             "en": "    Decision: changes model bias; useful when battle diagnosis exposed repeated mistakes.",
@@ -7677,7 +8547,7 @@ def _choice_decision_note(choice_type: str, lang: str) -> str:
         },
         "scout": {
             "en": "    Decision: buy information before elite, boss, or unfamiliar route pressure.",
-            "zh": "    决策: 精英、Boss 或陌生路线前，情报可降低失误。",
+            "zh": "    决策: 精英、首领或陌生路线前，情报可降低失误。",
         },
     }
     return notes.get(choice_type, {}).get(lang, "")
@@ -7801,6 +8671,18 @@ def _choice_card_art(title: str, body: list[str], *, tone: str) -> list[str]:
     return ["[PATH]  ##==>##  route", "        #....#"]
 
 
+def _reward_card_art(lang: str) -> list[str]:
+    if lang == "zh":
+        return ["[奖励] [SEED] -> [PAIR] -> [ONLINE]", "          ##==*"]
+    return ["[REWARD] [SEED] -> [PAIR] -> [ONLINE]", "          ##==*"]
+
+
+def _shop_card_art(lang: str) -> list[str]:
+    if lang == "zh":
+        return ["[商店]  ##[]##  价格 / 修正 / 侦察", "        #____#"]
+    return ["[SHOP]  ##[]##  price / repair / scout", "        #____#"]
+
+
 def _render_route_map(
     state,
     bundle: ContentBundle,
@@ -7816,7 +8698,7 @@ def _render_route_map(
     legend = (
         "Legend: C combat, E elite, B boss, $ shop, + rest, ? event, X visited"
         if lang == "en"
-        else "图例: C 战斗, E 精英, B Boss, $ 商店, + 休整, ? 事件, X 已完成"
+        else "图例: C 战斗, E 精英, B 首领, $ 商店, + 休整, ? 事件, X 已完成"
     )
     body = [f"{start} o", legend]
     for node_idx, node_id in enumerate(floor.nodes):
@@ -7875,14 +8757,19 @@ def _render_reward_build_track(
     lang: str,
     width: int,
 ) -> list[str]:
-    title = "REWARD BUILD TRACK" if lang == "en" else "奖励 Build 轨道"
+    title = "REWARD BUILD TRACK" if lang == "en" else "奖励构筑轨道"
     current = state.resolved_build(bundle)
     current_progress = current.calculate_progress(bundle)
+    current_stage = _build_stage_display(
+        current_progress.stage,
+        current_progress.stage_name,
+        lang=lang,
+    )
     body = [
         (
             f"Current: {current_progress.stage.badge} {current_progress.stage_name}"
             if lang == "en"
-            else f"当前: {current_progress.stage.badge} {current_progress.stage_name}"
+            else f"当前: {current_progress.stage.badge} {current_stage}"
         )
     ]
     for idx, choice in enumerate(choices, start=1):
@@ -7907,18 +8794,26 @@ def _reward_track_line(state, bundle: ContentBundle, choice, *, idx: int, lang: 
         )
         before = current.calculate_progress(bundle)
         after = projected.calculate_progress(bundle)
-        tag_delta = _tag_delta_summary(current, projected)
+        tag_delta = _tag_delta_summary(current, projected, lang=lang)
         arrow = "=>"
         if lang == "zh":
             return f"[{idx}] {before.stage.badge} {arrow} {after.stage.badge} | 标签 {tag_delta}"
         return f"[{idx}] {before.stage.badge} {arrow} {after.stage.badge} | tags {tag_delta}"
     if choice.type == "codex":
         amount = choice.progress or 1
+        if lang == "zh":
+            return f"[{idx}] [图鉴] => [+{amount} 研读] | 咒语情报"
         return f"[{idx}] [CODEX] => [+{amount} STUDY] | prompt intel"
     if choice.type == "gold" and choice.gold:
+        if lang == "zh":
+            return f"[{idx}] [金币] => +{choice.gold} | 商店修正资金"
         return f"[{idx}] [GOLD] => +{choice.gold} | shop route power"
     if choice.type == "heal" and choice.heal_percent:
+        if lang == "zh":
+            return f"[{idx}] [治疗] => +{choice.heal_percent}% HP | 生存线"
         return f"[{idx}] [HEAL] => +{choice.heal_percent}% HP | survival line"
+    if lang == "zh":
+        return f"[{idx}] [转向] => 后续构筑转向"
     return f"[{idx}] [FLEX] => future pivot"
 
 
@@ -7935,7 +8830,7 @@ def _render_shop_fix_board(
         (
             "Lanes: RECOVER / BUILD / PROMPT / SCOUT"
             if lang == "en"
-            else "货架: 恢复 / Build / Prompt / 侦察"
+            else "货架: 恢复 / 构筑 / 咒语 / 侦察"
         )
     ]
     for idx, item in enumerate(items, start=1):
@@ -7945,15 +8840,20 @@ def _render_shop_fix_board(
 
 def _shop_fix_line(state, bundle: ContentBundle, item, *, idx: int, lang: str) -> str:
     price = item.price or 0
-    afford = "READY" if state.can_afford(item) else "LOCKED"
-    prefix = f"[{idx}] {_shop_lane_label(item.type)} {price}g {afford} => "
+    if lang == "zh":
+        afford = "可买" if state.can_afford(item) else "锁定"
+    else:
+        afford = "READY" if state.can_afford(item) else "LOCKED"
+    prefix = f"[{idx}] {_shop_lane_label(item.type, lang=lang)} {price}g {afford} => "
     if item.type == "heal":
         bits = []
         if item.heal_percent:
             bits.append(f"HP +{item.heal_percent}%")
         if getattr(item, "restore_mp", False):
-            bits.append("MP full")
-        return prefix + (", ".join(bits) if bits else "survival repair")
+            bits.append("MP full" if lang == "en" else "MP 回满")
+        if bits:
+            return prefix + ", ".join(bits)
+        return prefix + ("survival repair" if lang == "en" else "生存修复")
     if item.type in {"item", "affix"}:
         current = state.resolved_build(bundle)
         item_ids = list(getattr(state, "item_ids", ()))
@@ -7968,17 +8868,33 @@ def _shop_fix_line(state, bundle: ContentBundle, item, *, idx: int, lang: str) -
             item_ids=tuple(item_ids),
             affix_ids=tuple(affix_ids),
         )
-        tag_delta = _tag_delta_summary(current, projected)
-        return prefix + f"Build tags {tag_delta}"
+        tag_delta = _tag_delta_summary(current, projected, lang=lang)
+        return prefix + (
+            f"Build tags {tag_delta}"
+            if lang == "en"
+            else f"构筑标签 {tag_delta}"
+        )
     if item.type == "strategy":
         style = item.strategy_style or "flex"
-        return prefix + f"Prompt style {style}"
+        return prefix + (
+            f"Prompt style {style}" if lang == "en" else f"咒语预设 {style}"
+        )
     if item.type == "scout":
-        return prefix + "Boss clue / route intel"
-    return prefix + "future pivot"
+        return prefix + ("Boss clue / route intel" if lang == "en" else "首领线索 / 路线情报")
+    return prefix + ("future pivot" if lang == "en" else "后续转向")
 
 
-def _shop_lane_label(item_type: str) -> str:
+def _shop_lane_label(item_type: str, *, lang: str = "en") -> str:
+    if lang == "zh":
+        if item_type == "heal":
+            return "恢复"
+        if item_type in {"item", "affix"}:
+            return "构筑"
+        if item_type == "strategy":
+            return "咒语"
+        if item_type == "scout":
+            return "侦察"
+        return "弹性"
     if item_type == "heal":
         return "RECOVER"
     if item_type in {"item", "affix"}:
@@ -7996,6 +8912,8 @@ def render_route_choice(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the route choice screen.
 
@@ -8018,6 +8936,17 @@ def render_route_choice(
     # Header
     lines.append(label("route_choice_title", lang))
     lines.append("")
+    lines.extend(
+        _render_run_choice_component_header(
+            "route",
+            state,
+            bundle,
+            available,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
     lines.append(
         f"{label('run_dungeon', lang)}: {dungeon.display_name.get(lang)}  "
         f"{label('run_floor', lang)}: {floor.floor_number}"
@@ -8029,12 +8958,22 @@ def render_route_choice(
         f"MP: {state.current_mp}/{state.max_mp}"
     )
     if getattr(state, "strategy_style", None):
-        style_label = "Prompt style" if lang == "en" else "Prompt 预设"
+        style_label = "Prompt style" if lang == "en" else "咒语预设"
         lines.append(f"{style_label}: {state.strategy_style}")
     if getattr(state, "scout_notes", None):
         scout_label = "Scout note" if lang == "en" else "侦察笔记"
         for note in state.scout_notes[-2:]:
             lines.append(f"{scout_label}: {fit_text(note, max(20, width - 14))}")
+    route_asset_lines = render_route_asset_art(
+        getattr(dungeon, "id", ""),
+        tuple(node.node_type for _node_idx, node in available),
+        asset_atlas,
+        language=lang,
+        unicode_mode=unicode_mode,
+    )
+    if route_asset_lines is not None:
+        lines.append("")
+        lines.extend(route_asset_lines)
     lines.append("")
     lines.extend(_render_route_map(state, bundle, available, lang=lang, width=width))
     lines.append("")
@@ -8058,7 +8997,7 @@ def render_route_choice(
         story_intro = node.boss_intro.get(lang) if getattr(node, "is_boss", False) else node.encounter_intro.get(lang)
         if story_intro:
             story_label = "Boss omen" if getattr(node, "is_boss", False) and lang == "en" else (
-                "Boss 预兆" if getattr(node, "is_boss", False) else ("Omen" if lang == "en" else "预兆")
+                "首领预兆" if getattr(node, "is_boss", False) else ("Omen" if lang == "en" else "预兆")
             )
             for wrapped in _wrap_text(story_intro, max(24, width - 4))[:2]:
                 card_body.append(f"{story_label}: {wrapped}")
@@ -8100,7 +9039,16 @@ def render_route_choice(
                             card_body.append(f"{scout_word}: {wrapped}")
 
         tone = "danger" if node.node_type in {"elite_combat", "boss"} else "normal"
-        lines.extend(_choice_card(f"[{display_idx}] {name}", card_body, width=width, tone=tone))
+        art_lines = _route_choice_card_art(node, tone=tone, lang=lang) if lang == "zh" else None
+        lines.extend(
+            _choice_card(
+                f"[{display_idx}] {name}",
+                card_body,
+                width=width,
+                tone=tone,
+                art_lines=art_lines,
+            )
+        )
         lines.append("")
 
     # Prompt
@@ -8122,7 +9070,7 @@ def _render_route_director_board(
         (
             "Read: TAKE clean route / FIX repair node / GREED pressure for reward / RISK needs prep"
             if lang == "en"
-            else "读法: TAKE 稳定路线 / FIX 修复节点 / GREED 高压高收益 / RISK 需准备"
+            else "读法: 稳进=稳定路线 / 修复=补资源节点 / 贪心=高压高收益 / 风险=需要准备"
         )
     ]
     for display_idx, (_node_idx, node) in enumerate(available, start=1):
@@ -8144,6 +9092,8 @@ def _route_director_line(state, node, bundle: ContentBundle, *, idx: int, lang: 
         verdict = "WAIT"
     else:
         verdict = "TAKE"
+    if lang == "zh":
+        verdict = _route_verdict_display(verdict, lang)
     node_name = node.display_name.get(lang) or node.display_name.get("en", node.id)
     risk = _route_map_risk_badge(node.risk_level, node.node_type, lang=lang)
     summary = recommendation
@@ -8156,12 +9106,183 @@ def _route_director_line(state, node, bundle: ContentBundle, *, idx: int, lang: 
     return f"[{idx}] {verdict:<5} {risk} | {node_name} | {summary}"
 
 
+def _route_verdict_display(verdict: str, lang: str) -> str:
+    if lang != "zh":
+        return verdict
+    return {
+        "TAKE": "稳进",
+        "FIX": "修复",
+        "GREED": "贪心",
+        "RISK": "风险",
+        "FLEX": "转向",
+        "WAIT": "观望",
+    }.get(verdict, verdict)
+
+
+def _route_choice_card_art(node, *, tone: str, lang: str) -> list[str]:
+    if lang != "zh":
+        if node.node_type == "boss":
+            return ["[PATH]  ######  danger route", "        ##XX##"]
+        if tone == "danger" or node.node_type in {"elite_combat", "mimic_chest"}:
+            return ["[PATH]  ##!!##  high risk", "        #====#"]
+        return ["[PATH]  ##==>##  route", "        #....#"]
+    if node.node_type == "boss":
+        return ["[路线]  ######  危险路线", "        ##XX##"]
+    if tone == "danger" or node.node_type in {"elite_combat", "mimic_chest"}:
+        return ["[路线]  ##!!##  高压路线", "        #====#"]
+    return ["[路线]  ##==>##  路线图形", "        #....#"]
+
+
+def _render_run_choice_component_header(
+    kind: str,
+    state,
+    bundle: ContentBundle,
+    choices,
+    *,
+    lang: str,
+    width: int,
+) -> list[str]:
+    build = state.resolved_build(bundle)
+    progress = build.calculate_progress(bundle)
+    choice_count = len(choices) if choices is not None else 0
+    hp_text = f"{state.current_hp}/{state.max_hp}"
+    mp_text = f"{state.current_mp}/{state.max_mp}"
+    gold_text = str(getattr(state, "gold", 0))
+
+    if kind == "route":
+        floor = state.current_floor(bundle)
+        if lang == "zh":
+            tabs = [TuiTab("路线", True, f"F{floor.floor_number}"), TuiTab("地图"), TuiTab("导演"), TuiTab("确认")]
+            chips = [
+                TuiChip("分支", str(choice_count), "counter"),
+                TuiChip("资源", f"HP {hp_text} MP {mp_text}", "hero"),
+                TuiChip("金币", gold_text, "quiet"),
+                TuiChip("构筑", f"{progress.stage.badge} {_build_stage_display(progress.stage, progress.stage_name, lang=lang)}", "hero"),
+            ]
+            commands = [("选择", "输入编号 1-9"), ("退出", "q"), ("详情", "阅读路线卡")]
+            titles = ("路线 TUI 导航", "路线焦点轨", "路线命令轨")
+        else:
+            tabs = [TuiTab("Route", True, f"F{floor.floor_number}"), TuiTab("Map"), TuiTab("Director"), TuiTab("Commit")]
+            chips = [
+                TuiChip("Branches", str(choice_count), "counter"),
+                TuiChip("Resources", f"HP {hp_text} MP {mp_text}", "hero"),
+                TuiChip("Gold", gold_text, "quiet"),
+                TuiChip("Build", f"{progress.stage.badge} {progress.stage_name}", "hero"),
+            ]
+            commands = [("PICK", "enter 1-9"), ("QUIT", "q"), ("READ", "scan route cards")]
+            titles = ("ROUTE TUI NAV", "ROUTE FOCUS RAIL", "ROUTE COMMAND RAIL")
+    elif kind == "reward":
+        if lang == "zh":
+            tabs = [TuiTab("奖励", True, str(choice_count)), TuiTab("构筑"), TuiTab("优先级"), TuiTab("锁定")]
+            chips = [
+                TuiChip("阶段", f"{progress.stage.badge} {_build_stage_display(progress.stage, progress.stage_name, lang=lang)}", "hero"),
+                TuiChip("选择", str(choice_count), "counter"),
+                TuiChip("金币", gold_text, "quiet"),
+                TuiChip("蓝量", mp_text, "quiet"),
+            ]
+            commands = [("选择", "输入奖励编号"), ("图鉴", "ouro codex --lang zh"), ("继续", "锁定后进入下一节点")]
+            titles = ("奖励 TUI 导航", "奖励焦点轨", "奖励命令轨")
+        else:
+            tabs = [TuiTab("Reward", True, str(choice_count)), TuiTab("Build"), TuiTab("Priority"), TuiTab("Lock")]
+            chips = [
+                TuiChip("Stage", f"{progress.stage.badge} {progress.stage_name}", "hero"),
+                TuiChip("Choices", str(choice_count), "counter"),
+                TuiChip("Gold", gold_text, "quiet"),
+                TuiChip("MP", mp_text, "quiet"),
+            ]
+            commands = [("PICK", "enter reward number"), ("CODEX", "ouro codex --lang en"), ("NEXT", "lock and advance")]
+            titles = ("REWARD TUI NAV", "REWARD FOCUS RAIL", "REWARD COMMAND RAIL")
+    elif kind == "shop":
+        affordable = sum(1 for item in choices if state.can_afford(item))
+        if lang == "zh":
+            tabs = [TuiTab("商店", True, f"{choice_count}件"), TuiTab("修正"), TuiTab("预算"), TuiTab("购买")]
+            chips = [
+                TuiChip("金币", f"{gold_text}g", "counter"),
+                TuiChip("可买", f"{affordable}/{choice_count}", "hero"),
+                TuiChip("血量", hp_text, "quiet"),
+                TuiChip("蓝量", mp_text, "quiet"),
+            ]
+            commands = [("购买", "输入商品编号"), ("离开", "0 / q"), ("预算", "先看预算战术")]
+            titles = ("商店 TUI 导航", "商店焦点轨", "商店命令轨")
+        else:
+            tabs = [TuiTab("Shop", True, f"{choice_count}"), TuiTab("Fix"), TuiTab("Budget"), TuiTab("Buy")]
+            chips = [
+                TuiChip("Gold", f"{gold_text}g", "counter"),
+                TuiChip("Affordable", f"{affordable}/{choice_count}", "hero"),
+                TuiChip("HP", hp_text, "quiet"),
+                TuiChip("MP", mp_text, "quiet"),
+            ]
+            commands = [("BUY", "enter item number"), ("LEAVE", "0 / q"), ("BUDGET", "read budget tactics")]
+            titles = ("SHOP TUI NAV", "SHOP FOCUS RAIL", "SHOP COMMAND RAIL")
+    elif kind == "rest":
+        pressure = _rest_pressure_label(state, lang=lang)
+        if lang == "zh":
+            tabs = [TuiTab("休整", True), TuiTab("恢复"), TuiTab("专注"), TuiTab("研读")]
+            chips = [
+                TuiChip("压力", pressure, "danger" if pressure == "高" else "quiet"),
+                TuiChip("血量", hp_text, "hero"),
+                TuiChip("蓝量", mp_text, "hero"),
+                TuiChip("构筑", progress.stage.badge, "counter"),
+            ]
+            commands = [("恢复", "1"), ("专注", "2"), ("研读", "3")]
+            titles = ("休整 TUI 导航", "休整焦点轨", "休整命令轨")
+        else:
+            tabs = [TuiTab("Rest", True), TuiTab("Recover"), TuiTab("Focus"), TuiTab("Study")]
+            chips = [
+                TuiChip("Pressure", pressure, "danger" if pressure == "high" else "quiet"),
+                TuiChip("HP", hp_text, "hero"),
+                TuiChip("MP", mp_text, "hero"),
+                TuiChip("Build", progress.stage.badge, "counter"),
+            ]
+            commands = [("RECOVER", "1"), ("FOCUS", "2"), ("STUDY", "3")]
+            titles = ("REST TUI NAV", "REST FOCUS RAIL", "REST COMMAND RAIL")
+    else:
+        if lang == "zh":
+            tabs = [TuiTab("事件", True, str(choice_count)), TuiTab("命运"), TuiTab("风险"), TuiTab("选择")]
+            chips = [
+                TuiChip("选择", str(choice_count), "counter"),
+                TuiChip("血量", hp_text, "hero"),
+                TuiChip("金币", gold_text, "quiet"),
+                TuiChip("构筑", progress.stage.badge, "hero"),
+            ]
+            commands = [("选择", "输入事件编号"), ("风险", "先读事件风险面板"), ("退出", "q")]
+            titles = ("事件 TUI 导航", "事件焦点轨", "事件命令轨")
+        else:
+            tabs = [TuiTab("Event", True, str(choice_count)), TuiTab("Fate"), TuiTab("Risk"), TuiTab("Choose")]
+            chips = [
+                TuiChip("Choices", str(choice_count), "counter"),
+                TuiChip("HP", hp_text, "hero"),
+                TuiChip("Gold", gold_text, "quiet"),
+                TuiChip("Build", progress.stage.badge, "hero"),
+            ]
+            commands = [("PICK", "enter event number"), ("RISK", "read event risk board"), ("QUIT", "q")]
+            titles = ("EVENT TUI NAV", "EVENT FOCUS RAIL", "EVENT COMMAND RAIL")
+
+    lines: list[str] = []
+    lines.extend(render_tab_bar(tabs, width=width, title=titles[0]))
+    lines.extend(render_chip_rail(chips, width=width, title=titles[1]))
+    lines.extend(render_command_rail(commands, width=width, title=titles[2]))
+    return lines
+
+
+def _rest_pressure_label(state, *, lang: str) -> str:
+    hp_ratio = state.current_hp / max(1, state.max_hp)
+    mp_ratio = state.current_mp / max(1, state.max_mp)
+    if hp_ratio <= 0.45 or mp_ratio <= 0.25:
+        return "高" if lang == "zh" else "high"
+    if hp_ratio <= 0.7 or mp_ratio <= 0.5:
+        return "中" if lang == "zh" else "medium"
+    return "低" if lang == "zh" else "low"
+
+
 def render_reward_choice(
     state,
     bundle: ContentBundle,
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the reward choice screen.
 
@@ -8182,6 +9303,17 @@ def render_reward_choice(
 
     # Header
     lines.append(label("reward_choice_title", lang))
+    lines.append("")
+    lines.extend(
+        _render_run_choice_component_header(
+            "reward",
+            state,
+            bundle,
+            choices,
+            lang=lang,
+            width=width,
+        )
+    )
     lines.append("")
 
     # Show what we earned
@@ -8222,7 +9354,7 @@ def render_reward_choice(
             if choice.item_id in bundle.items:
                 item = bundle.items[choice.item_id]
                 name = item.display_name.get(lang) or item.display_name.get("en", choice.item_id)
-                card_body.append(f"{name} [{item.tier}]")
+                card_body.append(f"{name} [{_format_tier_label(item.tier, lang)}]")
                 desc = item.description.get(lang) or item.description.get("en", "")
                 if desc:
                     card_body.append(desc)
@@ -8241,9 +9373,11 @@ def render_reward_choice(
                     if item.stat_mods.power:
                         mods.append(f"POW+{item.stat_mods.power}")
                     if mods:
-                        card_body.append(f"Impact: {', '.join(mods)}")
+                        impact_label = "Impact" if lang == "en" else "数值"
+                        card_body.append(f"{impact_label}: {', '.join(mods)}")
                 if item.tags:
-                    card_body.append(f"Build tags: {', '.join(item.tags[:4])}")
+                    tags_label = "Build tags" if lang == "en" else "构筑标签"
+                    card_body.append(f"{tags_label}: {_format_tag_list(item.tags, lang)}")
                 card_body.extend(_choice_build_preview(state, bundle, item_id=choice.item_id, lang=lang))
             else:
                 card_body.append(choice.item_id)
@@ -8271,9 +9405,11 @@ def render_reward_choice(
                     if affix.stat_mods.power:
                         mods.append(f"POW+{affix.stat_mods.power}")
                     if mods:
-                        card_body.append(f"Impact: {', '.join(mods)}")
+                        impact_label = "Impact" if lang == "en" else "数值"
+                        card_body.append(f"{impact_label}: {', '.join(mods)}")
                 if affix.tags:
-                    card_body.append(f"Build tags: {', '.join(affix.tags[:4])}")
+                    tags_label = "Build tags" if lang == "en" else "构筑标签"
+                    card_body.append(f"{tags_label}: {_format_tag_list(affix.tags, lang)}")
                 card_body.extend(_choice_build_preview(state, bundle, affix_id=choice.affix_id, lang=lang))
             else:
                 card_body.append(choice.affix_id)
@@ -8289,7 +9425,23 @@ def render_reward_choice(
             card_body.append(label("reward_heal_percent", lang).format(percent=choice.heal_percent))
             card_body.append(_choice_decision_note("heal", lang))
 
-        lines.extend(_choice_card(f"[{idx}] {type_label}", card_body, width=width, tone="hero"))
+        art_lines = render_reward_asset_art(
+            choice,
+            asset_atlas,
+            language=lang,
+            unicode_mode=unicode_mode,
+        )
+        if art_lines is None and lang == "zh":
+            art_lines = _reward_card_art(lang)
+        lines.extend(
+            _choice_card(
+                f"[{idx}] {type_label}",
+                card_body,
+                width=width,
+                tone="hero",
+                art_lines=art_lines,
+            )
+        )
         lines.append("")
 
     # Prompt
@@ -8311,7 +9463,7 @@ def _render_reward_priority_board(
         (
             "Read: BEST stage push / CORE main tags / PIVOT off-core / INFO economy"
             if lang == "en"
-            else "读法: BEST 推阶段 / CORE 主标签 / PIVOT 转向 / INFO 经济情报"
+            else "读法: 最优=阶段推进 / 核心=主标签 / 转向=非核心 / 情报=经济情报"
         )
     ]
     for idx, choice in enumerate(choices, start=1):
@@ -8339,23 +9491,27 @@ def _reward_priority_line(state, bundle: ContentBundle, choice, *, idx: int, lan
         return (
             f"[{idx}] INFO   => prompt intel +{choice.progress or 1}; take before unknown/boss routes"
             if lang == "en"
-            else f"[{idx}] INFO   => 提示词情报 +{choice.progress or 1}；未知/Boss 前优先"
+            else f"[{idx}] 情报   => 咒语情报 +{choice.progress or 1}；未知/首领前优先"
         )
     if choice.type == "gold":
         amount = choice.gold or 0
         return (
             f"[{idx}] ECON   => +{amount}g; buy shop fixes or future pivots"
             if lang == "en"
-            else f"[{idx}] ECON   => +{amount} 金；购买商店修正或后续转向"
+            else f"[{idx}] 经济   => +{amount} 金；购买商店修正或后续转向"
         )
     if choice.type == "heal":
         amount = choice.heal_percent or 0
         return (
             f"[{idx}] SAFE   => +{amount}% HP; take if next route is elite/boss/chant"
             if lang == "en"
-            else f"[{idx}] SAFE   => +{amount}% HP；下一路精英/Boss/吟唱时优先"
+            else f"[{idx}] 安全   => +{amount}% HP；下一路精英/首领/吟唱时优先"
         )
-    return f"[{idx}] FLEX   => future pivot"
+    return (
+        f"[{idx}] FLEX   => future pivot"
+        if lang == "en"
+        else f"[{idx}] 弹性   => 后续转向"
+    )
 
 
 def _build_priority_line(
@@ -8382,7 +9538,12 @@ def _build_priority_line(
     }
     before_stage = current.calculate_progress(bundle).stage
     after_stage = projected.calculate_progress(bundle).stage
-    tag_text = ", ".join((core_gain or gained or off_core)[:3]) or "stats"
+    raw_tag_text = (core_gain or gained or off_core)[:3]
+    tag_text = (
+        ", ".join(_display_build_tag(tag, lang) for tag in raw_tag_text)
+        if raw_tag_text
+        else ("stats" if lang == "en" else "数值")
+    )
     if stage_order[after_stage] > stage_order[before_stage]:
         label_text = "BEST"
         reason = (
@@ -8405,8 +9566,23 @@ def _build_priority_line(
         label_text = "BEST"
         reason = "large stat push" if lang == "en" else "大幅数值推进"
     if lang == "zh":
-        return f"[{idx}] {label_text:<5} => {reason} | AI 会更重视对应回合"
+        label_text = _reward_priority_label(label_text, lang)
+        return f"[{idx}] {label_text:<4} => {reason} | 模型会更重视对应回合"
     return f"[{idx}] {label_text:<5} => {reason} | AI weights matching turns higher"
+
+
+def _reward_priority_label(label_text: str, lang: str) -> str:
+    if lang != "zh":
+        return label_text
+    return {
+        "BEST": "最优",
+        "CORE": "核心",
+        "PIVOT": "转向",
+        "INFO": "情报",
+        "ECON": "经济",
+        "SAFE": "安全",
+        "FLEX": "弹性",
+    }.get(label_text, label_text)
 
 
 def render_shop(
@@ -8415,6 +9591,8 @@ def render_shop(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the shop screen.
 
@@ -8444,6 +9622,17 @@ def render_shop(
     if desc:
         lines.append(desc)
     lines.append("")
+    lines.extend(
+        _render_run_choice_component_header(
+            "shop",
+            state,
+            bundle,
+            items,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
 
     # Current gold
     lines.append(f"{label('run_gold', lang)}: {state.gold}")
@@ -8467,7 +9656,7 @@ def render_shop(
             if item.item_id in bundle.items:
                 bundle_item = bundle.items[item.item_id]
                 name = bundle_item.display_name.get(lang) or bundle_item.display_name.get("en", item.item_id)
-                card_body.append(f"{name} [{bundle_item.tier}]")
+                card_body.append(f"{name} [{_format_tier_label(bundle_item.tier, lang)}]")
                 desc = bundle_item.description.get(lang) or bundle_item.description.get("en", "")
                 if desc:
                     card_body.append(desc)
@@ -8486,9 +9675,11 @@ def render_shop(
                     if bundle_item.stat_mods.power:
                         mods.append(f"POW+{bundle_item.stat_mods.power}")
                     if mods:
-                        card_body.append(f"Impact: {', '.join(mods)}")
+                        impact_label = "Impact" if lang == "en" else "数值"
+                        card_body.append(f"{impact_label}: {', '.join(mods)}")
                 if bundle_item.tags:
-                    card_body.append(f"Build tags: {', '.join(bundle_item.tags[:4])}")
+                    tags_label = "Build tags" if lang == "en" else "构筑标签"
+                    card_body.append(f"{tags_label}: {_format_tag_list(bundle_item.tags, lang)}")
                 card_body.extend(_choice_build_preview(state, bundle, item_id=item.item_id, lang=lang))
             else:
                 card_body.append(item.item_id)
@@ -8516,9 +9707,11 @@ def render_shop(
                     if affix.stat_mods.power:
                         mods.append(f"POW+{affix.stat_mods.power}")
                     if mods:
-                        card_body.append(f"Impact: {', '.join(mods)}")
+                        impact_label = "Impact" if lang == "en" else "数值"
+                        card_body.append(f"{impact_label}: {', '.join(mods)}")
                 if affix.tags:
-                    card_body.append(f"Build tags: {', '.join(affix.tags[:4])}")
+                    tags_label = "Build tags" if lang == "en" else "构筑标签"
+                    card_body.append(f"{tags_label}: {_format_tag_list(affix.tags, lang)}")
                 card_body.extend(_choice_build_preview(state, bundle, affix_id=item.affix_id, lang=lang))
             else:
                 card_body.append(item.affix_id)
@@ -8537,14 +9730,32 @@ def render_shop(
             hint = item.scout_hint.get(lang) if item.scout_hint else (
                 "Reveal one route or boss mechanism clue."
                 if lang == "en"
-                else "揭示一条路线或 Boss 机制线索。"
+                else "揭示一条路线或首领机制线索。"
             )
+            if lang == "zh":
+                hint = hint.replace("Boss 线索", "首领线索").replace("Boss", "首领")
             for wrapped in _wrap_text(hint, 70):
                 card_body.append(wrapped)
             card_body.append(_choice_decision_note("scout", lang))
 
         tone = "quiet" if not can_afford else "hero"
-        lines.extend(_choice_card(f"[{idx}] SHOP", card_body, width=width, tone=tone))
+        art_lines = render_choice_asset_art(
+            item,
+            asset_atlas,
+            language=lang,
+            unicode_mode=unicode_mode,
+        )
+        if art_lines is None and lang == "zh":
+            art_lines = _shop_card_art(lang)
+        lines.extend(
+            _choice_card(
+                f"[{idx}] SHOP",
+                card_body,
+                width=width,
+                tone=tone,
+                art_lines=art_lines,
+            )
+        )
         lines.append("")
 
     # Prompt
@@ -8565,7 +9776,7 @@ def _render_shop_budget_board(
         (
             f"Wallet: {state.gold}g | Read: BUY fixes weakness / WAIT keeps route tempo"
             if lang == "en"
-            else f"钱包: {state.gold} 金 | 读法: BUY 修短板 / WAIT 保路线节奏"
+            else f"钱包: {state.gold} 金 | 读法: 买入=修短板 / 观望=保路线节奏"
         )
     ]
     for idx, item in enumerate(items, start=1):
@@ -8576,10 +9787,10 @@ def _render_shop_budget_board(
 def _shop_budget_line(state, item, *, idx: int, lang: str) -> str:
     price = item.price or 0
     remaining = state.gold - price
-    lane = _shop_lane_label(item.type)
+    lane = _shop_lane_label(item.type, lang=lang)
     if remaining < 0:
         if lang == "zh":
-            return f"[{idx}] WAIT   {lane} {price}g | 缺 {abs(remaining)}g，先存钱或选低价修正"
+            return f"[{idx}] 观望   {lane} {price}g | 缺 {abs(remaining)}g，先存钱或选低价修正"
         return f"[{idx}] WAIT   {lane} {price}g | short {abs(remaining)}g; bank gold or pick cheaper"
 
     hp_ratio = state.current_hp / max(1, state.max_hp)
@@ -8589,19 +9800,24 @@ def _shop_budget_line(state, item, *, idx: int, lang: str) -> str:
         reason = "repairs HP/MP before pressure" if lang == "en" else "压力前修复 HP/MP"
     elif item.type in {"item", "affix"}:
         verdict = "BUY" if remaining >= 4 else "THINK"
-        reason = "turns gold into Build tags" if lang == "en" else "金币转 Build 标签"
+        reason = "turns gold into Build tags" if lang == "en" else "金币转构筑标签"
     elif item.type == "strategy":
         verdict = "BUY" if state.gold >= price + 4 else "THINK"
         reason = "fixes model bias" if lang == "en" else "修正模型偏好"
     elif item.type == "scout":
         verdict = "BUY" if remaining >= 0 else "WAIT"
-        reason = "cheap boss/route intel" if lang == "en" else "低价 Boss/路线情报"
+        reason = "cheap boss/route intel" if lang == "en" else "低价首领/路线情报"
     else:
         verdict = "THINK"
         reason = "future flexibility" if lang == "en" else "后续弹性"
 
     if lang == "zh":
-        return f"[{idx}] {verdict:<5} {lane} {price}g -> {remaining}g | {reason}"
+        verdict = {
+            "BUY": "买入",
+            "THINK": "斟酌",
+            "WAIT": "观望",
+        }.get(verdict, verdict)
+        return f"[{idx}] {verdict:<4} {lane} {price}g -> {remaining}g | {reason}"
     return f"[{idx}] {verdict:<5} {lane} {price}g -> {remaining}g | {reason}"
 
 
@@ -8611,6 +9827,8 @@ def render_run_summary(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the run summary screen.
 
@@ -8639,6 +9857,18 @@ def render_run_summary(
     lines.append(f"{label('run_dungeon', lang)}: {dungeon.display_name.get(lang)}")
     lines.append(f"{label('run_id_label', lang)}: {state.run_id}")
     lines.append(f"{label('seed_label', lang)}: {state.seed}")
+    result_key = "complete" if state.phase == RunPhase.COMPLETE else "dead"
+    asset_lines = render_run_record_asset_art(
+        hero_id=getattr(state, "hero_id", ""),
+        dungeon_id=getattr(dungeon, "id", ""),
+        result=result_key,
+        atlas=asset_atlas,
+        language=lang,
+        unicode_mode=unicode_mode,
+    )
+    if asset_lines is not None:
+        lines.append("")
+        lines.extend(asset_lines)
     lines.append("")
 
     # Stats
@@ -8648,9 +9878,14 @@ def render_run_summary(
     lines.append("")
     lines.extend(_render_run_retry_loadout_board(state, bundle, lang=lang, width=width))
     lines.append("")
-    lines.append(f"  {label('run_floor', lang)} reached: {state.current_floor_index + 1}")
-    lines.append(f"  {label('run_gold', lang)} earned: {state.earned_gold_total}")
-    lines.append(f"  {label('run_xp', lang)} earned: {state.earned_xp_total}")
+    if lang == "zh":
+        lines.append(f"  楼层到达: {state.current_floor_index + 1}")
+        lines.append(f"  金币获得: {state.earned_gold_total}")
+        lines.append(f"  经验获得: {state.earned_xp_total}")
+    else:
+        lines.append(f"  {label('run_floor', lang)} reached: {state.current_floor_index + 1}")
+        lines.append(f"  {label('run_gold', lang)} earned: {state.earned_gold_total}")
+        lines.append(f"  {label('run_xp', lang)} earned: {state.earned_xp_total}")
     lines.append(f"  {label('run_battles_won', lang)}: {state.battles_won}")
     lines.append(f"  {label('run_battles_lost', lang)}: {state.battles_lost}")
     if getattr(state, "strategy_style", None):
@@ -8676,7 +9911,11 @@ def render_run_summary(
     build = state.resolved_build(bundle)
     lines.append(f"{label('run_final_build', lang)}: {build.archetype(lang)}")
     progress = build.calculate_progress(bundle)
-    lines.append(f"  {label('run_final_build_stage', lang)}: {progress.stage.badge} {progress.stage_name}")
+    lines.append(
+        "  "
+        f"{label('run_final_build_stage', lang)}: "
+        f"{progress.stage.badge} {_build_stage_display(progress.stage, progress.stage_name, lang=lang)}"
+    )
     lines.append(f"  {label('run_final_build_items', lang)}: {', '.join(i.display_name.get(lang) or i.display_name.get('en', i.id) for i in build.items)}")
     lines.append(f"  {label('run_final_build_affixes', lang)}: {', '.join(a.display_name.get(lang) or a.display_name.get('en', a.id) for a in build.affixes)}")
     if build.resonances:
@@ -8699,14 +9938,20 @@ def _render_run_result_board(
 ) -> list[str]:
     title = "RUN RESULT BOARD" if lang == "en" else "本局结算板"
     result = "complete" if state.phase == RunPhase.COMPLETE else "dead"
-    result_badge = "[WIN]" if state.phase == RunPhase.COMPLETE else "[FALL]"
+    if lang == "zh":
+        result_badge = "[通关]" if state.phase == RunPhase.COMPLETE else "[陨落]"
+        result_text = _status_outcome_display(result, lang)
+    else:
+        result_badge = "[WIN]" if state.phase == RunPhase.COMPLETE else "[FALL]"
+        result_text = result
     build = state.resolved_build(bundle)
     progress = build.calculate_progress(bundle)
+    stage_name = _build_stage_display(progress.stage, progress.stage_name, lang=lang)
     body = [
         (
-            f"{result_badge} Result: {result} | Floor {state.current_floor_index + 1} | Nodes {len(state.completed_node_ids)}"
+            f"{result_badge} Result: {result_text} | Floor {state.current_floor_index + 1} | Nodes {len(state.completed_node_ids)}"
             if lang == "en"
-            else f"{result_badge} 结果: {result} | 第 {state.current_floor_index + 1} 层 | 节点 {len(state.completed_node_ids)}"
+            else f"{result_badge} 结果: {result_text} | 第 {state.current_floor_index + 1} 层 | 节点 {len(state.completed_node_ids)}"
         ),
         (
             f"Combat: {state.battles_won}W/{state.battles_lost}L | Resources HP {state.current_hp}/{state.max_hp} MP {state.current_mp}/{state.max_mp}"
@@ -8714,9 +9959,9 @@ def _render_run_result_board(
             else f"战斗: {state.battles_won}胜/{state.battles_lost}负 | 资源 HP {state.current_hp}/{state.max_hp} MP {state.current_mp}/{state.max_mp}"
         ),
         (
-            f"Build: {progress.stage.badge} {progress.stage_name} | {build.archetype(lang)}"
+            f"Build: {progress.stage.badge} {stage_name} | {build.archetype(lang)}"
             if lang == "en"
-            else f"Build: {progress.stage.badge} {progress.stage_name} | {build.archetype(lang)}"
+            else f"构筑: {progress.stage.badge} {stage_name} | {build.archetype(lang)}"
         ),
         _run_result_next_hint(state, lang=lang),
     ]
@@ -8725,9 +9970,9 @@ def _render_run_result_board(
 
 def _run_result_next_hint(state, *, lang: str) -> str:
     if state.phase == RunPhase.COMPLETE:
-        return "Next: raise risk, try a new hero, or chase HIGH ROLL" if lang == "en" else "下一步: 提高风险、换英雄或追求 HIGH ROLL"
+        return "Next: raise risk, try a new hero, or chase HIGH ROLL" if lang == "en" else "下一步: 提高风险、换英雄或追求高光"
     if state.battles_lost:
-        return "Next: review route/rest timing and prompt style before retry" if lang == "en" else "下一步: 复盘路线/休整时机和 Prompt 风格"
+        return "Next: review route/rest timing and prompt style before retry" if lang == "en" else "下一步: 复盘路线/休整时机和咒语风格"
     return "Next: inspect archive and prepare another run" if lang == "en" else "下一步: 查看归档并准备下一局"
 
 
@@ -8752,10 +9997,10 @@ def _render_run_retry_loadout_board(
             ]
             if lang == "en"
             else [
-                f"[PROMPT] guarded / 在压力下验证 {progress.stage.badge}",
-                f"[SEED] {next_seed} / 压力样本",
-                "[ROUTE] 精英/事件贪心路线",
-                "[BUILD] 换英雄前先比较通关标签",
+                f"[提示词] guarded / 在压力下验证 {progress.stage.badge}",
+                f"[种子] {next_seed} / 压力样本",
+                "[路线] 精英/事件贪心路线",
+                "[构筑] 换英雄前先比较通关标签",
             ]
         )
     else:
@@ -8768,10 +10013,10 @@ def _render_run_retry_loadout_board(
             ]
             if lang == "en"
             else [
-                "[PROMPT] control / 降低敌方节奏",
-                f"[SEED] {next_seed} / 固定重试样本",
-                "[ROUTE] Boss 压力前找休整/商店",
-                "[CODEX] 补未知敌人家族",
+                "[提示词] control / 降低敌方节奏",
+                f"[种子] {next_seed} / 固定重试样本",
+                "[路线] 首领压力前找休整/商店",
+                "[图鉴] 补未知敌人家族",
             ]
         )
     return list(pixel_panel(title, [fit_text(line, max(12, width - 4)) for line in body], width, tone="hero").lines)
@@ -8785,6 +10030,8 @@ def render_rest(
     width: int = 100,
     heal_percent: int = 30,
     restore_full_mp: bool = True,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the rest screen.
 
@@ -8812,6 +10059,17 @@ def render_rest(
     desc = node.description.get(lang) or node.description.get("en", "")
     if desc:
         lines.append(desc)
+    lines.append("")
+    lines.extend(
+        _render_run_choice_component_header(
+            "rest",
+            state,
+            bundle,
+            (),
+            lang=lang,
+            width=width,
+        )
+    )
     lines.append("")
 
     lines.append(f"Current HP: {state.current_hp}/{state.max_hp}")
@@ -8844,20 +10102,34 @@ def render_rest(
         lines.append("选择一个休整方式:")
         recover_hp = min(state.max_hp, state.current_hp + int(state.max_hp * heal_percent / 100))
         rest_cards = [
-            ("[1] Recover", [f"HP {state.current_hp}->{recover_hp}, MP {state.current_mp}->{state.max_mp}"], "hero"),
-            ("[2] Focus", ["下一战开局获得 SHD 12 护盾"], "counter"),
-            ("[3] Study", ["记录一条下一路线/敌方机制侦察提示"], "quiet"),
+            ("recover", "[1] Recover", [f"HP {state.current_hp}->{recover_hp}, MP {state.current_mp}->{state.max_mp}"], "hero"),
+            ("focus", "[2] Focus", ["下一战开局获得 SHD 12 护盾"], "counter"),
+            ("study", "[3] Study", ["记录一条下一路线/敌方机制侦察提示"], "quiet"),
         ]
     else:
         lines.append("Choose one rest option:")
         recover_hp = min(state.max_hp, state.current_hp + int(state.max_hp * heal_percent / 100))
         rest_cards = [
-            ("[1] Recover", [f"HP {state.current_hp}->{recover_hp}, MP {state.current_mp}->{state.max_mp}"], "hero"),
-            ("[2] Focus", ["next battle starts with SHD 12 shield"], "counter"),
-            ("[3] Study", ["add one route/enemy mechanism scout note"], "quiet"),
+            ("recover", "[1] Recover", [f"HP {state.current_hp}->{recover_hp}, MP {state.current_mp}->{state.max_mp}"], "hero"),
+            ("focus", "[2] Focus", ["next battle starts with SHD 12 shield"], "counter"),
+            ("study", "[3] Study", ["add one route/enemy mechanism scout note"], "quiet"),
         ]
-    for title, body, tone in rest_cards:
-        lines.extend(_choice_card(title, body, width=width, tone=tone))
+    for option, title, body, tone in rest_cards:
+        art_lines = render_rest_asset_art(
+            option,
+            asset_atlas,
+            language=lang,
+            unicode_mode=unicode_mode,
+        )
+        lines.extend(
+            _choice_card(
+                title,
+                body,
+                width=width,
+                tone=tone,
+                art_lines=art_lines,
+            )
+        )
     lines.append("")
 
     lines.append(label("rest_prompt", lang))
@@ -8923,6 +10195,8 @@ def render_event(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render the event screen.
 
@@ -8950,13 +10224,24 @@ def render_event(
     if desc:
         lines.append(desc)
     lines.append("")
+    lines.extend(
+        _render_run_choice_component_header(
+            "event",
+            state,
+            bundle,
+            choices,
+            lang=lang,
+            width=width,
+        )
+    )
+    lines.append("")
 
     if choices:
         lines.extend(_render_event_fate_board(state, bundle, choices, lang=lang, width=width))
         lines.append("")
         lines.extend(_render_event_risk_board(state, bundle, choices, lang=lang, width=width))
         lines.append("")
-        lines.append("Choices:")
+        lines.append("Choices:" if lang == "en" else "选择:")
         lines.append("")
         for idx, choice in enumerate(choices, start=1):
             choice_name = None
@@ -8974,7 +10259,7 @@ def render_event(
                     choice_desc = str(choice.description)
 
             if not choice_name:
-                choice_name = f"Choice {idx}"
+                choice_name = f"Choice {idx}" if lang == "en" else f"选择 {idx}"
 
             card_body: list[str] = []
             if choice_desc:
@@ -8985,18 +10270,40 @@ def render_event(
                     if choice.item_id in bundle.items:
                         item = bundle.items[choice.item_id]
                         item_name = item.display_name.get(lang) or item.display_name.get("en", choice.item_id)
-                        card_body.append(f"Item: {item_name} [{item.tier}]")
+                        item_label = "Item" if lang == "en" else "装备"
+                        card_body.append(
+                            f"{item_label}: {item_name} [{_format_tier_label(item.tier, lang)}]"
+                        )
                 elif choice.type == "affix" and hasattr(choice, "affix_id") and choice.affix_id:
                     if choice.affix_id in bundle.affixes:
                         affix = bundle.affixes[choice.affix_id]
                         affix_name = affix.display_name.get(lang) or affix.display_name.get("en", choice.affix_id)
-                        card_body.append(f"Affix: {affix_name}")
+                        affix_label = "Affix" if lang == "en" else "词条"
+                        card_body.append(f"{affix_label}: {affix_name}")
                 elif choice.type == "gold" and hasattr(choice, "gold") and choice.gold:
-                    card_body.append(f"Gold: +{choice.gold}")
+                    gold_label = "Gold" if lang == "en" else "金币"
+                    card_body.append(f"{gold_label}: +{choice.gold}")
                 elif choice.type == "heal" and hasattr(choice, "heal_percent") and choice.heal_percent:
-                    card_body.append(f"Heal: {choice.heal_percent}% HP")
+                    heal_label = "Heal" if lang == "en" else "治疗"
+                    card_body.append(f"{heal_label}: {choice.heal_percent}% HP")
 
-            lines.extend(_choice_card(f"[{idx}] {choice_name}", card_body, width=width, tone="normal"))
+            art_lines = render_choice_asset_art(
+                choice,
+                asset_atlas,
+                language=lang,
+                unicode_mode=unicode_mode,
+            )
+            if art_lines is None and lang == "zh":
+                art_lines = _reward_card_art(lang)
+            lines.extend(
+                _choice_card(
+                    f"[{idx}] {choice_name}",
+                    card_body,
+                    width=width,
+                    tone="normal",
+                    art_lines=art_lines,
+                )
+            )
             lines.append("")
     else:
         lines.append("No choices available.")
@@ -9020,7 +10327,7 @@ def _render_event_risk_board(
         (
             "Read: TAKE fits state / GREED high value / SAFE repairs run / INFO reduces unknowns"
             if lang == "en"
-            else "读法: TAKE 贴合状态 / GREED 高收益 / SAFE 修复本局 / INFO 降低未知"
+            else "读法: 稳进=贴合状态 / 贪心=高收益 / 安全=修复本局 / 情报=降低未知"
         )
     ]
     for idx, choice in enumerate(choices, start=1):
@@ -9045,10 +10352,17 @@ def _event_risk_line(state, bundle: ContentBundle, choice, *, idx: int, lang: st
             item_ids=tuple(item_ids),
             affix_ids=tuple(affix_ids),
         )
-        tags = _tag_delta_summary(current, projected)
-        if any(tag in tags for tag in HERO_CORE_TAGS.get(state.hero_id, ())):
+        tags = _tag_delta_summary(current, projected, lang=lang)
+        before_tags = current.tag_counts()
+        after_tags = projected.tag_counts()
+        gained = {
+            tag
+            for tag, count in after_tags.items()
+            if count > before_tags.get(tag, 0)
+        }
+        if gained & set(HERO_CORE_TAGS.get(state.hero_id, ())):
             verdict = "TAKE"
-            reason = f"core Build tags {tags}" if lang == "en" else f"核心 Build 标签 {tags}"
+            reason = f"core Build tags {tags}" if lang == "en" else f"核心构筑标签 {tags}"
         else:
             verdict = "GREED"
             reason = f"pivot tags {tags}" if lang == "en" else f"转向标签 {tags}"
@@ -9064,11 +10378,27 @@ def _event_risk_line(state, bundle: ContentBundle, choice, *, idx: int, lang: st
         reason = "funds shop fixes" if lang == "en" else "补商店修正资金"
     elif choice_type == "codex":
         verdict = "INFO"
-        reason = "adds prompt intel" if lang == "en" else "增加提示词情报"
+        reason = "adds prompt intel" if lang == "en" else "增加咒语情报"
     else:
         verdict = "FLEX"
         reason = "unknown event branch" if lang == "en" else "未知事件分支"
+    if lang == "zh":
+        verdict = _event_verdict_label(verdict, lang)
     return f"[{idx}] {verdict:<5} => {reason}"
+
+
+def _event_verdict_label(verdict: str, lang: str) -> str:
+    if lang != "zh":
+        return verdict
+    return {
+        "TAKE": "稳进",
+        "GREED": "贪心",
+        "SAFE": "安全",
+        "LOW": "低值",
+        "THINK": "斟酌",
+        "INFO": "情报",
+        "FLEX": "弹性",
+    }.get(verdict, verdict)
 
 
 def _render_event_fate_board(
@@ -9084,7 +10414,7 @@ def _render_event_fate_board(
         (
             "Read the altar before choosing: build, economy, or survival."
             if lang == "en"
-            else "先读祭坛: Build、经济或生存三种走向。"
+            else "先读祭坛: 构筑、经济或生存三种走向。"
         )
     ]
     for idx, choice in enumerate(choices, start=1):
@@ -9107,19 +10437,27 @@ def _event_fate_line(state, bundle: ContentBundle, choice, *, idx: int, lang: st
             item_ids=tuple(item_ids),
             affix_ids=tuple(affix_ids),
         )
-        tag_delta = _tag_delta_summary(current, projected)
+        tag_delta = _tag_delta_summary(current, projected, lang=lang)
         if lang == "zh":
-            return f"[{idx}] BUILD => 标签 {tag_delta}"
+            return f"[{idx}] 构筑 => 标签 {tag_delta}"
         return f"[{idx}] BUILD => tags {tag_delta}"
     if getattr(choice, "type", "") == "gold" and getattr(choice, "gold", None):
+        if lang == "zh":
+            return f"[{idx}] 金币  => +{choice.gold} 商店资金"
         return f"[{idx}] GOLD  => +{choice.gold} shop power"
     if getattr(choice, "type", "") == "heal" and getattr(choice, "heal_percent", None):
         heal_amount = int(state.max_hp * choice.heal_percent / 100)
         healed = min(state.max_hp, state.current_hp + heal_amount)
+        if lang == "zh":
+            return f"[{idx}] 治疗  => HP {state.current_hp}->{healed}"
         return f"[{idx}] HEAL  => HP {state.current_hp}->{healed}"
     if getattr(choice, "type", "") == "codex":
         amount = getattr(choice, "progress", None) or 1
+        if lang == "zh":
+            return f"[{idx}] 图鉴 => +{amount} 研读"
         return f"[{idx}] CODEX => +{amount} study"
+    if lang == "zh":
+        return f"[{idx}] 命运  => 弹性结果"
     return f"[{idx}] FATE  => flexible outcome"
 
 
@@ -9137,6 +10475,8 @@ def render_codex_card(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 60,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render a codex card for a monster.
 
@@ -9197,6 +10537,15 @@ def render_codex_card(
         header = f"[??] UNKNOWN FAMILY"
         lines.append(_codex_line(header, width))
         lines.append(_codex_line("tier: ???", width))
+        asset_lines = render_codex_asset_art(
+            enemy,
+            stage,
+            asset_atlas,
+            language=lang,
+            unicode_mode=unicode_mode,
+        )
+        if asset_lines is not None:
+            lines.extend(_codex_line(line, width) for line in asset_lines)
         lines.extend(_codex_sprite_lines(glyph, stage, width=width))
         lines.extend(_render_codex_counter_plan(enemy, stage, lang=lang, width=width))
         lines.append(_codex_line("known: never encountered", width))
@@ -9215,6 +10564,15 @@ def render_codex_card(
             lines.append(_codex_line(f"{family_label}: {family_name}", width))
 
         lines.append(_codex_line("Glyph: [" + glyph + "]", width))
+        asset_lines = render_codex_asset_art(
+            enemy,
+            stage,
+            asset_atlas,
+            language=lang,
+            unicode_mode=unicode_mode,
+        )
+        if asset_lines is not None:
+            lines.extend(_codex_line(line, width) for line in asset_lines)
         lines.extend(_codex_sprite_lines(glyph, stage, width=width))
 
         if is_observed:
@@ -9410,11 +10768,73 @@ def _fog_sprite(sprite: list[str]) -> list[str]:
     return fogged
 
 
+def _render_codex_component_header(
+    *,
+    total: int,
+    observed: int,
+    familiar: int,
+    mastered: int,
+    hunted: int,
+    lang: str,
+    width: int,
+) -> list[str]:
+    if lang == "zh":
+        tabs = [
+            TuiTab("总览", True),
+            TuiTab("狩猎板"),
+            TuiTab("画廊"),
+            TuiTab("反制计划"),
+        ]
+        chips = [
+            TuiChip("观察", render_meter("", observed, total, width=8), "counter"),
+            TuiChip("熟悉", render_meter("", familiar, total, width=8), "quiet"),
+            TuiChip("掌握", render_meter("", mastered, total, width=8), "hero"),
+            TuiChip("追猎", render_meter("", hunted, total, width=8), "danger"),
+        ]
+        commands = [
+            ("打开", "ouro codex <卡片>"),
+            ("状态", "ouro status --lang zh"),
+            ("运行", "ouro run --mock"),
+        ]
+        nav_title = "图鉴 TUI 导航"
+        focus_title = "图鉴焦点轨"
+        command_title = "图鉴命令轨"
+    else:
+        tabs = [
+            TuiTab("Overview", True),
+            TuiTab("Hunt Board"),
+            TuiTab("Gallery"),
+            TuiTab("Counter Plan"),
+        ]
+        chips = [
+            TuiChip("Observed", render_meter("", observed, total, width=8), "counter"),
+            TuiChip("Familiar", render_meter("", familiar, total, width=8), "quiet"),
+            TuiChip("Mastered", render_meter("", mastered, total, width=8), "hero"),
+            TuiChip("Hunted", render_meter("", hunted, total, width=8), "danger"),
+        ]
+        commands = [
+            ("OPEN", "ouro codex <card>"),
+            ("STATUS", "ouro status --lang en"),
+            ("RUN", "ouro run --mock"),
+        ]
+        nav_title = "CODEX TUI NAV"
+        focus_title = "CODEX FOCUS RAIL"
+        command_title = "CODEX COMMAND RAIL"
+
+    lines: list[str] = []
+    lines.extend(render_tab_bar(tabs, width=width, title=nav_title))
+    lines.extend(render_chip_rail(chips, width=width, title=focus_title))
+    lines.extend(render_command_rail(commands, width=width, title=command_title))
+    return lines
+
+
 def render_codex_summary(
     bundle: ContentBundle,
     codex_progress: CodexProgress | None = None,
     *,
     language: str = DEFAULT_LANGUAGE,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render a summary of all codex entries.
 
@@ -9456,15 +10876,43 @@ def render_codex_summary(
             if stage >= CodexStage.HUNTED:
                 hunted += 1
 
-    lines.append(f"Total: {total} monsters")
-    lines.append(f"Observed: {observed}/{total}")
-    lines.append(f"Familiar: {familiar}/{total}")
-    lines.append(f"Mastered: {mastered}/{total}")
-    lines.append(f"Hunted: {hunted}/{total}")
+    lines.extend(
+        _render_codex_component_header(
+            total=total,
+            observed=observed,
+            familiar=familiar,
+            mastered=mastered,
+            hunted=hunted,
+            lang=lang,
+            width=80,
+        )
+    )
+    lines.append("")
+
+    if lang == "zh":
+        lines.append(f"总计: {total} 只怪物")
+        lines.append(f"已观察: {observed}/{total}")
+        lines.append(f"已熟悉: {familiar}/{total}")
+        lines.append(f"已掌握: {mastered}/{total}")
+        lines.append(f"已追猎: {hunted}/{total}")
+    else:
+        lines.append(f"Total: {total} monsters")
+        lines.append(f"Observed: {observed}/{total}")
+        lines.append(f"Familiar: {familiar}/{total}")
+        lines.append(f"Mastered: {mastered}/{total}")
+        lines.append(f"Hunted: {hunted}/{total}")
     lines.append("")
     lines.extend(_render_codex_hunt_board(bundle, codex_progress, lang=lang))
     lines.append("")
-    lines.extend(_render_codex_gallery_board(bundle, codex_progress, lang=lang))
+    lines.extend(
+        _render_codex_gallery_board(
+            bundle,
+            codex_progress,
+            lang=lang,
+            asset_atlas=asset_atlas,
+            unicode_mode=unicode_mode,
+        )
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -9475,6 +10923,8 @@ def _render_codex_gallery_board(
     codex_progress: CodexProgress | None,
     *,
     lang: str,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> list[str]:
     title = "MONSTER GALLERY BOARD" if lang == "en" else "怪物图鉴画廊"
     lines = [title]
@@ -9495,6 +10945,12 @@ def _render_codex_gallery_board(
         )
         threat = _codex_gallery_threat(enemy, lang=lang)
         silhouette = _codex_gallery_silhouette(enemy, stage)
+        asset_line = render_codex_gallery_asset_line(
+            enemy,
+            stage,
+            asset_atlas,
+            language=lang,
+        )
         next_action = _codex_gallery_next_action(stage, lang=lang)
         family = _codex_gallery_family(enemy, lang=lang)
         card_code = _codex_gallery_card_code(enemy)
@@ -9502,6 +10958,8 @@ def _render_codex_gallery_board(
         lines.append(fit_text(f"    {family_label}: {family}", 80))
         lines.append(fit_text(f"    {behavior_label}: {threat}", 80))
         lines.append(fit_text(f"    {silhouette_label}: {silhouette}", 80))
+        if asset_line is not None:
+            lines.append(fit_text(f"    {asset_line}", 80))
         lines.append(fit_text(f"    {card_label}: {card_code} | -> {next_action}", 80))
     lines.append(
         "Next: ouro codex <card> for counter plan"
@@ -9592,7 +11050,7 @@ def _render_codex_hunt_board(
 
     target = _codex_next_hunt_target(rows, lang=lang)
     if lang == "zh":
-        title = "CODEX HUNT BOARD :: 图鉴狩猎板"
+        title = "图鉴狩猎板"
         lines = [
             title,
             f"  缺口: 未观察 {unknown} / 未熟悉 {familiar_gap} / 未掌握 {mastered_gap}",
@@ -9726,10 +11184,16 @@ def render_death_history(
         build_badge = str(build.get("stage_badge", ""))
 
         lines.append(f"[{index}] {run_id}")
-        lines.append(f"  Seed: {seed}  Result: {result}")
-        lines.append(f"  Hero: {hero_name}  Dungeon: {dungeon_name}")
-        lines.append(f"  Battles: {wins}W/{losses}L  Nodes: {len(node_ids)}")
-        lines.append(f"  Build: {build_name} {build_badge}".rstrip())
+        if lang == "zh":
+            lines.append(f"  种子: {seed}  结果: {_status_outcome_display(result, lang)}")
+            lines.append(f"  英雄: {hero_name}  副本: {dungeon_name}")
+            lines.append(f"  战斗: {wins}胜/{losses}负  节点: {len(node_ids)}")
+            lines.append(f"  构筑: {_status_build_display(build_name, lang)} {build_badge}".rstrip())
+        else:
+            lines.append(f"  Seed: {seed}  Result: {result}")
+            lines.append(f"  Hero: {hero_name}  Dungeon: {dungeon_name}")
+            lines.append(f"  Battles: {wins}W/{losses}L  Nodes: {len(node_ids)}")
+            lines.append(f"  Build: {build_name} {build_badge}".rstrip())
         if node_ids:
             node_names: list[str] = []
             for node_id in node_ids[:4]:
@@ -9742,7 +11206,8 @@ def render_death_history(
             node_line = " -> ".join(node_names)
             if extra > 0:
                 node_line += f" -> +{extra}"
-            lines.append(f"  Path: {node_line}")
+            path_label = "路径" if lang == "zh" else "Path"
+            lines.append(f"  {path_label}: {node_line}")
         lines.append("")
 
     return "\n".join(lines).rstrip()
@@ -9758,11 +11223,11 @@ def _render_death_review_board(deaths: list[dict], *, lang: str) -> list[str]:
     retry_seed = _next_seed_text(latest_seed)
     if lang == "zh":
         return [
-            "DEATH REVIEW BOARD :: 陨落复盘板",
-            f"  [SAMPLES] {len(deaths)} 次陨落",
-            f"  [LATEST] seed {latest_seed} / {latest_wins}W",
-            f"  [DEEPEST] seed {deepest_seed} / {deepest_wins}W",
-            f"  [RETRY] ouro run --mock --prompt-style control --seed {retry_seed}",
+            "陨落复盘板",
+            f"  [样本] {len(deaths)} 次陨落",
+            f"  [最近] seed {latest_seed} / {latest_wins}胜",
+            f"  [最深] seed {deepest_seed} / {deepest_wins}胜",
+            f"  [重试] ouro run --mock --prompt-style control --seed {retry_seed}",
         ]
     return [
         "DEATH REVIEW BOARD",
@@ -9837,14 +11302,27 @@ def render_run_archives(
         build_badge = str(build.get("stage_badge", ""))
 
         lines.append(f"[{index}] {run_id}")
-        lines.append(f"  Seed: {seed}  Result: {result}  Phase: {phase}")
-        lines.append(f"  Hero: {hero_name}  Dungeon: {dungeon_name}")
-        lines.append(f"  Battles: {wins}W/{losses}L  Nodes: {len(node_ids)}  Gold: {gold}  XP: {xp}")
-        lines.append(f"  Resources: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}")
-        lines.append(f"  Build: {build_name} {build_badge}".rstrip())
+        if lang == "zh":
+            lines.append(
+                "  "
+                f"种子: {seed}  "
+                f"结果: {_status_outcome_display(result, lang)}  "
+                f"阶段: {_status_outcome_display(phase, lang)}"
+            )
+            lines.append(f"  英雄: {hero_name}  副本: {dungeon_name}")
+            lines.append(f"  战斗: {wins}胜/{losses}负  节点: {len(node_ids)}  金币: {gold}  XP: {xp}")
+            lines.append(f"  资源: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}")
+            lines.append(f"  构筑: {_status_build_display(build_name, lang)} {build_badge}".rstrip())
+        else:
+            lines.append(f"  Seed: {seed}  Result: {result}  Phase: {phase}")
+            lines.append(f"  Hero: {hero_name}  Dungeon: {dungeon_name}")
+            lines.append(f"  Battles: {wins}W/{losses}L  Nodes: {len(node_ids)}  Gold: {gold}  XP: {xp}")
+            lines.append(f"  Resources: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}")
+            lines.append(f"  Build: {build_name} {build_badge}".rstrip())
         archive_path = entry.get("_archive_path")
         if archive_path:
-            lines.append(f"  Archive: {archive_path}")
+            archive_label = "归档" if lang == "zh" else "Archive"
+            lines.append(f"  {archive_label}: {archive_path}")
         lines.append("")
 
     return "\n".join(lines).rstrip()
@@ -9863,11 +11341,11 @@ def _render_run_archive_board(archives: list[dict], *, lang: str) -> list[str]:
     latest_path = str(latest.get("_archive_path", "-"))
     if lang == "zh":
         return [
-            "RUN ARCHIVE BOARD :: 运行归档面板",
-            f"  [RESULTS] 通关 {complete} / 阵亡 {dead}",
-            f"  [BEST] seed {best_seed} / {best_wins}W/{best_losses}L",
-            f"  [LATEST] seed {latest_seed} / {latest_result}",
-            f"  [REPORT] ouro run-report {latest_path}",
+            "运行归档面板",
+            f"  [结果] 通关 {complete} / 陨落 {dead}",
+            f"  [最佳] seed {best_seed} / {best_wins}胜/{best_losses}负",
+            f"  [最近] seed {latest_seed} / {_status_outcome_display(latest_result, lang)}",
+            f"  [报告] ouro run-report {latest_path}",
         ]
     return [
         "RUN ARCHIVE BOARD",
@@ -9884,6 +11362,8 @@ def render_run_report(
     *,
     language: str = DEFAULT_LANGUAGE,
     width: int = 100,
+    asset_atlas: SpriteAtlas | None = None,
+    unicode_mode: bool = False,
 ) -> str:
     """Render one compact run archive report for post-run review."""
     lang = language
@@ -9918,8 +11398,27 @@ def render_run_report(
     progress_title = "PROGRESSION" if lang == "en" else "进度"
     loadout_title = "NEXT RUN LOADOUT" if lang == "en" else "下一局配置"
     next_title = "NEXT RUN" if lang == "en" else "下一局"
+    result = str(entry.get("result", entry.get("battle_result", "-")))
+    asset_lines = render_run_record_asset_art(
+        hero_id=str(entry.get("hero_id", "")),
+        dungeon_id=str(entry.get("dungeon_id", "")),
+        result=result,
+        atlas=asset_atlas,
+        language=lang,
+        unicode_mode=unicode_mode,
+    )
     panels = [
         pixel_rule(title, width, tone="hero"),
+        *(
+            pixel_panel(
+                "VISUAL ANCHORS" if lang == "en" else "视觉锚点",
+                [fit_text(line, max(12, width - 4)) for line in asset_lines],
+                width,
+                tone="hero",
+            ).lines
+            if asset_lines is not None
+            else []
+        ),
         *pixel_panel(
             summary_title,
             _run_report_summary(entry, bundle, lang),
@@ -9982,11 +11481,11 @@ def _run_report_summary(entry: dict, bundle: ContentBundle, lang: str) -> list[s
 
     if lang == "zh":
         return [
-            f"Run: {run_id}",
-            f"Seed: {seed}  结果: {result}  阶段: {phase}",
+            f"运行: {run_id}",
+            f"种子: {seed}  结果: {_status_outcome_display(result, lang)}  阶段: {_status_outcome_display(phase, lang)}",
             f"英雄: {hero_name}  副本: {dungeon_name}",
             f"战斗: {wins}胜/{losses}败  到达层: {floor}  节点: {len(node_ids)}",
-            f"资源: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}  Gold {gold}  XP {xp}",
+            f"资源: HP {current_hp}/{max_hp}  MP {current_mp}/{max_mp}  金币 {gold}  XP {xp}",
         ]
     return [
         f"Run: {run_id}",
@@ -10008,10 +11507,10 @@ def _run_report_build(entry: dict, lang: str) -> list[str]:
 
     if lang == "zh":
         return [
-            f"原型: {archetype} {badge}".rstrip(),
-            f"阶段: {stage}  Prompt: {style}",
-            f"标签: {tags}",
-            f"共鸣: {resonances}",
+            f"原型: {_status_build_display(archetype, lang)} {badge}".rstrip(),
+            f"阶段: {_run_report_stage_display(stage, lang)}  提示词: {style}",
+            f"标签: {_run_report_tags_display(build.get('tags', []), lang=lang)}",
+            f"共鸣: {_run_report_resonances_display(build.get('active_resonances', []), lang=lang)}",
         ]
     return [
         f"Archetype: {archetype} {badge}".rstrip(),
@@ -10032,9 +11531,9 @@ def _run_report_route(
     archive_path = str(entry.get("_archive_path") or "-")
 
     if lang == "zh":
-        lines = [f"Path: {path}", f"Archive: {archive_path}"]
+        lines = [f"路径: {path}", f"归档: {archive_path}"]
         if scout_notes:
-            lines.append(f"Scout: {_run_report_join(scout_notes[:3], fallback='-')}")
+            lines.append(f"侦察: {_run_report_join(scout_notes[:3], fallback='-')}")
         return lines
     lines = [f"Path: {path}", f"Archive: {archive_path}"]
     if scout_notes:
@@ -10055,12 +11554,12 @@ def _run_report_progress(entry: dict, bundle: ContentBundle, lang: str) -> list[
     if lang == "zh":
         return [
             (
-                "Codex: "
-                f"Observed {counts['observed']}/{counts['total']}  "
-                f"Familiar {counts['familiar']}/{counts['total']}  "
-                f"Mastered {counts['mastered']}/{counts['total']}"
+                "图鉴: "
+                f"已观察 {counts['observed']}/{counts['total']}  "
+                f"已熟悉 {counts['familiar']}/{counts['total']}  "
+                f"已掌握 {counts['mastered']}/{counts['total']}"
             ),
-            f"Earned: Gold {earned_gold}  XP {earned_xp}",
+            f"获得: 金币 {earned_gold}  XP {earned_xp}",
         ]
     return [
         (
@@ -10090,10 +11589,10 @@ def _run_report_next_loadout(entry: dict, bundle: ContentBundle, lang: str) -> l
     if result == "dead" or phase == "dead":
         if lang == "zh":
             return [
-                "[PROMPT] control / 降低 Boss 前节奏风险",
-                f"[SEED] {next_seed} / 固定样本复验",
-                f"[CODEX] 补 {codex_gap} 个观察缺口",
-                "[ROUTE] Boss 前优先 rest/shop",
+                "[提示词] control / 降低首领前节奏风险",
+                f"[种子] {next_seed} / 固定样本复验",
+                f"[图鉴] 补 {codex_gap} 个观察缺口",
+                "[路线] 首领前优先休整/商店",
             ]
         return [
             "[PROMPT] control / reduce boss tempo risk",
@@ -10105,10 +11604,10 @@ def _run_report_next_loadout(entry: dict, bundle: ContentBundle, lang: str) -> l
     if result == "complete" or phase == "complete":
         if lang == "zh":
             return [
-                "[PROMPT] guarded / 提高压力验证稳定性",
-                f"[SEED] {next_seed} / 压力样本",
-                "[CODEX] 比较通关构筑",
-                "[ROUTE] 尝试精英或事件高收益线",
+                "[提示词] guarded / 提高压力验证稳定性",
+                f"[种子] {next_seed} / 压力样本",
+                "[图鉴] 比较通关构筑",
+                "[路线] 尝试精英或事件高收益线",
             ]
         return [
             "[PROMPT] guarded / validate under higher pressure",
@@ -10119,10 +11618,10 @@ def _run_report_next_loadout(entry: dict, bundle: ContentBundle, lang: str) -> l
 
     if lang == "zh":
         return [
-            "[PROMPT] current / 保持变量",
-            f"[SEED] {next_seed} / 补完整样本",
-            f"[CODEX] 补 {codex_gap} 个观察缺口",
-            "[ROUTE] 完成一局再复盘",
+            "[提示词] current / 保持变量",
+            f"[种子] {next_seed} / 补完整样本",
+            f"[图鉴] 补 {codex_gap} 个观察缺口",
+            "[路线] 完成一局再复盘",
         ]
     return [
         "[PROMPT] current / keep variables stable",
@@ -10143,8 +11642,8 @@ def _run_report_next(entry: dict, lang: str) -> list[str]:
         if lang == "zh":
             return [
                 f"结论: {wins} 胜后陨落，下一局先降低节奏风险。",
-                f"Retry: ouro run --mock --prompt-style control --seed {next_seed}",
-                "Review: ouro history --lang zh --limit 3",
+                f"重试: ouro run --mock --prompt-style control --seed {next_seed}",
+                "复盘: ouro history --lang zh --limit 3",
             ]
         return [
             f"Takeaway: fell after {wins} wins; reduce tempo risk before the boss.",
@@ -10156,8 +11655,8 @@ def _run_report_next(entry: dict, lang: str) -> list[str]:
         if lang == "zh":
             return [
                 "结论: 通关构筑成立，下一步提高压力种子验证稳定性。",
-                f"Pressure: ouro run --mock --prompt-style guarded --seed {next_seed}",
-                "Compare: ouro runs --lang zh --limit 5",
+                f"压力: ouro run --mock --prompt-style guarded --seed {next_seed}",
+                "对照: ouro runs --lang zh --limit 5",
             ]
         return [
             "Takeaway: clear confirmed; compare this build before raising pressure.",
@@ -10168,8 +11667,8 @@ def _run_report_next(entry: dict, lang: str) -> list[str]:
     if lang == "zh":
         return [
             "结论: 归档未形成最终胜负，建议用固定 seed 重跑完整样本。",
-            f"Retry: ouro run --mock --seed {next_seed}",
-            "List: ouro runs --lang zh --limit 5",
+            f"重试: ouro run --mock --seed {next_seed}",
+            "列表: ouro runs --lang zh --limit 5",
         ]
     return [
         "Takeaway: archive has no final result; rerun a fixed mock sample.",
@@ -10220,6 +11719,43 @@ def _run_report_join(raw: object, *, fallback: str) -> str:
         return fallback
     values = [str(item) for item in raw if str(item)]
     return ", ".join(values[:6]) if values else fallback
+
+
+def _run_report_stage_display(stage: str, lang: str) -> str:
+    if lang != "zh":
+        return stage
+    return {
+        "seed": "种子",
+        "pair": "成对",
+        "online": "在线",
+        "locked_in": "锁定",
+        "high_roll": "高掷",
+    }.get(stage, stage)
+
+
+def _run_report_tags_display(raw: object, *, lang: str) -> str:
+    if not isinstance(raw, list) or not raw:
+        return "-"
+    values = [str(item) for item in raw if str(item)]
+    if lang == "zh":
+        values = [_display_build_tag(item, lang) for item in values]
+    return ", ".join(values[:6]) if values else "-"
+
+
+def _run_report_resonances_display(raw: object, *, lang: str) -> str:
+    if not isinstance(raw, list) or not raw:
+        return "-"
+    values = [str(item) for item in raw if str(item)]
+    if lang == "zh":
+        names = {
+            "resonance_corruption_school": "腐化学派",
+            "resonance_iron_legion": "铁色军团",
+            "resonance_bleed_hunt": "流血狩猎",
+            "resonance_plague_oracle": "瘟疫预言",
+            "resonance_echo_ward": "回声护壁",
+        }
+        values = [names.get(item, item) for item in values]
+    return ", ".join(values[:6]) if values else "-"
 
 
 def render_context_window(

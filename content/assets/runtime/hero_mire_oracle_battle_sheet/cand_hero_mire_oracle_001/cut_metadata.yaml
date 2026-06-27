@@ -1,0 +1,183 @@
+schema_version: '0.1'
+asset_id: hero_mire_oracle_battle_sheet
+candidate_id: cand_hero_mire_oracle_001
+work_order_id: wo_hero_mire_oracle_battle_sheet
+source_brief: mirel_mire_oracle_poison_omen
+runtime_promoted: true
+frames:
+- frame_id: portrait
+  path: portrait.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 67
+  - 50
+  - 301
+  - 317
+  visible_pixels: 37197
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.portrait
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 66
+  - 52
+  - 259
+  - 320
+  visible_pixels: 28407
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.idle
+- frame_id: ready
+  path: ready.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 22
+  - 74
+  - 362
+  - 316
+  visible_pixels: 33635
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.ready
+- frame_id: attack
+  path: attack.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 87
+  - 353
+  - 305
+  visible_pixels: 29931
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.attack
+- frame_id: skill
+  path: skill.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 50
+  - 5
+  - 335
+  - 362
+  visible_pixels: 41599
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.skill
+- frame_id: guard
+  path: guard.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 49
+  - 44
+  - 253
+  - 304
+  visible_pixels: 32317
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.guard
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 39
+  - 60
+  - 362
+  - 362
+  visible_pixels: 28276
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.hit
+- frame_id: low_hp
+  path: low_hp.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 38
+  - 223
+  - 292
+  visible_pixels: 29785
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.low_hp
+- frame_id: victory
+  path: victory.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 50
+  - 0
+  - 362
+  - 274
+  visible_pixels: 36074
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.victory
+- frame_id: defeat
+  path: defeat.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 154
+  - 362
+  - 297
+  visible_pixels: 27743
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.defeat
+- frame_id: signature
+  path: signature.png
+  frame_size:
+  - 362
+  - 362
+  visible_bbox:
+  - 0
+  - 0
+  - 362
+  - 297
+  visible_pixels: 44963
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.hero_mire_oracle.signature

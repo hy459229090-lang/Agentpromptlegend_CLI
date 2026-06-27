@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 DIALOGUE_CATEGORIES = (
     "intro",
     "advantage",
+    "kill_confirmed",
     "low_hp",
     "mp_low",
     "interrupt_success",
@@ -47,6 +48,18 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
                 "黑暗已经找到了落点。",
                 "他们的咏唱变薄了。",
                 "稳住。封印正在生效。",
+            ],
+        },
+        "kill_confirmed": {
+            "en": [
+                "Seal it. Let the dark remember the shape.",
+                "The last spark folds into the Codex.",
+                "Done. The candle leaves only a name.",
+            ],
+            "zh": [
+                "封住它。让黑暗记住这个形状。",
+                "最后一粒火星折进秘典。",
+                "结束了。烛火只剩一个名字。",
             ],
         },
         "low_hp": {
@@ -147,6 +160,18 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
                 "再进一步，防线就会变成刀锋。",
             ],
         },
+        "kill_confirmed": {
+            "en": [
+                "The wall closes. Nothing gets back up.",
+                "Marked, braced, finished.",
+                "That is how a line ends: standing.",
+            ],
+            "zh": [
+                "城墙合拢。没有东西还能站起来。",
+                "标记，稳住，结束。",
+                "防线就是这样收尾的：站着。",
+            ],
+        },
         "low_hp": {
             "en": [
                 "The shield is splitting, but the line still holds.",
@@ -229,6 +254,10 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
             "en": ["They're bleeding. Now we count down.", "The shot is lining itself up.", "Pressure makes targets honest."],
             "zh": ["他们在流血。现在开始倒数。", "准星自己排好了。", "压力会让目标变诚实。"],
         },
+        "kill_confirmed": {
+            "en": ["String cut. Target gone.", "Last bolt found the ending.", "The hunt closes clean."],
+            "zh": ["弦断，目标消失。", "最后一矢找到了结尾。", "狩猎干净收束。"],
+        },
         "low_hp": {
             "en": ["Blood in my eye. Aim still clear.", "Too close. I shoot better close.", "Pain is noise. The target is signal."],
             "zh": ["血进了眼睛，准星还在。", "太近了。我近处更准。", "痛是噪音，目标是信号。"],
@@ -262,6 +291,10 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
         "advantage": {
             "en": ["Now the sickness starts counting.", "They are already losing. Slowly.", "Do not rush poison. It hates that."],
             "zh": ["现在，病开始计数。", "他们已经在输了。只是慢一点。", "别催毒。毒不喜欢被催。"],
+        },
+        "kill_confirmed": {
+            "en": ["The fever keeps the body. The Codex keeps the rest.", "Slow poison, final answer.", "The mire has finished counting."],
+            "zh": ["热病收下身体，秘典收下其余。", "慢毒，终局答案。", "瘴沼已经数完了。"],
         },
         "low_hp": {
             "en": ["The veil tears. The vial does not.", "Too much blood in the water.", "I need the mire to buy one more breath."],
@@ -297,6 +330,10 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
             "en": ["The machine likes this angle.", "Now the nail remembers its work.", "The trap is no longer theoretical."],
             "zh": ["机器喜欢这个角度。", "现在，钉子想起了它的工作。", "陷阱不再只是理论。"],
         },
+        "kill_confirmed": {
+            "en": ["Nail set. Grave sealed.", "The mechanism writes the ending.", "Measure complete. Bury once."],
+            "zh": ["钉已落，坟已封。", "机关写下结尾。", "测量完成，只埋一次。"],
+        },
         "low_hp": {
             "en": ["Gears skip. Hands steady.", "The crate is smoking. Keep turning.", "If it breaks, I build with the pieces."],
             "zh": ["齿轮跳齿，手不能抖。", "箱子冒烟了。继续转。", "若它坏掉，我就用碎片再造。"],
@@ -330,6 +367,10 @@ HERO_DIALOGUE: dict[str, dict[str, dict[str, list[str]]]] = {
         "advantage": {
             "en": ["The room is singing back.", "Their noise is becoming my hymn.", "Echoes stack. So do chances."],
             "zh": ["房间正在回唱。", "他们的噪音正在变成我的圣歌。", "回声会叠，机会也是。"],
+        },
+        "kill_confirmed": {
+            "en": ["Final note returned sharp.", "The broken bell keeps the name.", "Silence lands exactly where it should."],
+            "zh": ["最后一音锋利地回来了。", "破铃记住了这个名字。", "沉默落在该落的位置。"],
         },
         "low_hp": {
             "en": ["The hymn is thin. Still tuned.", "Too much silence in my chest.", "One clean bell before the dark."],
@@ -391,6 +432,8 @@ def select_dialogue_category(
 
 
 def _select_category(*, frame: BattleFrame | None, hp_pct: float, mp_pct: float) -> str:
+    if frame is not None and frame.event_banner in {"KILL CONFIRMED", "BOSS DOWN"}:
+        return "kill_confirmed"
     if hp_pct < 0.18:
         return "near_defeat"
     if hp_pct < 0.3:

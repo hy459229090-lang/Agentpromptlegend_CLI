@@ -1,0 +1,135 @@
+schema_version: '0.1'
+asset_id: enemy_black_candle_high_priest_archive_actor_sheet
+candidate_id: cand_enemy_black_candle_high_priest_archive_001
+work_order_id: wo_enemy_black_candle_high_priest_archive_actor_sheet
+source_brief: black_candle_high_priest_archive_boss
+runtime_promoted: true
+frames:
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 71378
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.idle
+- frame_id: telegraph
+  path: telegraph.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 76820
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.telegraph
+- frame_id: cast
+  path: cast.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 83727
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.cast
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 72753
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.hit
+- frame_id: break
+  path: break.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 82695
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.break
+- frame_id: phase_change
+  path: phase_change.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 444
+  visible_pixels: 100472
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.phase_change
+- frame_id: death
+  path: death.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 57297
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.death
+- frame_id: codex_reveal
+  path: codex_reveal.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 444
+  visible_pixels: 106548
+  anchor:
+  - 96
+  - 128
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_high_priest_archive.codex_reveal

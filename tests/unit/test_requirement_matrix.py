@@ -47,14 +47,25 @@ def test_done_requirements_have_replayable_evidence():
         assert not any(marker in evidence.lower() for marker in forbidden_placeholders), req_id
 
 
+def test_requirement_matrix_separates_current_evidence_count_from_historical_snapshots():
+    """REQ-QA-001: matrix history should not confuse current release evidence counts."""
+    text = MATRIX.read_text(encoding="utf-8")
+
+    assert "证据计数口径" in text
+    assert "release_check.py --evidence-only" in text
+    assert "464 tests collected; 777 release-bound text files" in text
+    assert "历史命令快照" in text
+    assert "不代表当前 release candidate 的最新总数" in text
+
+
 def test_qa_note_records_fixed_seed_evidence_and_manual_template():
     """REQ-QA-001: QA note keeps command evidence and human playtest structure."""
     text = QA_NOTE.read_text(encoding="utf-8")
 
     assert "venv312/bin/python -m pytest" in text
-    assert "400 passed" in text
+    assert "464 passed" in text
     assert "scripts/release_check.py --evidence-only" in text
-    assert "Evidence counts OK: 400 tests collected; 247 release-bound text files." in text
+    assert "Evidence counts OK: 464 tests collected; 777 release-bound text files." in text
     assert "scripts/release_scope.py --stage-plan" in text
     assert "test_release_scope_prints_read_only_stage_plan_without_mutating_index" in text
     assert "scripts/acceptance_check.py" in text

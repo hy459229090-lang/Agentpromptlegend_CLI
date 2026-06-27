@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: ui_status_bleed_badge
+candidate_id: cand_ui_status_bleed_001
+work_order_id: wo_ui_status_bleed_badge
+source_brief: bleed_status_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 80
+  - 152
+  - 483
+  - 580
+  visible_pixels: 64233
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_bleed.badge
+- frame_id: applied
+  path: applied.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 69
+  - 147
+  - 487
+  - 586
+  visible_pixels: 81644
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_bleed.applied
+- frame_id: ticking
+  path: ticking.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 58
+  - 137
+  - 482
+  - 586
+  visible_pixels: 79151
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_bleed.ticking
+- frame_id: expire
+  path: expire.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 65
+  - 166
+  - 460
+  - 580
+  visible_pixels: 63962
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_bleed.expire

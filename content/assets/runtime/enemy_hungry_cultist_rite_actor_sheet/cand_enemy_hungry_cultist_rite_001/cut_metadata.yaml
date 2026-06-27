@@ -1,0 +1,119 @@
+schema_version: '0.1'
+asset_id: enemy_hungry_cultist_rite_actor_sheet
+candidate_id: cand_enemy_hungry_cultist_rite_001
+work_order_id: wo_enemy_hungry_cultist_rite_actor_sheet
+source_brief: ravenous_zealot_ritebound_silhouette
+runtime_promoted: true
+frames:
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 63427
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.idle
+- frame_id: telegraph
+  path: telegraph.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 70761
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.telegraph
+- frame_id: attack
+  path: attack.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 72847
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.attack
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 62577
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.hit
+- frame_id: break
+  path: break.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 79189
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.break
+- frame_id: death
+  path: death.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 444
+  visible_pixels: 55859
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.death
+- frame_id: codex_reveal
+  path: codex_reveal.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 73618
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_hungry_cultist_rite.codex_reveal

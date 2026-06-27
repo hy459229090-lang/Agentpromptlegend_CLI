@@ -15,6 +15,8 @@ For Windows compatibility, we also provide fallbacks.
 """
 import os
 import sys
+from contextlib import contextmanager
+from collections.abc import Iterator
 from typing import Optional
 
 # ANSI escape codes for terminal control
@@ -38,8 +40,10 @@ ANSI_RESTORE_CURSOR = "\x1b[u"
 ANSI_HIDE_CURSOR = "\x1b[?25l"
 ANSI_SHOW_CURSOR = "\x1b[?25h"
 
-ANSI_SAVE_SCREEN = "\x1b[?47h"
-ANSI_RESTORE_SCREEN = "\x1b[?47l"
+ANSI_ENTER_ALT_SCREEN = "\x1b[?1049h"
+ANSI_EXIT_ALT_SCREEN = "\x1b[?1049l"
+ANSI_SAVE_SCREEN = ANSI_ENTER_ALT_SCREEN
+ANSI_RESTORE_SCREEN = ANSI_EXIT_ALT_SCREEN
 
 
 class Terminal:
@@ -68,7 +72,7 @@ class Terminal:
             refresh: If True, use cursor positioning for refresh instead of scrolling
             clear_screen: If True, clear the screen when starting
             hide_cursor: If True, hide the cursor during the session
-            save_screen: If True, save the screen state and restore it when done
+            save_screen: If True, use the alternate screen and restore it when done
         """
         self.refresh = refresh
         self.clear_screen = clear_screen
@@ -78,6 +82,7 @@ class Terminal:
         self._cursor_hidden = False
         self._screen_saved = False
         self._last_frame_lines: int = 0
+        self._last_frame: tuple[str, ...] = ()
 
     def __enter__(self) -> "Terminal":
         """Enter context manager."""
@@ -123,16 +128,28 @@ class Terminal:
             sys.stdout.write(ANSI_SHOW_CURSOR)
             sys.stdout.flush()
             self._cursor_hidden = False
+
+    @contextmanager
+    def input_mode(self) -> Iterator[None]:
+        """Temporarily show the cursor while the user is typing."""
+        restore_hidden = self.hide_cursor and self._cursor_hidden
+        if restore_hidden:
+            self._show_cursor()
+        try:
+            yield
+        finally:
+            if restore_hidden:
+                self._hide_cursor()
     
     def _save_screen(self) -> None:
-        """Save the current screen state."""
+        """Enter the terminal alternate screen."""
         if self._is_terminal():
             sys.stdout.write(ANSI_SAVE_SCREEN)
             sys.stdout.flush()
             self._screen_saved = True
     
     def _restore_screen(self) -> None:
-        """Restore the saved screen state."""
+        """Leave the terminal alternate screen."""
         if self._is_terminal():
             sys.stdout.write(ANSI_RESTORE_SCREEN)
             sys.stdout.flush()
@@ -148,11 +165,33 @@ class Terminal:
             sys.stdout.write(ANSI_MOVE_UP.format(n=lines))
             sys.stdout.flush()
 
+    def _move_to(self, row: int, col: int) -> None:
+        """Move cursor to a 1-based row and column."""
+        if self._is_terminal():
+            sys.stdout.write(ANSI_MOVE_TO.format(row=max(1, row), col=max(1, col)))
+
     def _clear_from_cursor(self) -> None:
         """Clear from cursor position to end of screen."""
         if self._is_terminal():
             sys.stdout.write(ANSI_CLEAR_TO_END)
             sys.stdout.flush()
+
+    def _clear_line(self) -> None:
+        """Clear the current line."""
+        if self._is_terminal():
+            sys.stdout.write(ANSI_CLEAR_LINE)
+
+    def clear_input_echo_line(self) -> None:
+        """Clear the line where a live empty-prompt input was echoed."""
+        if self._is_terminal():
+            sys.stdout.write(ANSI_MOVE_UP.format(n=1))
+            sys.stdout.write(ANSI_CLEAR_LINE)
+            sys.stdout.write("\r")
+            sys.stdout.flush()
+
+    def _frame_lines(self, content: str) -> tuple[str, ...]:
+        """Split a rendered frame without adding a phantom trailing blank."""
+        return tuple(content.rstrip("\n").split("\n"))
     
     def _count_lines(self, text: str) -> int:
         """Count the number of lines in text, accounting for wrapped lines."""
@@ -184,14 +223,20 @@ class Terminal:
         content: str,
         *,
         clear_previous: bool = True,
+        partial: bool = False,
     ) -> None:
         """Render content to the terminal.
         
         Args:
             content: The content to render
             clear_previous: If True, clear the previous frame (only in refresh mode)
+            partial: If True, repaint only changed lines in refresh mode
         """
         if self.refresh and self._is_terminal():
+            if partial and clear_previous:
+                self._render_partial(content, clear_previous=clear_previous)
+                return
+
             new_lines = self._count_lines(content)
 
             if clear_previous and self._last_frame_lines > 0:
@@ -209,6 +254,41 @@ class Terminal:
             if not content.endswith("\n"):
                 sys.stdout.write("\n")
             sys.stdout.flush()
+
+    def _render_partial(self, content: str, *, clear_previous: bool) -> None:
+        """Render a frame by touching only changed rows when possible."""
+        lines = self._frame_lines(content)
+        if not clear_previous or not self._last_frame:
+            self._move_to(1, 1)
+            for index, line in enumerate(lines, start=1):
+                self._move_to(index, 1)
+                self._clear_line()
+                sys.stdout.write(line)
+            if self._last_frame and len(self._last_frame) > len(lines):
+                for index in range(len(lines) + 1, len(self._last_frame) + 1):
+                    self._move_to(index, 1)
+                    self._clear_line()
+            self._move_to(len(lines) + 1, 1)
+            self._last_frame = lines
+            self._last_frame_lines = len(lines)
+            sys.stdout.flush()
+            return
+
+        previous = self._last_frame
+        max_lines = max(len(lines), len(previous))
+        for index in range(max_lines):
+            next_line = lines[index] if index < len(lines) else ""
+            prev_line = previous[index] if index < len(previous) else ""
+            if next_line == prev_line:
+                continue
+            self._move_to(index + 1, 1)
+            self._clear_line()
+            if next_line:
+                sys.stdout.write(next_line)
+        self._move_to(len(lines) + 1, 1)
+        self._last_frame = lines
+        self._last_frame_lines = len(lines)
+        sys.stdout.flush()
 
 
 def get_terminal(

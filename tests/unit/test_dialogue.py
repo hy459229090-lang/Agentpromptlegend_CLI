@@ -53,12 +53,20 @@ def test_every_hero_has_three_lines_for_each_situational_dialogue_category(bundl
 
 
 def test_dialogue_selector_responds_to_distinct_battle_situations():
-    """REQ-DLG-001: low HP, MP pressure, interrupt, build, and boss phase differ."""
+    """REQ-DLG-001/REQ-KILLVOICE-001: situational dialogue categories differ."""
     hero_id = "hero_shadow_apprentice"
     samples = {
         "intro": select_dialogue_line(hero_id, frame=None, hp_pct=1.0, mp_pct=1.0, lang="en", tick=0),
         "low_hp": select_dialogue_line(hero_id, frame=None, hp_pct=0.25, mp_pct=1.0, lang="en", tick=0),
         "mp_low": select_dialogue_line(hero_id, frame=None, hp_pct=1.0, mp_pct=0.1, lang="en", tick=0),
+        "kill_confirmed": select_dialogue_line(
+            hero_id,
+            frame=_frame(event_banner="KILL CONFIRMED"),
+            hp_pct=1.0,
+            mp_pct=1.0,
+            lang="en",
+            tick=1,
+        ),
         "interrupt_success": select_dialogue_line(
             hero_id,
             frame=_frame(event_banner="CHARGE BROKEN"),
@@ -91,6 +99,7 @@ def test_dialogue_selector_responds_to_distinct_battle_situations():
     assert "candle" in samples["intro"].lower()
     assert "guttering" in samples["low_hp"].lower()
     assert "echo" in samples["mp_low"].lower()
+    assert "codex" in samples["kill_confirmed"].lower()
     assert "wick" in samples["interrupt_success"].lower()
     assert "pattern" in samples["build_trigger"].lower()
     assert "second wick" in samples["boss_phase"].lower()
@@ -103,6 +112,22 @@ def test_dialogue_category_selector_exposes_same_situational_logic():
     assert select_dialogue_category(frame=None, hp_pct=0.25, mp_pct=1.0) == "low_hp"
     assert select_dialogue_category(frame=None, hp_pct=0.1, mp_pct=1.0) == "near_defeat"
     assert select_dialogue_category(frame=None, hp_pct=1.0, mp_pct=0.1) == "mp_low"
+    assert (
+        select_dialogue_category(
+            frame=_frame(event_banner="KILL CONFIRMED"),
+            hp_pct=0.1,
+            mp_pct=0.1,
+        )
+        == "kill_confirmed"
+    )
+    assert (
+        select_dialogue_category(
+            frame=_frame(event_banner="BOSS DOWN", risk="MP below interrupt cost"),
+            hp_pct=0.1,
+            mp_pct=0.1,
+        )
+        == "kill_confirmed"
+    )
     assert (
         select_dialogue_category(
             frame=_frame(event_banner="SEAL PLACED"),

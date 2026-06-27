@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_hymnal_of_the_voiceless_icon_card
+candidate_id: cand_item_hymnal_of_the_voiceless_001
+work_order_id: wo_item_hymnal_of_the_voiceless_icon_card
+source_brief: hymnal_of_the_voiceless_legendary_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 512
+  - 1024
+  visible_bbox:
+  - 35
+  - 164
+  - 475
+  - 764
+  visible_pixels: 140890
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_hymnal_of_the_voiceless.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 512
+  - 1024
+  visible_bbox:
+  - 64
+  - 131
+  - 497
+  - 779
+  visible_pixels: 279221
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_hymnal_of_the_voiceless.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 512
+  - 1024
+  visible_bbox:
+  - 105
+  - 277
+  - 448
+  - 643
+  visible_pixels: 65803
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_hymnal_of_the_voiceless.hud_mark

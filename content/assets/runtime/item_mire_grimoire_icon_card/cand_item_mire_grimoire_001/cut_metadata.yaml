@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_mire_grimoire_icon_card
+candidate_id: cand_item_mire_grimoire_001
+work_order_id: wo_item_mire_grimoire_icon_card
+source_brief: mire_grimoire_poison_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 99
+  - 129
+  - 531
+  - 705
+  visible_pixels: 156043
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_mire_grimoire.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 591
+  - 887
+  visible_bbox:
+  - 82
+  - 107
+  - 552
+  - 741
+  visible_pixels: 296433
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_mire_grimoire.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 592
+  - 887
+  visible_bbox:
+  - 172
+  - 281
+  - 461
+  - 608
+  visible_pixels: 43989
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_mire_grimoire.hud_mark

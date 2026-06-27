@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from ouro_agent.content import load_content_bundle
+from ouro_agent.art.sprite_atlas import SpriteAtlas
+from ouro_agent.content import load_content_bundle, validate_asset_manifest
 from ouro_agent.engine import resolve_build
 from ouro_agent.engine.battle import BattleLoop, TurnRecord
 from ouro_agent.engine.judge import JudgeOutcome
@@ -17,6 +18,11 @@ from ouro_agent.sessions.run_state import create_run_state
 @pytest.fixture()
 def bundle(content_root: Path):
     return load_content_bundle(content_root)
+
+
+def _atlas(content_root: Path, bundle) -> SpriteAtlas:
+    report = validate_asset_manifest(content_root, bundle)
+    return SpriteAtlas.from_manifest_report(report)
 
 
 def test_actor_pose_idle():
@@ -281,6 +287,247 @@ def test_route_reward_shop_rest_screens_show_decision_context(bundle):
     assert "[3] Study" in rest
 
 
+def test_reward_lock_animation_frames_keep_reward_screen_width_safe(bundle):
+    """REQ-UIANIM-001: rewards should get a visible lock animation."""
+    from ouro_agent.i18n import visual_width
+    from ouro_agent.tui.animation import (
+        CHOICE_LOCK_PHASES,
+        MOTION_DIRECTOR_STAGES,
+        build_choice_lock_animation_frames,
+    )
+    from ouro_agent.tui.screens import render_reward_choice
+
+    state = create_run_state(
+        "run_reward_lock_anim",
+        7,
+        "hero_shadow_apprentice",
+        "dungeon_ember_crypt",
+        bundle,
+    )
+    node = state.current_node(bundle)
+    state.set_reward_choices(list(node.rewards.reward_choices))
+    screen = render_reward_choice(state, bundle, language="en", width=100)
+
+    frames = build_choice_lock_animation_frames(
+        screen,
+        selected_index=2,
+        selected_label="Corrupted Focus",
+        kind="reward",
+        language="en",
+        width=100,
+        unicode_mode=False,
+    )
+
+    assert tuple(frame.phase for frame in frames) == CHOICE_LOCK_PHASES
+    assert MOTION_DIRECTOR_STAGES == ("threat", "select", "impact", "judge", "meaning")
+    assert "REWARD LOCK / SCAN" in frames[0].text
+    assert "PHASE >SCAN< [FOCUS] [LOCK]" in frames[0].text
+    assert "LOCK RAIL >SCAN<--[FOCUS]--[CONFIRM]" in frames[0].text
+    assert "TARGET [2] Corrupted Focus" in frames[0].text
+    assert "PULSE >>>---____ reading choices" in frames[0].text
+    assert "STATE preview only | run state waits" in frames[0].text
+    assert "FLOW >THREAT< [SELECT] [IMPACT] [JUDGE] [MEANING]" in frames[0].text
+    assert "FOCUS available options, reward, and route pressure" in frames[0].text
+    assert "RISK blind picks can miss resource, build, or counter windows" in frames[0].text
+    assert "NEXT focus one candidate and preview deltas" in frames[0].text
+    assert "REWARD LOCK / FOCUS" in frames[1].text
+    assert "LOCK RAIL [SCAN]-->FOCUS<--[CONFIRM]" in frames[1].text
+    assert "PULSE __>>>---__ preview deltas" in frames[1].text
+    assert "STATE build/resource/risk lenses online" in frames[1].text
+    assert "FLOW [THREAT] >SELECT< [IMPACT] [JUDGE] [MEANING]" in frames[1].text
+    assert "previewing build, resource, and risk deltas" in frames[1].text
+    assert "RISK this choice changes the next battle window" in frames[1].text
+    assert "REWARD LOCK / LOCK" in frames[2].text
+    assert "LOCK RAIL [SCAN]--[FOCUS]-->CONFIRM<" in frames[2].text
+    assert "PULSE ______>>>> confirm armed" in frames[2].text
+    assert "STATE selection locked | write after frame" in frames[2].text
+    assert "FLOW [THREAT] [SELECT] [IMPACT] [JUDGE] >MEANING<" in frames[2].text
+    assert "LOCK [2] Corrupted Focus selected" in frames[2].text
+    assert "NEXT play result frame and continue the run" in frames[2].text
+    assert "REWARD BUILD TRACK" in frames[2].text
+    assert "PICK PRIORITY BOARD" in frames[2].text
+    assert all(frame.text.isascii() for frame in frames)
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+    zh_screen = render_reward_choice(state, bundle, language="zh", width=100)
+    zh_frames = build_choice_lock_animation_frames(
+        zh_screen,
+        selected_index=2,
+        selected_label="腐化专注",
+        kind="reward",
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    assert "奖励锁定 / 扫描" in zh_frames[0].text
+    assert "锁定轨 █扫描█──[聚焦]──[确认]" in zh_frames[0].text
+    assert "目标 [2] 腐化专注" in zh_frames[0].text
+    assert "脉冲 █▓▒░░░░░░░ 读取选项" in zh_frames[0].text
+    assert "状态 只预览 | 本局状态等待写入" in zh_frames[0].text
+    assert "锁定轨 [扫描]──█聚焦█──[确认]" in zh_frames[1].text
+    assert "脉冲 ░░█▓▒░░░░░ 预览变化" in zh_frames[1].text
+    assert "状态 构筑/资源/风险镜头在线" in zh_frames[1].text
+    assert "锁定轨 [扫描]──[聚焦]──█确认█" in zh_frames[2].text
+    assert "脉冲 ░░░░░░█▓▒█ 确认就绪" in zh_frames[2].text
+    assert "状态 已锁定 | 动画后写入本局状态" in zh_frames[2].text
+    for frame in zh_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+
+def test_choice_lock_animation_overlays_selected_original_surface(bundle):
+    """REQ-TUIMOTION-016: lock frames focus the selected line inside the original choice screen."""
+    from ouro_agent.i18n import visual_width
+    from ouro_agent.tui.animation import build_choice_lock_animation_frames
+    from ouro_agent.tui.screens import (
+        render_event,
+        render_rest,
+        render_reward_choice,
+        render_route_choice,
+        render_shop,
+    )
+
+    def assert_choice_focus_overlay(
+        name: str,
+        screen: str,
+        *,
+        selected_index: int,
+        selected_label: str,
+        width: int = 100,
+    ) -> None:
+        assert "FOCUS OVERLAY" not in screen
+        frames = build_choice_lock_animation_frames(
+            screen,
+            selected_index=selected_index,
+            selected_label=selected_label,
+            kind=name,
+            language="en",
+            width=width,
+            unicode_mode=False,
+        )
+        assert f"{name.upper()} LOCK / LOCK" in frames[2].text
+        assert f"FOCUS OVERLAY LOCK [{selected_index}] {selected_label} | >>>" in frames[2].text
+        lock_lines = [line for line in frames[2].text.splitlines() if line.startswith(">>LOCK")]
+        assert lock_lines
+        assert any(
+            f"[{selected_index}]" in line or f"[{selected_index}:" in line
+            for line in lock_lines
+        )
+        assert all(frame.text.isascii() for frame in frames)
+        for frame in frames:
+            for line in frame.text.splitlines():
+                assert visual_width(line) <= width
+
+    state = create_run_state(
+        "run_choice_focus_overlay",
+        7,
+        "hero_shadow_apprentice",
+        "dungeon_ember_crypt",
+        bundle,
+    )
+
+    state.current_floor_index = 2
+    route = render_route_choice(state, bundle, language="en", width=100)
+    assert_choice_focus_overlay("route", route, selected_index=1, selected_label="Hungry Followers")
+
+    state.current_floor_index = 0
+    state.current_node_index = 0
+    state.set_reward_choices(list(state.current_node(bundle).rewards.reward_choices))
+    reward = render_reward_choice(state, bundle, language="en", width=100)
+    assert_choice_focus_overlay("reward", reward, selected_index=2, selected_label="Corrupted Focus")
+
+    state.current_floor_index = 1
+    state.current_node_index = 1
+    state.set_shop_items(list(state.current_node(bundle).shop_items))
+    state.gold = 25
+    shop = render_shop(state, bundle, language="en", width=100)
+    assert_choice_focus_overlay("shop", shop, selected_index=4, selected_label="Prompt Rewrite")
+
+    state.current_node_index = 2
+    state.current_hp = max(1, state.max_hp // 3)
+    state.current_mp = 0
+    state.set_rest_phase()
+    rest = render_rest(state, bundle, language="en", width=100)
+    assert_choice_focus_overlay("rest", rest, selected_index=2, selected_label="Focus")
+
+    state.current_floor_index = 2
+    state.current_node_index = 1
+    state.current_hp = state.max_hp // 2
+    state.set_event_choices(list(state.current_node(bundle).rewards.reward_choices))
+    event = render_event(state, bundle, language="en", width=100)
+    assert_choice_focus_overlay("event", event, selected_index=3, selected_label="Heal")
+
+
+def test_run_choice_surfaces_share_component_header(bundle):
+    """REQ-TUICOMP-002: route/reward/shop/rest/event use the shared TUI header."""
+    from ouro_agent.i18n import visual_width
+    from ouro_agent.tui.screens import (
+        render_event,
+        render_rest,
+        render_reward_choice,
+        render_route_choice,
+        render_shop,
+    )
+
+    state = create_run_state(
+        "run_choice_components",
+        7,
+        "hero_shadow_apprentice",
+        "dungeon_ember_crypt",
+        bundle,
+    )
+
+    state.current_floor_index = 2
+    route = render_route_choice(state, bundle, language="en", width=100)
+    route_zh = render_route_choice(state, bundle, language="zh", width=80)
+
+    state.current_floor_index = 0
+    state.current_node_index = 0
+    state.set_reward_choices(list(state.current_node(bundle).rewards.reward_choices))
+    reward = render_reward_choice(state, bundle, language="en", width=100)
+    reward_zh = render_reward_choice(state, bundle, language="zh", width=80)
+
+    state.current_floor_index = 1
+    state.current_node_index = 1
+    state.set_shop_items(list(state.current_node(bundle).shop_items))
+    state.gold = 25
+    shop = render_shop(state, bundle, language="en", width=100)
+    shop_zh = render_shop(state, bundle, language="zh", width=80)
+
+    state.current_node_index = 2
+    state.current_hp = max(1, state.max_hp // 3)
+    state.current_mp = 0
+    state.set_rest_phase()
+    rest = render_rest(state, bundle, language="en", width=100)
+    rest_zh = render_rest(state, bundle, language="zh", width=80)
+
+    state.current_floor_index = 2
+    state.current_node_index = 1
+    state.current_hp = state.max_hp // 2
+    state.set_event_choices(list(state.current_node(bundle).rewards.reward_choices))
+    event = render_event(state, bundle, language="en", width=100)
+    event_zh = render_event(state, bundle, language="zh", width=80)
+
+    expected = {
+        "route": (route, 100, ("ROUTE TUI NAV", "ROUTE FOCUS RAIL", "ROUTE COMMAND RAIL", "[PICK] enter 1-9")),
+        "reward": (reward, 100, ("REWARD TUI NAV", "REWARD FOCUS RAIL", "REWARD COMMAND RAIL", "[PICK] enter reward number")),
+        "shop": (shop, 100, ("SHOP TUI NAV", "SHOP FOCUS RAIL", "SHOP COMMAND RAIL", "[BUY] enter item number")),
+        "rest": (rest, 100, ("REST TUI NAV", "REST FOCUS RAIL", "REST COMMAND RAIL", "[RECOVER] 1")),
+        "event": (event, 100, ("EVENT TUI NAV", "EVENT FOCUS RAIL", "EVENT COMMAND RAIL", "[PICK] enter event number")),
+        "route_zh": (route_zh, 80, ("路线 TUI 导航", "路线焦点轨", "路线命令轨", "[选择] 输入编号 1-9")),
+        "reward_zh": (reward_zh, 80, ("奖励 TUI 导航", "奖励焦点轨", "奖励命令轨", "[选择] 输入奖励编号")),
+        "shop_zh": (shop_zh, 80, ("商店 TUI 导航", "商店焦点轨", "商店命令轨", "[购买] 输入商品编号")),
+        "rest_zh": (rest_zh, 80, ("休整 TUI 导航", "休整焦点轨", "休整命令轨", "[恢复] 1")),
+        "event_zh": (event_zh, 80, ("事件 TUI 导航", "事件焦点轨", "事件命令轨", "[选择] 输入事件编号")),
+    }
+    for name, (text, width, markers) in expected.items():
+        for marker in markers:
+            assert marker in text, f"{name} missing {marker}"
+        assert all(visual_width(line) <= width for line in text.splitlines()), name
+
+
 def test_route_choice_shows_pixel_route_map_with_visited_nodes(bundle):
     from ouro_agent.i18n import visual_width
     from ouro_agent.tui.screens import render_route_choice
@@ -315,6 +562,21 @@ def test_route_choice_shows_pixel_route_map_with_visited_nodes(bundle):
 
     zh_route = render_route_choice(state, bundle, language="zh", width=80)
     assert "路线导演板" in zh_route
+    assert "读法: 稳进=稳定路线" in zh_route
+    assert "[1] 修复" in zh_route
+    assert "[路线]  ##==>##  路线图形" in zh_route
+    assert "B 首领" in zh_route
+    assert "构筑适配:" in zh_route
+    assert "协同" in zh_route or "中性" in zh_route
+    assert "构筑拼图" in zh_route
+    assert "[PATH]" not in zh_route
+    assert "Build 适配:" not in zh_route
+    assert "Build 拼图" not in zh_route
+    assert "Prompt 预设" not in zh_route
+    assert "TAKE" not in zh_route
+    assert "FIX" not in zh_route
+    assert "GREED" not in zh_route
+    assert "RISK" not in zh_route
     assert all(visual_width(line) <= 80 for line in zh_route.splitlines())
 
 
@@ -342,11 +604,85 @@ def test_reward_choice_build_track_stays_width_stable(bundle):
         assert all(visual_width(line) <= width for line in reward.splitlines())
 
     zh_reward = render_reward_choice(state, bundle, language="zh", width=80)
-    assert "奖励 Build 轨道" in zh_reward
+    assert "奖励构筑轨道" in zh_reward
+    assert "[奖励] [SEED] -> [PAIR] -> [ONLINE]" in zh_reward
+    assert "当前: [ONLINE] 在线" in zh_reward
+    assert "[1] [ONLINE] => [ONLINE] | 标签 暗影 5->6" in zh_reward
+    assert "[2] [ONLINE] => [ONLINE] | 标签 腐化 1->2, 暗影 5->6" in zh_reward
+    assert "[3] [图鉴] => [+1 研读] | 咒语情报" in zh_reward
     assert "选择优先级面板" in zh_reward
+    assert "读法: 最优=阶段推进" in zh_reward
+    assert "[1] 核心" in zh_reward
+    assert "[2] 核心" in zh_reward
+    assert "[3] 情报" in zh_reward
     assert "主标签" in zh_reward
-    assert "提示词情报" in zh_reward
+    assert "咒语情报" in zh_reward
+    assert "构筑前后:" in zh_reward
+    assert "构筑标签:" in zh_reward
+    assert "模型影响:" in zh_reward
+    assert "建议: 下一步找" in zh_reward
+    assert "奖励 Build 轨道" not in zh_reward
+    assert "Current:" not in zh_reward
+    assert "Build tags:" not in zh_reward
+    assert "Build 前后:" not in zh_reward
+    assert "AI 影响:" not in zh_reward
+    assert "prompt intel" not in zh_reward
+    assert "prompt / build / risk" not in zh_reward
+    assert "BEST" not in zh_reward
+    assert "CORE" not in zh_reward
+    assert "INFO" not in zh_reward
+    assert "HIGH ROLL" not in zh_reward
     assert all(visual_width(line) <= 80 for line in zh_reward.splitlines())
+
+
+def test_reward_choice_uses_runtime_asset_cards_when_atlas_passed(
+    bundle,
+    content_root,
+):
+    from ouro_agent.i18n import visual_width
+    from ouro_agent.tui.screens import render_reward_choice
+
+    atlas = _atlas(content_root, bundle)
+    state = create_run_state(
+        "run_reward_asset_cards",
+        7,
+        "hero_shadow_apprentice",
+        "dungeon_ember_crypt",
+        bundle,
+    )
+    state.current_floor_index = 0
+    state.current_node_index = 0
+    state.set_reward_choices(list(state.current_node(bundle).rewards.reward_choices))
+    choices_before = tuple(state.current_choices)
+    gold_before = state.gold
+
+    reward = render_reward_choice(
+        state,
+        bundle,
+        language="en",
+        width=100,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
+
+    assert "[ASSET] BMP item card | fallback cell.item_cracked_wand.card" in reward
+    assert "[THUMB] " in reward
+    assert "item 543x724 crop" in reward
+    assert "[CARD] BMP reward online | fallback cell.ui.reward_card.online" in reward
+    assert "[CARD THUMB] " in reward
+    assert "reward 435x724 crop" in reward
+    assert "▀" in reward
+    assert (
+        "[ASSET] BMP affix reward_motif | "
+        "fallback cell.affix_corrupted_focus.reward_motif"
+    ) in reward
+    assert "[CARD] BMP reward pair | fallback cell.ui.reward_card.pair" in reward
+    assert "[ASSET] BMP codex reveal | fallback cell.ui.codex_reveal.reveal" in reward
+    assert "[CARD] BMP reward lock | fallback cell.ui.reward_card.lock" in reward
+    assert "[REWARD] [SEED] -> [PAIR] -> [ONLINE]" not in reward
+    assert tuple(state.current_choices) == choices_before
+    assert state.gold == gold_before
+    assert all(visual_width(line) <= 100 for line in reward.splitlines())
 
 
 def test_shop_fix_board_tracks_affordability_and_lanes(bundle):
@@ -382,9 +718,127 @@ def test_shop_fix_board_tracks_affordability_and_lanes(bundle):
 
     zh_shop = render_shop(state, bundle, language="zh", width=80)
     assert "商店修正面板" in zh_shop
+    assert "[商店]  ##[]##  价格 / 修正 / 侦察" in zh_shop
+    assert "货架: 恢复 / 构筑 / 咒语 / 侦察" in zh_shop
+    assert "[1] 恢复 12g 锁定 => HP +35%, MP 回满" in zh_shop
+    assert "[4] 咒语 10g 锁定 => 咒语预设 control" in zh_shop
+    assert "[5] 侦察 8g 可买 => 首领线索 / 路线情报" in zh_shop
     assert "预算战术面板" in zh_shop
+    assert "读法: 买入=修短板" in zh_shop
     assert "缺 3g" in zh_shop
+    assert "READY" not in zh_shop
+    assert "LOCKED" not in zh_shop
+    assert "Prompt style" not in zh_shop
+    assert "Boss clue" not in zh_shop
+    assert "Build tags" not in zh_shop
+    assert "price / repair / scout" not in zh_shop
     assert all(visual_width(line) <= 80 for line in zh_shop.splitlines())
+
+
+def test_run_choice_surfaces_use_runtime_asset_thumbnails_when_atlas_passed(
+    bundle,
+    content_root,
+):
+    from ouro_agent.i18n import visual_width
+    from ouro_agent.tui.screens import render_event, render_rest, render_route_choice, render_shop
+
+    atlas = _atlas(content_root, bundle)
+    state = create_run_state(
+        "run_choice_asset_surfaces",
+        7,
+        "hero_shadow_apprentice",
+        "dungeon_ember_crypt",
+        bundle,
+    )
+
+    state.current_floor_index = 2
+    route_choices_before = tuple(state.get_available_nodes(bundle))
+    route = render_route_choice(
+        state,
+        bundle,
+        language="en",
+        width=100,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
+    assert "[STAGE] BMP dungeon background | fallback cell.dungeon_ember_crypt.background" in route
+    assert "[STAGE THUMB] " in route
+    assert "dungeon 724x724 crop 724x724 px 524176" in route
+    assert "[ROUTE] BMP node background | fallback cell.node.normal_combat.background" in route
+    assert "[ROUTE THUMB] " in route
+    assert "node 724x724 crop 724x724 px 524176" in route
+    assert "[ROUTE] BMP node background | fallback cell.node.event.background" in route
+    assert "node 637x823 crop 637x823 px 524251" in route
+    assert "▀" in route
+    assert tuple(state.get_available_nodes(bundle)) == route_choices_before
+    assert all(visual_width(line) <= 100 for line in route.splitlines())
+
+    state.current_floor_index = 1
+    state.current_node_index = 1
+    state.set_shop_items(list(state.current_node(bundle).shop_items))
+    state.gold = 25
+    shop_choices_before = tuple(state.current_choices)
+    gold_before = state.gold
+    shop = render_shop(
+        state,
+        bundle,
+        language="en",
+        width=100,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
+    assert "[ASSET] BMP heal fill | fallback cell.ui.hp_bar.fill" in shop
+    assert "[ASSET] BMP strategy ready | fallback cell.ui.atb_bar.ready" in shop
+    assert "[ASSET] BMP codex reveal | fallback cell.ui.codex_reveal.reveal" in shop
+    assert "[CARD THUMB] " in shop
+    assert "▀" in shop
+    assert tuple(state.current_choices) == shop_choices_before
+    assert state.gold == gold_before
+    assert all(visual_width(line) <= 100 for line in shop.splitlines())
+
+    state.current_node_index = 2
+    state.current_hp = max(1, state.max_hp // 3)
+    state.current_mp = 0
+    state.set_rest_phase()
+    hp_before = state.current_hp
+    mp_before = state.current_mp
+    rest = render_rest(
+        state,
+        bundle,
+        language="en",
+        width=100,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
+    assert "[ASSET] BMP heal fill | fallback cell.ui.hp_bar.fill" in rest
+    assert "[ASSET] BMP focus applied | fallback cell.ui.status_shield.applied" in rest
+    assert "[ASSET] BMP codex reveal | fallback cell.ui.codex_reveal.reveal" in rest
+    assert "[THUMB] " in rest
+    assert "▀" in rest
+    assert state.current_hp == hp_before
+    assert state.current_mp == mp_before
+    assert all(visual_width(line) <= 100 for line in rest.splitlines())
+
+    state.current_floor_index = 2
+    state.current_node_index = 1
+    state.current_hp = state.max_hp // 2
+    state.set_event_choices(list(state.current_node(bundle).rewards.reward_choices))
+    event_choices_before = tuple(state.current_choices)
+    event = render_event(
+        state,
+        bundle,
+        language="en",
+        width=100,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
+    assert "[ASSET] BMP item card | fallback cell.item_quick_string.card" in event
+    assert "[ASSET] BMP heal fill | fallback cell.ui.hp_bar.fill" in event
+    assert "[CARD] BMP reward seed | fallback cell.ui.reward_card.seed" in event
+    assert "[CARD THUMB] " in event
+    assert "▀" in event
+    assert tuple(state.current_choices) == event_choices_before
+    assert all(visual_width(line) <= 100 for line in event.splitlines())
 
 
 def test_rest_decision_ring_shows_three_mutually_exclusive_outcomes(bundle):
@@ -459,16 +913,37 @@ def test_event_fate_board_summarizes_event_outcomes(bundle):
 
     zh_event = render_event(state, bundle, language="zh", width=80)
     assert "事件命运板" in zh_event
+    assert "[奖励] [SEED] -> [PAIR] -> [ONLINE]" in zh_event
+    assert "先读祭坛: 构筑、经济或生存三种走向。" in zh_event
+    assert "[1] 构筑 => 标签 猎手 0->1" in zh_event
+    assert "[2] 金币  => +50 商店资金" in zh_event
+    assert "[3] 治疗  => HP 50->100" in zh_event
     assert "事件风险面板" in zh_event
+    assert "读法: 稳进=贴合状态" in zh_event
+    assert "[1] 贪心" in zh_event
+    assert "[2] 贪心" in zh_event
+    assert "[3] 安全" in zh_event
     assert "血线有压力" in zh_event
+    assert "选择:" in zh_event
+    assert "选择 1" in zh_event
+    assert "TAKE" not in zh_event
+    assert "GREED" not in zh_event
+    assert "SAFE" not in zh_event
+    assert "INFO" not in zh_event
+    assert "Build" not in zh_event
+    assert "[PATH]" not in zh_event
+    assert "Choice 1" not in zh_event
+    assert "Gold:" not in zh_event
+    assert "Heal:" not in zh_event
     assert all(visual_width(line) <= 80 for line in zh_event.splitlines())
 
 
-def test_run_summary_shows_result_board_for_retry_decision(bundle):
+def test_run_summary_shows_result_board_for_retry_decision(bundle, content_root):
     from ouro_agent.i18n import visual_width
     from ouro_agent.sessions import RunPhase
     from ouro_agent.tui.screens import render_run_summary
 
+    atlas = _atlas(content_root, bundle)
     state = create_run_state(
         "run_result_board",
         7,
@@ -489,9 +964,20 @@ def test_run_summary_shows_result_board_for_retry_decision(bundle):
         ]
     )
 
-    summary = render_run_summary(state, bundle, language="en", width=100)
+    summary = render_run_summary(
+        state,
+        bundle,
+        language="en",
+        width=120,
+        asset_atlas=atlas,
+        unicode_mode=True,
+    )
 
     assert "RUN RESULT BOARD" in summary
+    assert "[RESULT] BMP hero defeat | fallback cell.hero_shadow_apprentice.defeat" in summary
+    assert "[RESULT THUMB]" in summary
+    assert "[STAGE] BMP dungeon background | fallback cell.dungeon_ember_crypt.background" in summary
+    assert "[RESULT] BMP reward lock | fallback cell.ui.reward_card.lock" in summary
     assert "RETRY LOADOUT BOARD" in summary
     assert "[FALL] Result: dead | Floor 1 | Nodes 3" in summary
     assert "Combat: 3W/1L | Resources HP 0/100 MP 4/72" in summary
@@ -503,7 +989,35 @@ def test_run_summary_shows_result_board_for_retry_decision(bundle):
     for width in (80, 100, 120):
         compact = render_run_summary(state, bundle, language="en", width=width)
         assert "RETRY LOADOUT BOARD" in compact
+        assert "[RESULT] BMP" not in compact
         assert all(visual_width(line) <= width for line in compact.splitlines())
+
+    zh_summary = render_run_summary(state, bundle, language="zh", width=100)
+    assert "你倒下了" in zh_summary
+    assert "运行总结" in zh_summary
+    assert "本局结算板" in zh_summary
+    assert "重开配置板" in zh_summary
+    assert "[陨落] 结果: 陨落 | 第 1 层 | 节点 3" in zh_summary
+    assert "战斗: 3胜/1负 | 资源 HP 0/100 MP 4/72" in zh_summary
+    assert "构筑: [ONLINE] 在线 | 黑烛打断" in zh_summary
+    assert "[提示词] control / 降低敌方节奏" in zh_summary
+    assert "[种子] 8 / 固定重试样本" in zh_summary
+    assert "[路线] 首领压力前找休整/商店" in zh_summary
+    assert "[图鉴] 补未知敌人家族" in zh_summary
+    assert "楼层到达: 1" in zh_summary
+    assert "金币获得: 0" in zh_summary
+    assert "经验获得: 0" in zh_summary
+    assert "阶段: [ONLINE] 在线" in zh_summary
+    assert "RUN RESULT BOARD" not in zh_summary
+    assert "Build:" not in zh_summary
+    assert "Online" not in zh_summary
+    assert "[PROMPT]" not in zh_summary
+    assert "[SEED]" not in zh_summary
+    assert "[ROUTE]" not in zh_summary
+    assert "[CODEX]" not in zh_summary
+    assert "Floor reached:" not in zh_summary
+    assert "Gold earned:" not in zh_summary
+    assert "XP earned:" not in zh_summary
 
     state.phase = RunPhase.COMPLETE
     complete = render_run_summary(state, bundle, language="en", width=100)
@@ -657,7 +1171,7 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
 
     required = {
         "en": {
-            "menu": (("MAIN MENU CONSOLE",), ("mock-smart",), ("ouro.toml",), ("Mock Path : mock-ready",), ("[NEXT] Recommended: ouro demo --seed 1",), ("PLAYER JOURNEY BOARD",), ("ENTRY COMMANDS",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("[PLAY] New Run",), ("[BUILD] Hero/Weapon",), ("[LEARN] Run Report",), ("ouro run --mock",), ("Guided Demo",), ("ouro demo --seed 1",), ("Quick Battle",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
+            "menu": (("MAIN MENU CONSOLE",), ("mock-smart",), ("ouro.toml",), ("Mock Path : mock-ready",), ("[NEXT] Recommended: ouro try --seed 1",), ("PLAYER JOURNEY BOARD",), ("ENTRY COMMANDS",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("[PLAY] New Run",), ("[BUILD] Hero/Weapon",), ("[LEARN] Run Report",), ("ouro run --mock",), ("Try / Demo",), ("ouro try --seed 1",), ("ouro demo --seed 1",), ("Quick Battle",), ("ouro play --mock --unicode",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("BUILD STAGE:",), ("Core Tags:",)),
             "weapon": (("WEAPON GALLERY :: BUILD ARSENAL",), ("[W:STF] c==* Astia",), ("NEXT WEAPON ROUTE",)),
             "route": (("Cost:",), ("Reward:",), ("Build fit:",), ("Scout:",)),
@@ -697,14 +1211,14 @@ def test_core_screens_have_stable_width_and_required_fields(bundle):
             ),
         },
         "zh": {
-            "menu": (("主菜单控制台",), ("mock-smart",), ("ouro.toml",), ("Mock Path : mock-ready",), ("[NEXT] 建议先跑: ouro demo --seed 1",), ("玩家旅程",), ("入口命令",), ("[START]",), ("[BUILD]",), ("[RUN]",), ("[LEARN]",), ("[PLAY] 新运行",), ("[BUILD] 英雄/武器",), ("[LEARN] 运行报告",), ("ouro run --mock",), ("引导试玩",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
+            "menu": (("主菜单控制台",), ("mock-smart",), ("ouro.toml",), ("离线试玩 : mock-ready",), ("[下一步] 建议先跑: ouro try --seed 1",), ("状态面板",), ("玩家旅程",), ("入口命令",), ("[试玩]",), ("[构筑]",), ("[运行]",), ("[复盘]",), ("[战斗] 快速战斗",), ("[工具] 诊断",), ("[退出] 退出",), ("ouro run --mock",), ("快速试玩",), ("ouro try --seed 1",), ("ouro demo --seed 1",), ("快速战斗",), ("ouro play --mock --unicode",), ("ouro codex",), ("ouro runs",), ("ouro run-report",), ("ouro history",), ("ouro doctor",)),
             "hero": (("[W:",), ("构筑阶段:",), ("核心标签:",)),
             "weapon": (("武器图鉴 :: 构筑兵装",), ("[W:STF] c==* 阿斯缇娅",), ("下一步武器路线",)),
-            "route": (("消耗:",), ("收益:",), ("Build 适配:",), ("侦察:",)),
-            "reward": (("Build 前后:",), ("标签变化:",), ("AI 影响:",)),
-            "shop": (("MP 恢复至满",), ("决策:",), ("Build 前后:",)),
+            "route": (("消耗:",), ("收益:",), ("构筑适配:",), ("侦察:",)),
+            "reward": (("构筑前后:",), ("标签变化:",), ("模型影响:",)),
+            "shop": (("MP 恢复至满",), ("决策:",), ("构筑前后:",)),
             "rest": (("休整预览:",), ("[1] Recover",), ("[2] Focus",)),
-            "status": (("OURO STATUS :: 回响总览",), ("档案",), ("Runs: 1 total",), ("传奇进度地图",), ("下一局计划",), ("下一局控制台",), ("补图鉴缺口 8 个",), ("下一步命令",), ("ouro status --lang zh",)),
+            "status": (("OURO :: 回响总览",), ("档案",), ("运行:",), ("陨落记录",), ("传奇进度地图",), ("[图鉴]",), ("[准备]",), ("下一局计划",), ("下一局控制台",), ("补图鉴缺口 8 个",), ("下一步命令",), ("ouro status --lang zh",)),
             "battle": (
                 ("HP",),
                 ("MP",),
@@ -1091,7 +1605,7 @@ def test_dynamic_next_pick_in_battle_screen(bundle):
     assert "shadow/control" not in screen_zh_canvas
 
 
-def test_start_and_setup_screens_show_playable_entry_context(bundle):
+def test_start_and_setup_screens_show_playable_entry_context(bundle, content_root: Path):
     from ouro_agent.tui.screens import (
         render_encounter_briefing,
         render_run_setup_screen,
@@ -1103,6 +1617,7 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     config = OuroConfig(provider="mock", model="mock-smart", language="en")
     hero = bundle.get_hero("hero_shadow_apprentice")
     build = resolve_build(hero, bundle)
+    atlas = _atlas(content_root, bundle)
 
     start = render_start_screen(config, provider_label="mock", seed=7, language="en")
     setup = render_run_setup_screen(
@@ -1112,6 +1627,8 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
         provider_label="mock",
         prompt_style="control",
         language="en",
+        asset_atlas=atlas,
+        unicode_mode=True,
     )
     start_zh = render_start_screen(
         config,
@@ -1126,7 +1643,15 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
         provider_label="mock",
         prompt_style="control",
         language="zh",
+        asset_atlas=atlas,
+        unicode_mode=True,
     )
+    assert "[ASSET] BMP hero portrait | fallback cell.hero_shadow_apprentice.portrait" in setup
+    assert "[THUMB]" in setup
+    assert "hero 313x418 crop 249x280 px 50919" in setup
+    assert "[资产] BMP 英雄 portrait | fallback cell.hero_shadow_apprentice.portrait" in setup_zh
+    assert "[缩略]" in setup_zh
+    assert "英雄 313x418 裁切 249x280 像素 50919" in setup_zh
 
     loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
     encounter_state = loop.setup(
@@ -1179,7 +1704,11 @@ def test_start_and_setup_screens_show_playable_entry_context(bundle):
     assert "属性/构筑" in start_zh
     assert "风格/意图" in start_zh
     assert "伤害/胜负" in start_zh
+    assert "新运行：先选英雄与提示词预设，再进入副本。" in start_zh
+    assert "新运行：先选英雄与 Prompt 预设" not in start_zh
     assert "入局确认" in setup_zh
+    assert "提示词契约" in setup_zh
+    assert "Prompt 契约" not in setup_zh
     assert "[提示词]" in setup_zh
     assert "[构筑]" in setup_zh
     assert "[ONLINE] 在线 / 黑烛打断" in setup_zh

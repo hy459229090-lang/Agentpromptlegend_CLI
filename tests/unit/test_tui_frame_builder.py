@@ -11,6 +11,7 @@ from ouro_agent.i18n import visual_width
 from ouro_agent.llm.actions import HeroAction
 from ouro_agent.llm.validator import ValidationResult
 from ouro_agent.providers.mock import MockProvider
+from ouro_agent.sessions.run_state import RunPhase, RunState
 from ouro_agent.tui.frame_builder import build_battle_frame, format_status_detail, format_status_short
 from ouro_agent.engine.models import StatusEffect
 
@@ -245,6 +246,565 @@ def test_unicode_battle_screen_uses_canvas_block_stage(bundle):
     assert "░▒▓▓██==>" in screen or "░░▓▓XX▓▓░" in screen
     for line in screen.splitlines():
         assert visual_width(line) <= 100
+
+
+def test_battle_animation_frames_expand_turn_into_cinematic_phases(bundle):
+    """REQ-ANIMSTAGE-001: one turn should play as staged TUI beats."""
+    from ouro_agent.tui.animation import (
+        BATTLE_ANIMATION_PHASES,
+        NO_ANIMATION_BATTLE_PHASES,
+        build_battle_animation_frames,
+        build_no_animation_battle_frames,
+    )
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    frames = build_battle_animation_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=100,
+        unicode_mode=True,
+    )
+
+    assert tuple(frame.phase for frame in frames) == BATTLE_ANIMATION_PHASES
+    assert len({frame.text for frame in frames}) == len(BATTLE_ANIMATION_PHASES)
+    assert "THE ECHO ALTAR / SELECT" in frames[0].text
+    assert "BEAT T009 HERO SELECT" in frames[0].text
+    assert "█SELECT█" in frames[0].text
+    assert "THE ECHO ALTAR / WINDUP" in frames[1].text
+    assert "█WIND█" in frames[1].text
+    assert "THE ECHO ALTAR / TRAVEL" in frames[2].text
+    assert "█TRAVEL█" in frames[2].text
+    assert "THE ECHO ALTAR / IMPACT" in frames[3].text
+    assert "█IMPACT█" in frames[3].text
+    assert "HIT FLASH -16HP" in frames[3].text
+    assert "PULSE ████▓░░ HIT hit" in frames[3].text
+    assert "THE ECHO ALTAR / JUDGE" in frames[4].text
+    assert "█JUDGE█" in frames[4].text
+    assert "JUDGE  VALID | -16 HP" in frames[4].text
+    assert "PULSE █▓░░░░░ SEL lock" in frames[0].text
+    assert "PULSE ██▓░░░░ WND charge" in frames[1].text
+    assert "PULSE ███▓░░░ FLY transit" in frames[2].text
+    assert "PULSE █████▓░ JDG judge" in frames[4].text
+    assert "CAMERA ░LOCK░ reticle on target" in frames[0].text
+    assert "CAMERA ▒PUSH▒ windup lean" in frames[1].text
+    assert "CAMERA ▓PAN▓ effect lane tracks" in frames[2].text
+    assert "CAMERA █SHAKE█ hit stop" in frames[3].text
+    assert "CAMERA ░SETTLE░ result hold" in frames[4].text
+    assert "HIT FLASH" not in frames[0].text
+    assert "HIT FLASH" not in frames[1].text
+    assert "HIT FLASH" not in frames[2].text
+    assert "HIT FLASH" not in frames[4].text
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+    for matrix_width in (80, 120):
+        matrix_frames = build_battle_animation_frames(
+            state,
+            _hex_record(),
+            provider_label="mock",
+            seed=1,
+            language="en",
+            width=matrix_width,
+            unicode_mode=True,
+        )
+        assert "HIT FLASH -16HP" in matrix_frames[3].text
+        assert all("CAM" in frame.text for frame in matrix_frames)
+        for line in matrix_frames[3].text.splitlines():
+            assert visual_width(line) <= matrix_width
+        if matrix_width == 120:
+            assert "ECHO PULSE ████▓░░ IMPACT hit return" in matrix_frames[3].text
+
+    zh_frames = build_battle_animation_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+
+    assert "命中闪光 -16生命" in zh_frames[3].text
+    assert "回声脉冲 █▓░░░░░ 选定 锁定目标" in zh_frames[0].text
+    assert "回声脉冲 ██▓░░░░ 起势 蓄势" in zh_frames[1].text
+    assert "回声脉冲 ███▓░░░ 飞行 穿过裂隙" in zh_frames[2].text
+    assert "回声脉冲 ████▓░░ 命中 命中回闪" in zh_frames[3].text
+    assert "回声脉冲 █████▓░ 裁判 本地裁判" in zh_frames[4].text
+    assert "镜头 ░锁定░ 目标入框" in zh_frames[0].text
+    assert "镜头 ▒推近▒ 起手压前" in zh_frames[1].text
+    assert "镜头 ▓平移▓ 追踪弹道" in zh_frames[2].text
+    assert "镜头 █震动█ 命中停顿" in zh_frames[3].text
+    assert "镜头 ░稳定░ 结果停留" in zh_frames[4].text
+    assert "HIT FLASH" not in zh_frames[3].text
+    for line in zh_frames[3].text.splitlines():
+        assert visual_width(line) <= 100
+
+    no_animation_frames = build_no_animation_battle_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=100,
+        unicode_mode=True,
+    )
+    assert tuple(frame.phase for frame in no_animation_frames) == NO_ANIMATION_BATTLE_PHASES
+    assert "PULSE █▓░░░░░ SEL lock" in no_animation_frames[0].text
+    assert "PULSE ████▓░░ HIT hit" in no_animation_frames[1].text
+    assert "PULSE █████▓░ JDG judge" in no_animation_frames[2].text
+    assert "CAMERA ░LOCK░ reticle on target" in no_animation_frames[0].text
+    assert "CAMERA █SHAKE█ hit stop" in no_animation_frames[1].text
+    assert "CAMERA ░SETTLE░ result hold" in no_animation_frames[2].text
+
+    zh_no_animation_frames = build_no_animation_battle_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    assert tuple(frame.phase for frame in zh_no_animation_frames) == NO_ANIMATION_BATTLE_PHASES
+    assert "回声脉冲 █▓░░░░░ 选定 锁定目标" in zh_no_animation_frames[0].text
+    assert "回声脉冲 ████▓░░ 命中 命中回闪" in zh_no_animation_frames[1].text
+    assert "回声脉冲 █████▓░ 裁判 本地裁判" in zh_no_animation_frames[2].text
+    assert "镜头 ░锁定░ 目标入框" in zh_no_animation_frames[0].text
+    assert "镜头 █震动█ 命中停顿" in zh_no_animation_frames[1].text
+    assert "镜头 ░稳定░ 结果停留" in zh_no_animation_frames[2].text
+
+
+def test_ascii_battle_animation_frames_keep_fallback_width_safe(bundle):
+    """REQ-ANIMSTAGE-001: ASCII fallback also shows staged beats."""
+    from ouro_agent.tui.animation import (
+        NO_ANIMATION_BATTLE_PHASES,
+        build_battle_animation_frames,
+        build_no_animation_battle_frames,
+    )
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+
+    frames = build_battle_animation_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+    joined = "\n".join(frame.text for frame in frames)
+
+    assert "[>SELECT]" in frames[0].text
+    assert "[>WIND]" in frames[1].text
+    assert "[>TRAVEL]" in frames[2].text
+    assert "[>IMPACT]" in frames[3].text
+    assert "[>JUDGE]" in frames[4].text
+    assert "PULSE" not in joined
+    assert "WINDUP" in joined
+    assert "TRAVEL" in joined
+    assert "IMPACT" in joined
+    assert "JUDGE" in joined
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+    no_animation_frames = build_no_animation_battle_frames(
+        state,
+        _hex_record(),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+    no_animation_joined = "\n".join(frame.text for frame in no_animation_frames)
+
+    assert tuple(frame.phase for frame in no_animation_frames) == NO_ANIMATION_BATTLE_PHASES
+    assert "[>SELECT]" in no_animation_frames[0].text
+    assert "[>IMPACT]" in no_animation_frames[1].text
+    assert "[>JUDGE]" in no_animation_frames[2].text
+    assert "[>WIND]" not in no_animation_joined
+    assert "[>TRAVEL]" not in no_animation_joined
+    for frame in no_animation_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+
+def test_mode_select_animation_frames_stage_noncombat_setup_width_safe():
+    """REQ-UIANIM-001: setup should animate before battle in TTY mode."""
+    from ouro_agent.tui.animation import MODE_SELECT_PHASES, build_mode_select_animation_frames
+
+    frames = build_mode_select_animation_frames(
+        start_screen="OURO AGENT :: PROMPT LEGEND\nProvider: mock",
+        setup_screen="RUN READY BOARD\n[PROMPT] control\n[BUILD] [ONLINE]",
+        ready_screen="ENCOUNTER BRIEFING\nMINI STAGE",
+        language="en",
+        width=64,
+        unicode_mode=False,
+    )
+
+    assert tuple(frame.phase for frame in frames) == MODE_SELECT_PHASES
+    assert "MODE SELECT / AGENT" in frames[0].text
+    assert "PHASE >AGENT< [PROMPT] [JUDGE] [READY]" in frames[0].text
+    assert "RITUAL DIAL >AGENT<--[PROMPT]--[JUDGE]--[STAGE]" in frames[0].text
+    assert "PULSE >>>---____ agent slot waking" in frames[0].text
+    assert "STATUS mock offline | seed locked | local judge rules" in frames[0].text
+    assert "FOCUS agent slot online; build, weapon, resources loaded" in frames[0].text
+    assert "MODE SELECT / PROMPT" in frames[1].text
+    assert "RITUAL DIAL [AGENT]-->PROMPT<--[JUDGE]--[STAGE]" in frames[1].text
+    assert "PULSE __>>>---__ prompt bias syncing" in frames[1].text
+    assert "prompt mode online" in frames[1].text
+    assert "RITUAL DIAL [AGENT]--[PROMPT]-->JUDGE<--[STAGE]" in frames[2].text
+    assert "PULSE ____>>>--_ local judge arming" in frames[2].text
+    assert "MODE SELECT / READY" in frames[3].text
+    assert "RITUAL DIAL [AGENT]--[PROMPT]--[JUDGE]-->STAGE<" in frames[3].text
+    assert "PULSE ______>>>> stage handoff ready" in frames[3].text
+    assert "ENCOUNTER BRIEFING" in frames[3].text
+    assert all(frame.text.isascii() for frame in frames)
+    for frame in frames:
+        assert "..." not in frame.text
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 64
+
+    zh_frames = build_mode_select_animation_frames(
+        start_screen="暗影代理 :: 祷文传说\n供应商: mock",
+        setup_screen="入局确认\n[提示词] control\n[构筑] [ONLINE]",
+        ready_screen="遭遇简报\n入场镜头",
+        language="zh",
+        width=80,
+        unicode_mode=True,
+    )
+
+    assert "模式选择 / 英雄" in zh_frames[0].text
+    assert "仪式拨盘 █英雄█──[提示词]──[裁判]──[舞台]" in zh_frames[0].text
+    assert "脉冲 █▓▒░░░░░░░ 英雄槽唤醒" in zh_frames[0].text
+    assert "状态 mock 离线 | seed 锁定 | 本地裁判结算" in zh_frames[0].text
+    assert "仪式拨盘 [英雄]──█提示词█──[裁判]──[舞台]" in zh_frames[1].text
+    assert "仪式拨盘 [英雄]──[提示词]──█裁判█──[舞台]" in zh_frames[2].text
+    assert "仪式拨盘 [英雄]──[提示词]──[裁判]──█舞台█" in zh_frames[3].text
+    assert "遭遇简报" in zh_frames[3].text
+    for frame in zh_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+
+def test_encounter_briefing_animation_frames_scan_threat_window_ready(bundle):
+    """REQ-TUIMOTION-019: encounter briefing animates before the first battle frame."""
+    from ouro_agent.engine import resolve_build
+    from ouro_agent.tui.animation import (
+        ENCOUNTER_BRIEFING_PHASES,
+        build_encounter_briefing_animation_frames,
+    )
+    from ouro_agent.tui.screens import render_encounter_briefing
+
+    build = resolve_build(bundle.get_hero("hero_shadow_apprentice"), bundle)
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    screen = render_encounter_briefing(state, bundle, build, language="en", width=80)
+    frames = build_encounter_briefing_animation_frames(
+        screen,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+
+    assert tuple(frame.phase for frame in frames) == ENCOUNTER_BRIEFING_PHASES
+    assert "ENCOUNTER BRIEFING / SCOUT" in frames[0].text
+    assert "ENTRY RAIL >SCOUT<--[THREAT]--[WINDOW]--[READY]" in frames[0].text
+    assert "BRIEFING OVERLAY SCOUT | >..." in frames[0].text
+    assert "ENTRY PULSE >>---__ scanning lineup" in frames[0].text
+    assert ">>SCOUT" in frames[0].text
+    assert "MINI STAGE" in frames[0].text
+    assert "ENCOUNTER BRIEFING / THREAT" in frames[1].text
+    assert ">>THREAT" in frames[1].text
+    assert "THREAT RAIL" in frames[1].text
+    assert "[THREAT]" in frames[1].text
+    assert "ENCOUNTER BRIEFING / WINDOW" in frames[2].text
+    assert ">>WINDOW" in frames[2].text
+    assert "WINDOW RAIL" in frames[2].text
+    assert "[WINDOW]" in frames[2].text
+    assert "ENCOUNTER BRIEFING / READY" in frames[3].text
+    assert ">>READY" in frames[3].text
+    assert "[PLAN]" in frames[3].text
+    assert "STATE briefing complete | next frame enters battle" in frames[3].text
+    assert all(frame.text.isascii() for frame in frames)
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+    zh_loop = BattleLoop(bundle, MockProvider(seed=1, language="zh"), seed=1, language="zh")
+    zh_state = zh_loop.setup(
+        "hero_shadow_apprentice",
+        ["enemy_hungry_cultist", "enemy_black_candle_acolyte"],
+    )
+    zh_screen = render_encounter_briefing(
+        zh_state,
+        bundle,
+        build,
+        language="zh",
+        width=100,
+    )
+    zh_frames = build_encounter_briefing_animation_frames(
+        zh_screen,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+
+    assert "遭遇简报 / 侦察" in zh_frames[0].text
+    assert "入场轨 █侦察█──[威胁]──[窗口]──[就绪]" in zh_frames[0].text
+    assert "简报覆盖 侦察 | █░░░" in zh_frames[0].text
+    assert "入场脉冲 █▓░░░░░ 扫描站位" in zh_frames[0].text
+    assert "█侦察█" in zh_frames[0].text
+    assert "遭遇简报 / 威胁" in zh_frames[1].text
+    assert "█威胁█" in zh_frames[1].text
+    assert "威胁轨道" in zh_frames[1].text
+    assert "[威胁]" in zh_frames[1].text
+    assert "遭遇简报 / 窗口" in zh_frames[2].text
+    assert "█窗口█" in zh_frames[2].text
+    assert "窗口轨道" in zh_frames[2].text
+    assert "[窗口]" in zh_frames[2].text
+    assert "遭遇简报 / 就绪" in zh_frames[3].text
+    assert "█就绪█" in zh_frames[3].text
+    assert "[计划]" in zh_frames[3].text
+    assert "状态 入场完成 | 下一帧进入战斗" in zh_frames[3].text
+    for english_fragment in ("SCOUT", "THREAT", "WINDOW", "READY"):
+        assert english_fragment not in "\n".join(frame.text for frame in zh_frames)
+    for frame in zh_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+
+def test_battle_result_animation_frames_settle_reveal_next(bundle):
+    """REQ-TUIMOTION-020: resolved battle reports get a live outcome handoff."""
+    from ouro_agent.tui.animation import (
+        BATTLE_RESULT_PHASES,
+        build_battle_result_animation_frames,
+    )
+    from ouro_agent.tui.presenter import render_live_chrome
+    from ouro_agent.tui.screens import render_battle_report
+
+    loop = BattleLoop(bundle, MockProvider(seed=1, language="en"), seed=1, language="en")
+    state = loop.setup("hero_shadow_apprentice", ["enemy_hungry_cultist"])
+    loop.run(state)
+    report = render_battle_report(state, loop.records, language="en", width=80)
+    frames = build_battle_result_animation_frames(
+        report,
+        result=state.result,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+
+    assert tuple(frame.phase for frame in frames) == BATTLE_RESULT_PHASES
+    assert "BATTLE OUTCOME / RESULT" in frames[0].text
+    assert "OUTCOME RAIL >RESULT<--[REVEAL]--[NEXT]" in frames[0].text
+    assert "OUTCOME OVERLAY RESULT | result victory | >.." in frames[0].text
+    assert "OUTCOME PULSE >>--- result settles" in frames[0].text
+    assert ">>RESULT" in frames[0].text
+    assert "BATTLE RESULT BOARD" in frames[0].text
+    assert "BATTLE OUTCOME / REVEAL" in frames[1].text
+    assert ">>REVEAL" in frames[1].text
+    assert "REVEAL fallen enemy, codex silhouette, and damage rail" in frames[1].text
+    assert "DAMAGE RAIL" in frames[1].text
+    assert "BATTLE OUTCOME / NEXT" in frames[2].text
+    assert ">>NEXT" in frames[2].text
+    assert "PLAY NEXT BOARD" in frames[2].text
+    assert "STATE outcome complete | stable report prints next" in frames[2].text
+    assert all(frame.text.isascii() for frame in frames)
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+    live_next = render_live_chrome(
+        frames[2].text,
+        mode="battle",
+        phase="next",
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+    assert "MODE BATTLE | PHASE NEXT | PROVIDER mock | SEED 1" in live_next
+
+    zh_report = "\n".join(
+        [
+            "战后结算镜头",
+            "结果轨道 [##########] 胜利",
+            "倒下敌方 [I:k] 饥饿信徒",
+            "伤害轨道 [####------] 造成 70 / 承受 12",
+            "下一镜头 保留构筑，推进压力样本",
+            "下一局闭环面板",
+            "[重开] ouro play --mock --seed 2",
+        ]
+    )
+    zh_frames = build_battle_result_animation_frames(
+        zh_report,
+        result="victory",
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    zh_text = "\n".join(frame.text for frame in zh_frames)
+
+    assert "战斗落幕 / 结算" in zh_frames[0].text
+    assert "落幕轨 █结算█──[揭示]──[下一步]" in zh_frames[0].text
+    assert "落幕覆盖 结算 | 结果 胜利 | █░░" in zh_frames[0].text
+    assert "落幕脉冲 █▓░░░ 判定落幕" in zh_frames[0].text
+    assert "█结算█ 战后结算镜头" in zh_frames[0].text
+    assert "战斗落幕 / 揭示" in zh_frames[1].text
+    assert "█揭示█ 倒下敌方" in zh_frames[1].text
+    assert "战斗落幕 / 下一步" in zh_frames[2].text
+    assert "█下一步█ 下一镜头" in zh_frames[2].text
+    assert "RESULT" not in zh_text
+    assert "REVEAL" not in zh_text
+    assert "NEXT" not in zh_text
+    for frame in zh_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+    zh_live = render_live_chrome(
+        zh_frames[2].text,
+        mode="battle",
+        phase="next",
+        provider_label="mock",
+        seed=1,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    assert "模式 战斗 | 阶段 下一步 | Provider mock | Seed 1" in zh_live
+
+
+def test_reward_reveal_animation_frames_drop_cards_handoff(bundle):
+    """REQ-TUIMOTION-021: victory rewards get a live reveal before choice wait."""
+    from ouro_agent.tui.animation import (
+        REWARD_REVEAL_PHASES,
+        build_reward_reveal_animation_frames,
+    )
+    from ouro_agent.tui.presenter import render_live_chrome
+    from ouro_agent.tui.screens import render_reward_choice
+
+    state = RunState(
+        run_id="run_reward_reveal",
+        seed=7,
+        dungeon_id="dungeon_ember_crypt",
+        hero_id="hero_shadow_apprentice",
+        phase=RunPhase.NODE_ACTION,
+        current_hp=80,
+        current_mp=72,
+        max_hp=80,
+        max_mp=72,
+    )
+    node = state.current_node(bundle)
+    assert node.rewards is not None
+    state.add_rewards(node.rewards.gold, node.rewards.xp)
+    state.set_reward_choices(list(node.rewards.reward_choices))
+    screen = render_reward_choice(state, bundle, language="en", width=80)
+    frames = build_reward_reveal_animation_frames(
+        screen,
+        gold=node.rewards.gold,
+        xp=node.rewards.xp,
+        choice_count=len(node.rewards.reward_choices),
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+
+    assert tuple(frame.phase for frame in frames) == REWARD_REVEAL_PHASES
+    assert "LOOT REVEAL / DROP" in frames[0].text
+    assert "LOOT RAIL >DROP<--[CARDS]--[HANDOFF]" in frames[0].text
+    assert "LOOT OVERLAY DROP | gold +15 / xp +10 / choices 3 | >.." in frames[0].text
+    assert "LOOT PULSE >>--- drop pops" in frames[0].text
+    assert ">>DROP +15 Gold" in frames[0].text
+    assert "LOOT REVEAL / CARDS" in frames[1].text
+    assert ">>CARDS" in frames[1].text
+    assert "REWARD BUILD TRACK" in frames[1].text
+    assert "PICK PRIORITY BOARD" in frames[1].text
+    assert "LOOT REVEAL / HANDOFF" in frames[2].text
+    assert ">>HANDOFF CHOOSE YOUR REWARD" in frames[2].text
+    assert "STATE reveal complete | choice waits next" in frames[2].text
+    assert all(frame.text.isascii() for frame in frames)
+    for frame in frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 80
+
+    live_handoff = render_live_chrome(
+        frames[2].text,
+        mode="reward",
+        phase="handoff",
+        provider_label="mock",
+        seed=7,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+    assert "MODE REWARD | PHASE HANDOFF | PROVIDER mock | SEED 7" in live_handoff
+
+    zh_screen = "\n".join(
+        [
+            "选择你的奖励",
+            "+15 金币",
+            "+10 经验",
+            "金币: 15  经验: 10  HP: 80/80  MP: 72/72",
+            "+==========================[ 奖励构筑轨道 ]==========================+",
+            "| [1] [ONLINE] => [PAIR] | 标签 暗影                               |",
+            "+==========================[ 选择优先级面板 ]========================+",
+            "| [1] 核心   => 主标签；下一战权重更高                              |",
+            "选择一个奖励（输入编号）",
+        ]
+    )
+    zh_frames = build_reward_reveal_animation_frames(
+        zh_screen,
+        gold=15,
+        xp=10,
+        choice_count=3,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    zh_text = "\n".join(frame.text for frame in zh_frames)
+
+    assert "奖励显影 / 掉落" in zh_frames[0].text
+    assert "掉落轨 █掉落█──[卡牌]──[交接]" in zh_frames[0].text
+    assert "掉落覆盖 掉落 | 金币 +15 / 经验 +10 / 候选 3 | █░░" in zh_frames[0].text
+    assert "掉落脉冲 █▓░░░ 掉落弹出" in zh_frames[0].text
+    assert "█掉落█ +15 金币" in zh_frames[0].text
+    assert "奖励显影 / 卡牌" in zh_frames[1].text
+    assert "█卡牌█" in zh_frames[1].text
+    assert "奖励构筑轨道" in zh_frames[1].text
+    assert "奖励显影 / 交接" in zh_frames[2].text
+    assert "█交接█ 选择你的奖励" in zh_frames[2].text
+    assert "状态 显影完成 | 下一帧等待选择" in zh_frames[2].text
+    for english_fragment in ("DROP", "CARDS", "HANDOFF"):
+        assert english_fragment not in zh_text
+    for frame in zh_frames:
+        for line in frame.text.splitlines():
+            assert visual_width(line) <= 100
+
+    zh_live = render_live_chrome(
+        zh_frames[2].text,
+        mode="reward",
+        phase="handoff",
+        provider_label="mock",
+        seed=7,
+        language="zh",
+        width=100,
+        unicode_mode=True,
+    )
+    assert "模式 奖励 | 阶段 交接 | Provider mock | Seed 7" in zh_live
 
 
 def test_unicode_battle_screen_optional_color_keeps_canvas_width(bundle, monkeypatch):
@@ -602,6 +1162,7 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
     assert "EXE" in execute
 
     target.hp = 0
+    state.hero.mp = 0
     down = render_battle_screen(
         state,
         hit_record(12),
@@ -618,6 +1179,9 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
     assert "ACTION" in down
     assert "JUDGE" in down
     assert "▐CDX▌" in down
+    down_panel = _cinematic_panel(down, language="en")
+    assert "VOX   [FINISH]" in down_panel
+    assert "MP LOW" not in down_panel
 
     ascii_down = render_battle_screen(
         state,
@@ -643,6 +1207,9 @@ def test_unicode_battle_screen_draws_wound_rail_inside_canvas(bundle, width):
     )
     assert "▐CDX▌" in zh_down
     assert "击杀确认" in zh_down
+    zh_down_panel = _cinematic_panel(zh_down, language="zh")
+    assert "声   [收束]" in zh_down_panel
+    assert "低蓝" not in zh_down_panel
     assert "KILL CONFIRMED" not in zh_down
 
     for screen in (hold, execute, down):
@@ -664,6 +1231,7 @@ def test_unicode_battle_screen_draws_codex_reveal_on_boss_down(bundle, width):
     state = loop.setup("hero_ash_guardian", ["enemy_black_candle_high_priest_archive"])
     boss = state.enemies[0]
     boss.hp = 0
+    state.hero.mp = 0
     record = TurnRecord(
         tick=420,
         actor_id=state.hero.id,
@@ -704,6 +1272,9 @@ def test_unicode_battle_screen_draws_codex_reveal_on_boss_down(bundle, width):
     assert "ACTION" in screen
     assert "JUDGE" in screen
     assert "▐CDX▌" in screen
+    panel = _cinematic_panel(screen, language="en")
+    assert "VOX   [FINISH]" in panel
+    assert "MP LOW" not in panel
 
     zh_screen = render_battle_screen(
         state,
@@ -716,6 +1287,9 @@ def test_unicode_battle_screen_draws_codex_reveal_on_boss_down(bundle, width):
     )
     assert "首领击破" in zh_screen
     assert "▐CDX▌" in zh_screen
+    zh_panel = _cinematic_panel(zh_screen, language="zh")
+    assert "声   [收束]" in zh_panel
+    assert "低蓝" not in zh_panel
     assert "BOSS DOWN" not in zh_screen
 
     ascii_screen = render_battle_screen(
@@ -818,6 +1392,19 @@ def test_unicode_battle_screen_draws_pain_rail_on_enemy_damage(bundle, width):
     assert "SAFE" in safe
     assert "HIT -9 HP" in safe
     assert "WOUND" not in safe
+
+    impact = render_battle_screen(
+        state,
+        enemy_hit(9),
+        provider_label="mock",
+        seed=1,
+        language="en",
+        width=width,
+        unicode_mode=True,
+        animation_phase="impact",
+    )
+    assert "PAIN FLASH -9HP" in impact
+    assert "WOUND" not in impact
 
     state.hero.hp = 12
     crit = render_battle_screen(
@@ -2458,10 +3045,208 @@ def test_presenter_builds_deterministic_headings():
     from ouro_agent.tui.presenter import present_battle_frame
 
     normal = present_battle_frame("BODY", turn_index=2, tick=17, language="en")
+    zh_normal = present_battle_frame("BODY", turn_index=2, tick=17, language="zh")
     thinking = present_battle_frame("BODY", turn_index=2, tick=17, thinking=True, language="zh")
 
     assert normal.text.startswith("--- turn 2 / tick 17 ---")
-    assert "模型读取战场" in thinking.text
+    assert zh_normal.text.startswith("--- 回合 2 / 刻度 17 ---")
+    assert thinking.text.startswith("--- 回合 2 / 刻度 17 :: 模型读取战场 ---")
+    assert "--- turn" not in thinking.text
+
+
+def test_presenter_live_chrome_wraps_tty_frames_without_width_drift():
+    """REQ-TUIMOTION-013: default TTY frames expose app mode and input chrome."""
+    from ouro_agent.tui.presenter import render_live_chrome
+
+    text = render_live_chrome(
+        "BODY",
+        mode="battle",
+        phase="impact",
+        provider_label="mock",
+        seed=2,
+        language="en",
+        width=80,
+        unicode_mode=False,
+    )
+
+    assert "OURO LIVE / BATTLE" in text
+    assert "MODE BATTLE | PHASE IMPACT | PROVIDER mock | SEED 2" in text
+    assert "INPUT watch-only; model chooses | Ctrl+C exits safely" in text
+    assert "STATE ALT 1049 ON | local judge resolves | shell restores on exit" in text
+    assert text.rstrip().endswith("BODY")
+    assert text.isascii()
+    for line in text.splitlines():
+        assert visual_width(line) <= 80
+
+    zh_text = render_live_chrome(
+        "主体",
+        mode="setup",
+        phase="thinking",
+        provider_label="mock",
+        seed=7,
+        language="zh",
+        width=80,
+        unicode_mode=True,
+    )
+    assert "OURO 实况 / 装配" in zh_text
+    assert "模式 装配 | 阶段 读取 | Provider mock | Seed 7" in zh_text
+    assert "输入 只观看；装配中 | Ctrl+C 安全退出" in zh_text
+    assert "状态 ALT 1049 █ON█ | 本地裁判结算 | shell 退出后恢复" in zh_text
+    assert "主体" in zh_text
+    assert "THINKING" not in zh_text
+    for line in zh_text.splitlines():
+        assert visual_width(line) <= 80
+
+
+def test_presenter_live_chrome_preserves_terminal_image_escapes():
+    """REQ-TERMGRAPHICS-002: bitmap payloads must survive live chrome wrapping."""
+    from ouro_agent.tui.presenter import render_live_chrome
+
+    payload = "\x1b_Ga=T,f=100,t=d,c=18,r=7,q=2,m=0;" + ("A" * 240) + "\x1b\\"
+
+    text = render_live_chrome(
+        payload,
+        mode="battle",
+        phase="impact",
+        provider_label="mock",
+        seed=2,
+        language="en",
+        width=80,
+        unicode_mode=True,
+    )
+
+    assert payload in text
+    assert "..." not in text.splitlines()[-1]
+
+
+def test_presenter_choice_prompt_chrome_keeps_input_wait_inside_app_frame():
+    """REQ-TUIMOTION-014: choice prompts stay in live TTY chrome while waiting."""
+    from ouro_agent.tui.presenter import render_choice_prompt_chrome
+
+    text = render_choice_prompt_chrome(
+        "ROUTE SCREEN\n[1] Hungry Followers\n[2] Rat Pack",
+        mode="route",
+        prompt_text="Choose route",
+        option_count=3,
+        provider_label="mock",
+        seed=7,
+        language="en",
+        width=80,
+        unicode_mode=False,
+        focus_index=1,
+        focus_label="Hungry Followers",
+    )
+
+    assert "OURO LIVE / ROUTE" in text
+    assert "MODE ROUTE | PHASE WAIT | PROVIDER mock | SEED 7" in text
+    assert "INPUT enter 1-3; route waiting | Ctrl+C exits safely" in text
+    assert "WAIT FOCUS [1] Hungry Followers / type number to lock, q abort" in text
+    assert "WAIT PULSE >>.. default lane lit" in text
+    assert ">>WAIT [1] Hungry Followers" in text
+    assert "INPUT KEYS" in text
+    assert "[PROMPT] Choose route" in text
+    assert "[1-3] choose route" in text
+    assert "[Ctrl+C] abort safely" in text
+    assert "ROUTE SCREEN" in text
+    assert "choice locked" not in text
+    assert text.isascii()
+    for line in text.splitlines():
+        assert visual_width(line) <= 80
+
+    zh_text = render_choice_prompt_chrome(
+        "商店画面\n[1] 恢复\n[2] 提示词重写",
+        mode="shop",
+        prompt_text="商店 (1-2 / 0/q/l)",
+        option_count=2,
+        provider_label="mock",
+        seed=7,
+        language="zh",
+        width=80,
+        unicode_mode=True,
+        allow_leave=True,
+        focus_index=2,
+        focus_label="提示词重写",
+    )
+
+    assert "OURO 实况 / 商店" in zh_text
+    assert "模式 商店 | 阶段 等待 | Provider mock | Seed 7" in zh_text
+    assert "输入 1-2 选择商店行动 / 0/q/l 离开；等待玩家 | Ctrl+C 安全退出" in zh_text
+    assert "等待焦点 [2] 提示词重写 / 输入编号锁定，q 取消" in zh_text
+    assert "等待脉冲 ██░░ 点亮候选" in zh_text
+    assert "█等待█ [2] 提示词重写" in zh_text
+    assert "输入键" in zh_text
+    assert "[提示] 商店 (1-2 / 0/q/l)" in zh_text
+    assert "[0/Q/L] 离开商店" in zh_text
+    assert "商店画面" in zh_text
+    assert "WAIT" not in zh_text
+    for line in zh_text.splitlines():
+        assert visual_width(line) <= 80
+
+
+def test_presenter_choice_prompt_chrome_animates_wait_scan_focus_ready():
+    """REQ-TUIMOTION-018: waiting choice chrome has a short scan/focus/ready pulse."""
+    from ouro_agent.tui.presenter import render_choice_prompt_chrome
+
+    frames = {
+        phase: render_choice_prompt_chrome(
+            "ROUTE SCREEN\n[1] Hungry Followers\n[2] Rat Pack",
+            mode="route",
+            prompt_text="Choose route",
+            option_count=2,
+            provider_label="mock",
+            seed=7,
+            language="en",
+            width=80,
+            unicode_mode=False,
+            focus_index=1,
+            focus_label="Hungry Followers",
+            wait_phase=phase,
+        )
+        for phase in ("scan", "focus", "ready")
+    }
+
+    assert "MODE ROUTE | PHASE WAIT SCAN | PROVIDER mock | SEED 7" in frames["scan"]
+    assert "WAIT SCAN [1] Hungry Followers / preview options before input" in frames["scan"]
+    assert "WAIT PULSE >... scanning options" in frames["scan"]
+    assert ">>SCAN [1] Hungry Followers" in frames["scan"]
+    assert "MODE ROUTE | PHASE WAIT FOCUS | PROVIDER mock | SEED 7" in frames["focus"]
+    assert "WAIT FOCUS [1] Hungry Followers / type number to lock, q abort" in frames["focus"]
+    assert "WAIT PULSE >>.. default lane lit" in frames["focus"]
+    assert ">>FOCUS [1] Hungry Followers" in frames["focus"]
+    assert "MODE ROUTE | PHASE WAIT READY | PROVIDER mock | SEED 7" in frames["ready"]
+    assert "WAIT READY [1] Hungry Followers / type number to lock, q abort" in frames["ready"]
+    assert "WAIT PULSE >>>> keys armed" in frames["ready"]
+    assert ">>READY [1] Hungry Followers" in frames["ready"]
+    for frame in frames.values():
+        assert frame.isascii()
+        for line in frame.splitlines():
+            assert visual_width(line) <= 80
+
+    zh_ready = render_choice_prompt_chrome(
+        "休整画面\n[1] 恢复\n[2] 专注",
+        mode="rest",
+        prompt_text="休整选择",
+        option_count=3,
+        provider_label="mock",
+        seed=8,
+        language="zh",
+        width=80,
+        unicode_mode=True,
+        allow_skip=True,
+        focus_index=1,
+        focus_label="恢复",
+        wait_phase="ready",
+    )
+
+    assert "模式 休整 | 阶段 等待就绪 | Provider mock | Seed 8" in zh_ready
+    assert "等待就绪 [1] 恢复 / 输入编号锁定，q 取消" in zh_ready
+    assert "等待脉冲 ████ 等待输入" in zh_ready
+    assert "█就绪█ [1] 恢复" in zh_ready
+    assert "WAIT" not in zh_ready
+    assert "READY" not in zh_ready
+    assert "SCAN" not in zh_ready
+    for line in zh_ready.splitlines():
+        assert visual_width(line) <= 80
 
 
 def test_battle_frame_flows_through_screen_model_layout_and_presenter(bundle):

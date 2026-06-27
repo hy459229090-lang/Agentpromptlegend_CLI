@@ -142,7 +142,7 @@ OpenAI 和 Anthropic 官方 API 形态会更新，因此实现时应先看官方
 
 1. `README.md`：安装、mock 试玩、Provider 配置、隐私说明。
 2. `AGENTS.md`：AI 协作规则。
-3. `LICENSE`：开源许可证，待 RicHe 决定。
+3. `LICENSE`：MIT 开源许可证。
 4. `pyproject.toml` 或等价包配置。
 5. `src/`：代码。
 6. `tests/`：测试。

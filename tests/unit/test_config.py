@@ -1,11 +1,12 @@
 """REQ-PROV-001/002/003: provider config rules and key handling."""
 from __future__ import annotations
 
+import os
 from argparse import Namespace
 
 import pytest
 
-from ouro_agent.cli.main import _effective_game_config, main
+from ouro_agent.cli.main import _demo_storage_note, _effective_game_config, main
 from ouro_agent.config import (
     OuroConfig,
     SUPPORTED_PROVIDERS,
@@ -16,6 +17,7 @@ from ouro_agent.config import (
     set_field,
 )
 from ouro_agent.config.model import ConfigError
+from ouro_agent.i18n import visual_width
 
 
 def test_default_provider_is_mock(isolated_home):
@@ -211,11 +213,11 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert rc == 0
     assert "OURO AGENT :: PROMPT LEGEND" in out
     assert "MAIN MENU CONSOLE" in out
-    assert "[NEXT] Recommended: ouro demo --seed 1" in out
+    assert "[NEXT] Recommended: ouro try --seed 1" in out
     assert "Mock Path : mock-ready" in out
     assert "Provider : mock" in out
     assert "PLAYER JOURNEY BOARD" in out
-    assert "[START] Guided demo -> ouro demo --seed 1" in out
+    assert "[START] Try first -> ouro try --seed 1 / ouro demo --seed 1" in out
     assert "[BUILD] Pick hero/weapon -> ouro list-heroes / ouro weapons" in out
     assert "[RUN] Full run -> ouro run --mock" in out
     assert "[LEARN] Review Codex/report -> ouro status / ouro codex / ouro run-report" in out
@@ -225,9 +227,12 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert "[LEARN] Run Report" in out
     assert "New Run" in out
     assert "ouro run --mock" in out
-    assert "Guided Demo" in out
+    assert "Try / Demo" in out
+    assert "ouro try --seed 1" in out
     assert "ouro demo --seed 1" in out
     assert "Quick Battle" in out
+    assert "ouro play --mock --unicode" in out
+    assert "ouro play --mock --no-animation" not in out
     assert "Hero/Weapon" in out
     assert "Prompt Style" in out
     assert "Status" in out
@@ -238,6 +243,39 @@ def test_cli_default_shows_main_menu(isolated_home, capsys):
     assert "ouro run-report" in out
     assert "History" in out
     assert "Doctor" in out
+
+    rc = main(["--lang", "zh"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "主菜单控制台" in out
+    assert "[下一步] 建议先跑: ouro try --seed 1" in out
+    assert "离线试玩 : mock-ready" in out
+    assert "[完整] 完整一局: ouro run --mock" in out
+    assert "状态面板" in out
+    assert "玩家旅程" in out
+    assert "[试玩] 快速试玩 -> ouro try --seed 1 / ouro demo --seed 1" in out
+    assert "[构筑] 选英雄/武器 -> ouro list-heroes / ouro weapons" in out
+    assert "[运行] 完整运行 -> ouro run --mock" in out
+    assert "[复盘] 复盘图鉴/报告 -> ouro status / ouro codex / ouro run-report" in out
+    assert "入口命令" in out
+    assert "[运行] 新运行" in out
+    assert "[战斗] 快速战斗" in out
+    assert "ouro play --mock --unicode" in out
+    assert "ouro play --mock --no-animation" not in out
+    assert "[工具] 诊断" in out
+    assert "[退出] 退出" in out
+    assert "Mock Path" not in out
+    assert "STATUS HUD" not in out
+    assert "PLAYER JOURNEY BOARD" not in out
+    assert "[NEXT]" not in out
+    assert "[FULL]" not in out
+    assert "[START]" not in out
+    assert "[PLAY]" not in out
+    assert "[FIGHT]" not in out
+    assert "[LEARN]" not in out
+    assert "[TOOLS]" not in out
+    assert "[QUIT]" not in out
 
 
 def test_cli_weapons_shows_gallery(content_root, isolated_home, capsys):
@@ -251,12 +289,31 @@ def test_cli_weapons_shows_gallery(content_root, isolated_home, capsys):
     assert "NEXT WEAPON ROUTE" in out
     assert "hero_shadow_apprentice" not in out
 
+    rc = main(["--lang", "zh", "weapons", "--content-dir", str(content_root)])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "武器图鉴 :: 构筑兵装" in out
+    assert "构筑标签" in out
+    assert "[图] c==*" in out
+    assert "[行为] 优先打断与节奏技能" in out
+    assert "[构筑] ouro list-heroes --unicode" in out
+    assert "[详情] ouro hero-card astia --unicode" in out
+    assert "[运行] ouro run --mock --hero astia" in out
+    assert "ART " not in out
+    assert "Build 标签" not in out
+    assert "[BUILD]" not in out
+    assert "[DETAIL]" not in out
+    assert "[RUN]" not in out
+    assert "hero_shadow_apprentice" not in out
+
 
 def test_cli_prompt_templates_show_pilot_board(isolated_home, capsys):
     rc = main(["--lang", "en", "prompt-templates"])
 
     out = capsys.readouterr().out
     assert rc == 0
+    assert out.isascii()
     assert "PROMPT STRATEGY TEMPLATES" in out
     assert "PROMPT PILOT BOARD" in out
     assert "[aggressive] BURST" in out
@@ -271,6 +328,36 @@ def test_cli_prompt_templates_show_pilot_board(isolated_home, capsys):
     assert "PICK: boss/chant use control; low HP use guarded" in out
     assert "RUN: ouro run --mock --prompt-style <name>" in out
     assert "Use: ouro play --mock --prompt-style control" in out
+
+    rc = main(["--lang", "zh", "prompt-templates"])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "咒语策略预设" in out
+    assert "Agent 驾驶面板" in out
+    assert "[aggressive] 爆发 | 风险 高 | 适配 处决 / 伤害" in out
+    assert "[guarded]    稳守 | 风险 低 | 适配 护盾 / 续航" in out
+    assert "[control]    压制 | 风险 中 | 适配 打断 / 沉默" in out
+    assert "[attrition]  消耗 | 风险 中 | 适配 毒素 / 流血" in out
+    assert "战况偏置面板" in out
+    assert "[吟唱] control -> 先打断高 ATB" in out
+    assert "[低血] guarded -> 防御或护盾" in out
+    assert "[处决] aggressive -> 收割低血" in out
+    assert "[首领] control -> 管蓄力" in out
+    assert "推荐: boss/吟唱 选 control；低血选 guarded" in out
+    assert "运行: ouro run --mock --prompt-style <name>" in out
+    assert "使用: ouro play --mock --prompt-style control" in out
+    assert "PROMPT PILOT BOARD" not in out
+    assert "PROMPT SCENARIO BOARD" not in out
+    assert "RUN:" not in out
+    assert "PICK:" not in out
+    assert "Use:" not in out
+    assert "execute / damage" not in out
+    assert "interrupt / silence" not in out
+    assert "[CHANT]" not in out
+    assert "[LOW HP]" not in out
+    for line in out.splitlines():
+        assert visual_width(line) <= 100
 
 
 def test_cli_accepts_global_language_after_subcommand(isolated_home, capsys):
@@ -304,7 +391,7 @@ def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
     assert rc == 0
     assert "OURO DEMO :: FIRST ECHO" in out
     assert "STEP 1: Status and next commands" in out
-    assert "Guided Demo" in out
+    assert "Try / Demo" in out
     assert "Trace: -" in out
     assert "STEP 2: Hero card and build plan" in out
     assert "HERO CARD" in out
@@ -319,6 +406,10 @@ def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
     assert "[OB] [c] Hungry Cultist [I: Trace]" in out
     assert "STEP 5: Continue from here" in out
     assert "Next commands" in out
+    assert "Try" in out
+    assert "ouro try --seed 1" in out
+    assert "Demo alias" in out
+    assert "ouro demo --seed 1" in out
     assert "Full run" in out
     assert "ouro run --mock" in out
     assert "Status" in out
@@ -332,6 +423,69 @@ def test_cli_demo_runs_guided_mock_smoke(isolated_home, content_root, capsys):
     assert "Doctor" in out
     assert "ouro doctor --lang en" in out
     assert "Trace :" not in out
+
+    rc_try = main(
+        [
+            "--lang",
+            "en",
+            "try",
+            "--seed",
+            "1",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+    try_out = capsys.readouterr().out
+
+    assert rc_try == 0
+    assert "OURO DEMO :: FIRST ECHO" in try_out
+    assert "STEP 5: Continue from here" in try_out
+    assert "Try" in try_out
+    assert "ouro try --seed 1" in try_out
+    assert "Demo alias" in try_out
+    assert "ouro demo --seed 1" in try_out
+    assert "Trace :" not in try_out
+
+
+def test_cli_try_uses_temporary_storage_when_home_is_unwritable(
+    tmp_path,
+    monkeypatch,
+    content_root,
+    capsys,
+):
+    """REQ-EXP-011: first-run try should not show persistence warnings."""
+    blocked_home = tmp_path / "blocked-home"
+    blocked_home.write_text("not a directory", encoding="utf-8")
+    monkeypatch.setenv("OURO_AGENT_HOME", str(blocked_home))
+
+    rc = main(
+        [
+            "--lang",
+            "en",
+            "try",
+            "--seed",
+            "1",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert os.environ["OURO_AGENT_HOME"] == str(blocked_home)
+    assert "DEMO STORAGE" in out
+    assert "[TEMP] Temporary progress active for this guided try." in out
+    assert "[KEEP] Set OURO_AGENT_HOME to a writable folder to keep progress." in out
+    assert "Warning: could not save Codex progress" not in out
+    assert "OURO DEMO :: FIRST ECHO" in out
+    assert "BATTLE COMPLETE" in out
+    assert "STEP 4: Codex readback" in out
+    assert "CODEX :: MONSTER ARCHIVE" in out
+    assert "Observed: 2/9" in out
+    assert "STEP 5: Continue from here" in out
+    assert all(visual_width(line) <= 78 for line in _demo_storage_note("en").splitlines())
+    assert all(visual_width(line) <= 78 for line in _demo_storage_note("zh").splitlines())
 
 
 def test_cli_hero_entry_accepts_player_refs_and_reports_errors(
@@ -350,7 +504,7 @@ def test_cli_hero_entry_accepts_player_refs_and_reports_errors(
     out = capsys.readouterr().out
     assert rc == 0
     assert "英雄详情 :: 阿斯缇娅 [CNDL]" in out
-    assert "[RUN] ouro run --mock --hero astia" in out
+    assert "[运行] ouro run --mock --hero astia" in out
 
     rc = main(["--lang", "en", "hero-card", "foo", "--content-dir", str(content_root)])
     captured = capsys.readouterr()
@@ -445,6 +599,38 @@ def test_interactive_run_abort_returns_code_without_system_exit(
 
     assert rc == 130
     assert "Aborted." in err
+
+    prompts: list[str] = []
+
+    def route_quit(prompt: str) -> str:
+        prompts.append(prompt)
+        return "q"
+
+    monkeypatch.setattr("builtins.input", route_quit)
+    rc = main(
+        [
+            "run",
+            "--mock",
+            "--seed",
+            "7",
+            "--hero",
+            "astia",
+            "--prompt-style",
+            "control",
+            "--no-animation",
+            "--no-trace",
+            "--content-dir",
+            str(content_root),
+            "--lang",
+            "en",
+        ]
+    )
+
+    err = capsys.readouterr().err
+
+    assert rc == 130
+    assert "Aborted." in err
+    assert prompts == ["\nSelect a node (enter number): "]
 
 
 def test_doctor_respects_language_override_and_validates_content(

@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_shadow_sting_effect_sheet
+candidate_id: cand_skill_shadow_sting_001
+work_order_id: wo_skill_shadow_sting_effect_sheet
+source_brief: shadow_sting_candle_lance
+runtime_promoted: true
+frames:
+- frame_id: spawn
+  path: spawn.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 113
+  - 110
+  - 384
+  - 482
+  visible_pixels: 20949
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.spawn
+- frame_id: travel
+  path: travel.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 265
+  - 350
+  - 377
+  visible_pixels: 15493
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.travel
+- frame_id: near_hit
+  path: near_hit.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 9
+  - 195
+  - 384
+  - 395
+  visible_pixels: 18345
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.near_hit
+- frame_id: impact
+  path: impact.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 125
+  - 328
+  - 473
+  visible_pixels: 42582
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.impact
+- frame_id: dissolve
+  path: dissolve.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 45
+  - 95
+  - 360
+  - 325
+  visible_pixels: 16200
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.dissolve
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 1
+  - 161
+  - 354
+  - 277
+  visible_pixels: 14873
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_shadow_sting.recover

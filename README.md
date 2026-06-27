@@ -1,59 +1,59 @@
 # Ouro Agent: Prompt Legend / 暗影代理：祷文传说
 
 <p align="center">
-  <strong>Build the mind. Release the run. Read the scars.</strong><br>
-  <strong>Train one AI hero. Watch it survive your Prompt.</strong><br>
-  <strong>训练一个 AI 英雄，让它带着你的 Prompt 下地牢。</strong><br>
-  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Offline Mock Playable · Bilingual TUI · Store page first, engineering later</sub>
+  <strong>Train one AI hero. Send it into a dark terminal dungeon. Learn what your Prompt really built.</strong><br>
+  <strong>训练一个 AI 英雄，把它放进黑暗终端地牢，看看你的 Prompt 到底构筑出了什么。</strong><br>
+  <sub>CLI AI Roguelike · Prompt-Building Auto Battler · Deterministic Local Judge · Offline Mock Playable · Chinese / English</sub>
 </p>
 
 <p align="center">
   <img alt="Ouro Agent storefront showcase with language switch, play CTA, and graphical TUI battle" src="examples/ouro-readme-storefront-showcase.svg" width="100%">
-  <br><strong>Steam-style promise:</strong> You design the mind it carries into the dungeon. The run proves whether that mind can survive pressure.<br>
-  <strong>玩家承诺：</strong>你设计 Agent 的战斗脑子，地牢负责验证它能不能活下来。<br>
-  <sub>Watch the run before reading the docs. Media first. Rules second. Engineering third.</sub>
+  <br><strong>You do not play the hero turn by turn. You build the Agent, then watch the dungeon audit its decisions.</strong><br>
+  <sub>Model chooses. Local Judge decides. No network or API key needed for the first run.</sub>
 </p>
 
-## Player Start Panel / 玩家入口面板
+## Start Here / 玩家入口
 
 <table>
   <tr>
-    <th colspan="4">Language Switch / 语言切换 · 中文 / English · Choose Your Page / 选择介绍页</th>
+    <th>Read</th>
+    <th>Play</th>
+    <th>Watch</th>
+    <th>Inspect</th>
   </tr>
   <tr>
-    <td align="center"><strong>ENGLISH</strong><br><strong>English (current)</strong><br><sub>game first, docs later</sub><br><a href="README.zh.md"><strong>中文</strong> · 切到中文介绍</a><br><sub>完整中文文档 / Full Chinese README</sub></td>
-    <td align="center"><a href="#play-now"><strong>ENTER THE RUN</strong><br><strong>Play Now / 立即试玩</strong><br><sub><strong>30-Second Demo</strong>: <code>ouro demo --lang en --seed 1</code></sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH THE GAME</strong><br><strong>Gameplay Screens / 先看游戏画面</strong><br><sub>Best First Screen: Build / Fight / Learn</sub></a></td>
-    <td align="center"><a href="#game-capsule"><strong>BROWSE BUILD</strong><br><strong>Hero Capsule</strong><br><sub>weapons, roles, Codex</sub></a></td>
-  </tr>
-  <tr>
-    <td colspan="4" align="center">
-      <strong>CLI Language Toggle / CLI 语言切换:</strong>
-      <code>ouro --lang en</code> / <code>ouro --lang zh</code>
-      <br><sub>Mock, offline, no API key. English is ASCII-safe. 中文界面建议 UTF-8 终端。</sub>
-    </td>
+    <td align="center"><strong>English</strong><br><a href="README.zh.md"><strong>中文介绍</strong></a><br><sub>CLI: <code>ouro --lang en</code> / <code>ouro --lang zh</code></sub></td>
+    <td align="center"><a href="#play-now"><strong>Play offline</strong></a><br><code>ouro try --lang en --seed 1</code><br><sub>mock, deterministic, no API key</sub></td>
+    <td align="center"><a href="#screenshots-build-fight-learn"><strong>See the TUI</strong></a><br><sub>Build / Fight / Learn</sub></td>
+    <td align="center"><a href="#current-playable-content--当前可玩内容"><strong>Current build</strong></a><br><sub>commands, providers, safety</sub></td>
   </tr>
 </table>
 
-| What kind of game is this? | Why open one more run? |
-|----------------------------|------------------------|
-| **A dark terminal roguelike where the Prompt is the build.** You configure one hero Agent before combat, then the run plays out automatically under local rules. | The Agent can read the moment, miss a counter window, run out of MP, or reveal a Codex clue. The after-action report turns that failure into the next build. |
-| **这是一款 Prompt 构筑型命令行肉鸽。** 战斗前你配置一个 AI 英雄；开战后模型只选择行动，本地裁判负责伤害、状态、奖励、失败和胜利。 | 它会读局、失误、打断、缺蓝、击杀显影。每次失败都会留下战报、图鉴线索和下一局构筑方向。 |
+## The Pitch / 游戏一句话
+
+**Ouro Agent: Prompt Legend** is a single-player CLI roguelike where the
+Prompt is part of the build. Before combat you configure one hero Agent:
+hero, weapon, affixes, Build direction, Prompt style, and tactical bias. During
+combat you cannot click skills or targets. The model chooses a structured
+action; the local engine validates it and resolves HP, MP, ATB, statuses,
+rewards, defeat, and victory.
+
+The fun is not "watch a chatbot narrate damage." The fun is watching a build
+you designed survive pressure, fail in readable ways, unlock Codex knowledge,
+and give you a sharper next run.
 
 <a id="storefront-hero"></a>
 
-## Storefront Hero / 商店页封面
+## First Look / 第一眼
 
 <p align="center">
   <img alt="Ouro Agent Prompt Legend storefront capture" src="examples/ouro-readme-storefront.svg" width="100%">
-  <br><strong>A dark terminal roguelike: build one Agent, then watch it survive by decision + rules, not by button-mashing.</strong><br>
-  <strong>You do not pilot the hero turn by turn. You design the mind it carries into the dungeon.</strong><br>
-  <strong>暗黑 Roguelike。先搭建，一局看生死。你是构筑师，不是放技能的人。</strong><br>
-  <sub>Model chooses. Local Judge decides. 模型只选招式，裁判负责结算。</sub>
+  <br><strong>Build before the fight. Watch the Agent answer under pressure. Rebuild from the scars.</strong><br>
+  <sub>Prompt choice, deterministic combat rules, bilingual terminal screens, and replayable evidence are all part of the loop.</sub>
 </p>
 
 <p align="center">
-  <strong>Game tags:</strong>
+  <strong>Game tags / 游戏标签:</strong>
   <code>Single-player</code>
   <code>AI Roguelike</code>
   <code>Auto Battler</code>
@@ -62,40 +62,19 @@
   <code>Chinese / English</code>
 </p>
 
-<table>
-  <tr>
-    <th colspan="3">Steam-Style Front Page / Steam 风格首页 · three clear actions</th>
-  </tr>
-  <tr>
-    <td align="center"><a href="#play-now"><strong>PLAY DEMO</strong><br><sub>one command, offline mock</sub></a></td>
-    <td align="center"><a href="#screenshots-build-fight-learn"><strong>WATCH BATTLE</strong><br><sub>real TUI captures</sub></a></td>
-    <td align="center"><a href="README.zh.md"><strong>中文 / Chinese</strong><br><sub>完整中文文档 / Full Chinese README</sub></a></td>
-  </tr>
-  <tr>
-    <td colspan="3" align="center"><strong>Store Page Capsule:</strong> language first, media first, playable proof first.</td>
-  </tr>
-</table>
-
-<p align="center">
-  <strong>Playable now in mock mode: no network, no API key, deterministic seeds.</strong><br>
-  <strong>现在可离线试玩：无需网络、无需 API key，固定 seed 可复现。</strong><br>
-  <sub>Choose a language, run one command, then look at the battle screen before the engineering notes.</sub>
-</p>
-
-| Play in 30 seconds | 中文 30 秒开局 | Watch the battle canvas |
-|--------------------|----------------|-------------------------|
-| `pip install -e .`<br>`ouro demo --lang en --seed 1` | `pip install -e .`<br>`ouro demo --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content` |
+| Try it in 30 seconds | 中文 30 秒试玩 | Jump to the battle canvas |
+|----------------------|----------------|---------------------------|
+| `pip install -e .`<br>`ouro try --lang en --seed 1` | `pip install -e .`<br>`ouro try --lang zh --seed 1` | `ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content` |
 
 <table>
   <tr>
     <td width="64%">
       <img alt="Steam-style screenshot wall for Ouro Agent TUI gameplay" src="examples/ouro-readme-screenshot-wall.svg" width="100%">
-      <br><strong>Steam-style screenshot wall / 商店式截图墙</strong><br>
-      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT. Real TUI Captures before the engineering notes begin.</sub><br>
-      <sub>Media proof: main menu, battle briefing, graphical duel, cinematic beat, and after-action learning loop.</sub>
+      <br><strong>Gameplay wall / 玩法画面墙</strong><br>
+      <sub>MAIN MENU CONSOLE -> ENCOUNTER BRIEFING -> THE ECHO ALTAR -> DECISION FOCUS -> AFTER-ACTION REPORT.</sub>
     </td>
     <td width="36%">
-      <strong>What you see first</strong><br><br>
+      <strong>What the first run shows</strong><br><br>
       <strong>Build</strong><br>
       Weapon cards, hero roles, AI behavior tags, and next-run commands appear before combat.<br><br>
       <strong>Fight</strong><br>
@@ -106,24 +85,12 @@
   </tr>
 </table>
 
-| Store Page Pitch | What The Screenshot Proves |
-|------------------|----------------------------|
-| **The Prompt is your build.** | Weapon cards, hero roles, Build badges, and prompt bias appear before combat. |
-| **The terminal is not a log. It is the arena.** | The TUI shows left hero, right enemy, effect lane, HP / MP / ATB, VOX / ENM, floating hits, and judge result in one frame. |
-| **The AI can choose, but it cannot cheat.** | The model picks a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
-| **Every loss teaches the next run.** | Reports, Codex progress, death history, and replayable traces turn failure into build advice. |
-
-<details>
-<summary>Store page framing / What a Steam page would show first / 好的 Steam 页面会先展示什么</summary>
-
-| What a Steam page would show first | How this README now handles it |
-|------------------------------------|--------------------------------|
-| **Capsule art and screenshots** | Showcase hero, storefront capture, screenshot wall, and Build/Fight/Learn gallery appear before architecture and provider docs. |
-| **A one-sentence fantasy** | Build one Agent, release it, and watch whether your Prompt survives pressure. |
-| **Playable status and CTA** | `ouro demo --lang en --seed 1` and `ouro demo --lang zh --seed 1` are above the engineering sections. |
-| **Feature proof, not promises** | Every media panel names a reproducible CLI command and uses mock-friendly game screens. |
-
-</details>
+| Player promise | What proves it today |
+|----------------|----------------------|
+| **The Prompt is your build.** | Hero cards, weapons, affixes, Build stages, strategy slots, and Prompt bias appear before combat. |
+| **The terminal is the arena.** | The fight renders a left/right battle stage with actors, effect lane, HP / MP / ATB, VOX / ENM, floating FX, and judge result. |
+| **The AI can choose, but it cannot cheat.** | The model returns a structured action; local deterministic rules decide legality, damage, rewards, defeat, and victory. |
+| **Every failure becomes evidence.** | Reports, Codex progress, death history, replayable traces, and batch runs explain what to change next. |
 
 <a id="game-capsule"></a>
 
@@ -147,9 +114,15 @@ then read how the local judge explains every hit.
 
 ## Screenshots: Build, Fight, Learn / 画面：构筑、战斗、复盘
 
-Media Gallery / 先看游戏画面. Screenshots below are captured from reproducible CLI output, not concept art. Run
-`ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content`
-to reproduce the battle style. The SVG media lives in `examples/`.
+Media Gallery / 先看游戏画面. Screenshots below are captured from reproducible CLI output, not concept art. Run the live TTY path with
+`ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content`
+to feel the default motion. In bitmap-capable terminals, `--graphics auto` prefers local QA-promoted PNG sprites through iTerm2 or Kitty inline images; otherwise it falls back to Unicode cell sprites, then ASCII-safe output. You can force each layer with
+`ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content`,
+`ouro --lang en play --mock --seed 2 --graphics unicode --color always --no-trace --content-dir content`, or
+`ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content`.
+Runtime image generation is disabled: ImageGen is a development asset pipeline, and playable combat reads local QA-promoted assets from `content/assets/`. Use `--no-animation` only for deterministic static capture, CI logs, or low-compatibility terminals. The SVG media lives in `examples/`.
+If a terminal reports bitmap support but the live fight still looks textual, run
+`ouro doctor graphics --graphics bitmap --probe-image --content-dir content` first; it prints a local QA-promoted runtime PNG in the terminal, which separates terminal image protocol issues from battle layout bugs.
 
 <table>
   <tr>
@@ -162,8 +135,8 @@ to reproduce the battle style. The SVG media lives in `examples/`.
     <td width="33%">
       <img alt="Graphical TUI battle canvas" src="examples/ouro-battle-canvas.svg">
       <br><strong>Fight / Graphical Battle Stage / 图形化战斗舞台</strong><br>
-      Left hero vs right enemy, projectile lane, HP / MP / ATB / risk rail, floating FX, Prompt hit, Build state, and local judge in one terminal frame.<br>
-      <sub>Reproduce: <code>ouro --lang en play --mock --seed 2 --unicode --no-animation --no-trace --content-dir content</code></sub>
+      Left hero vs right enemy, scene texture, hit flash, echo pulse, camera shake, window pressure, floating FX, Prompt hit, Build state, and local judge in one terminal frame.<br>
+      <sub>Live auto: <code>ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content</code><br>Bitmap best path: <code>ouro --lang en play --mock --seed 2 --graphics bitmap --color always --no-trace --content-dir content</code><br>Static fallback: <code>ouro --lang en play --mock --seed 2 --graphics ascii --no-animation --no-trace --content-dir content</code></sub>
     </td>
     <td width="33%">
       <img alt="After action report and Codex preview" src="examples/ouro-after-action.svg">
@@ -174,10 +147,22 @@ to reproduce the battle style. The SVG media lives in `examples/`.
   </tr>
 </table>
 
+<p align="center">
+  <img alt="Animated TUI filmstrip for mode, lock, and battle phases" src="examples/ouro-animation-filmstrip.svg" width="100%">
+  <br><strong>Motion Preview / 动画节奏预览</strong><br>
+  Default TTY play now animates setup, route, reward, shop, rest, event, and battle phases. The file is an animated SVG filmstrip backed by the same mock-friendly flow as the PTY evidence log.
+</p>
+
+<p align="center">
+  <img alt="Motion evidence wall for mode, route, reward, battle hit, and death pause" src="examples/ouro-motion-evidence.svg" width="100%">
+  <br><strong>Motion Evidence / 动效证据墙</strong><br>
+  Fixed seed evidence covers mode select, route focus, reward focus, battle hit, and death pause in one screenshot-friendly animated wall.
+</p>
+
 The first playable loop is meant to read like a compact game journey:
 
 1. **RUN READY BOARD** - your Agent's Prompt, Build stage, tags, next pick, and first rule.
-2. **THE ECHO ALTAR / COUNTER WINDOW** - the model chooses an action; the local judge resolves the impact.
+2. **THE ECHO ALTAR / IMPACT** - the model chooses an action; the local judge resolves the impact while scene, pulse, camera, window pressure, and hit flash stay readable.
 3. **BATTLE RESULT BOARD** - tempo, mistakes, Codex progress, and next-run commands stay visible.
 
 <details>
@@ -191,10 +176,10 @@ RUN READY BOARD
   [NEXT PICK] guard, armor, poison
   [FIRST RULE] model chooses action, local judge resolves
 
-THE ECHO ALTAR / COUNTER WINDOW
-HERO [CNDL] Astia     | SELECT > WINDOW > JUDGE | ENEMY [k] Acolyte
-VOX seal the chant    | SEAL -16 HP             | ENM armor cracking
-HP 100/100 MP 54/72   | ACTION HEX -> k         | HP 34/70 FX SLN1
+THE ECHO ALTAR / IMPACT
+HERO [CNDL] Astia     | SELECT > IMPACT > JUDGE | ENEMY [k] Acolyte
+VOX seal the chant    | HIT FLASH -16HP         | ENM armor cracking
+HP 100/100 MP 54/72   | CAMERA SHAKE + PULSE    | HP 34/70 FX SLN1
 
 CINEMATIC BEAT
   VOX [INTERRUPT] There. The wick forgets its prayer.
@@ -213,46 +198,21 @@ BATTLE TURN MAP
 ```
 </details>
 
-<a id="english-store-page"></a>
-
-## English Store Page
-
-### You are the builder behind the Agent.
-
-**Ouro Agent: Prompt Legend** is a playable CLI AI roguelike about preparation,
-pressure, and readable failure. You do not click skills during combat. You build
-one hero Agent before the dungeon starts: hero, weapon, affixes, Build direction,
-Prompt style, and tactical bias. Then the run begins, and you watch whether that
-plan can survive the dungeon.
-
-The model chooses structured actions. The local engine validates targets,
-cooldowns, resources, damage, statuses, rewards, defeat, and victory. That
-boundary is the fun: the Prompt can be clever, but the dungeon still has rules.
-
-| Storefront Snapshot / 游戏速览 | Current Promise |
-|--------------------------------|-----------------|
-| **Genre** | CLI roguelike / auto-battler / prompt-building game |
-| **Player Fantasy** | Build one Agent, release it, then watch it read pressure, miss windows, interrupt rituals, and grow through failure |
-| **Language / 语言** | README has Chinese and English pages; CLI 语言切换 uses `ouro --lang zh` or `ouro --lang en` |
-| **Playable State** | Mock provider is deterministic, offline, and ready without network or API keys |
-| **Combat Rule** | Model chooses action; local judge resolves legality, damage, rewards, defeat, and victory |
-| **Visual Target** | Graphical TUI with left hero vs right enemy, HP/MP/ATB, threat rails, projectile lane, floating FX, `Echo Cost / Read Echo / Spoken Echo / Ritual Time`, VOX/ENM barks, and Cinematic Beat |
-
-| Player Promise | What You Actually Do | Why It Feels Different |
-|----------------|----------------------|------------------------|
-| Build before the fight. Watch the Agent answer under pressure. | Pick one hero, weapon, affixes, Build tags, Prompt style, and tactical bias before combat. | The run tests your preparation instead of your reaction speed. |
-| See the fight, not a scroll of logs. | Watch a left-hero vs right-enemy battle canvas with HP/MP/ATB, intent, risk, model action, judge result, floating numbers, and battle barks. | CLI is treated as a low-resolution game screen, not a debug console. |
-| Let failure teach the next build. | Read battle reports, Codex progress, death history, status boards, replays, and batch balance reports. | Every mistake leaves a trace you can actually use in the next run. |
-
 ## About This Game
 
-This is not a chat wrapper with damage numbers. It is a local game loop where
-Prompt design becomes a build choice, model output becomes intent, and a
-deterministic judge keeps the dungeon honest.
+Ouro Agent is built around a strict split: the model may choose intent, but it
+does not get to be the rules. It cannot invent damage, skip cooldowns, grant
+rewards, reveal hidden Codex knowledge, or declare victory. Those outcomes come
+from local deterministic combat.
+
+That makes the AI readable as a risky teammate instead of a narrator. It can
+miss a counter window, spend MP badly, follow your Prompt too literally, or land
+the perfect interrupt. The screen then shows why the judge accepted, repaired,
+or rejected the move.
 
 | Why click into it? | What proves it now? |
 |--------------------|---------------------|
-| **The AI can be wrong in interesting ways.** | Every battle prints model action, judge result, resources, risk, and recent log. |
+| **The AI can be wrong in interesting ways.** | Every battle frame prints model action, judge result, resources, risk, and recent log. |
 | **The TUI is treated as a game screen.** | Weapon gallery, battle canvas, Codex, status, run report, and death history render as card-like terminal boards. |
 | **The first run is frictionless.** | Mock mode is offline, deterministic, and works without API keys. |
 
@@ -279,13 +239,15 @@ One command gets you from install to a guided first run:
 
 ```bash
 pip install -e .
-ouro demo --lang en --seed 1
+ouro try --lang en --seed 1
+ouro demo --lang en --seed 1   # Compatibility alias
 ```
 
 Want Chinese:
 
 ```bash
-ouro demo --lang zh --seed 1
+ouro try --lang zh --seed 1
+ouro demo --lang zh --seed 1   # Compatibility alias
 ```
 
 Want to jump straight into the game:
@@ -304,7 +266,7 @@ ouro menu --lang en
 Want the current battle canvas directly:
 
 ```bash
-ouro --lang en play --mock --seed 2 --unicode --color always --no-animation --no-trace --content-dir content
+ouro --lang en play --mock --seed 2 --graphics auto --color always --no-trace --content-dir content
 ```
 
 Want the post-run learning loop:
@@ -331,7 +293,7 @@ Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后�
 
 | What You Can Play | Available Now | Recommended Command |
 |-------------------|---------------|---------------------|
-| Guided first run | yes | `ouro demo --lang en --seed 1` |
+| Guided first run | yes | `ouro try --lang en --seed 1` |
 | Journey console and command map | yes | `ouro menu --lang en` |
 | Single AI battle | yes | `ouro play --mock` |
 | Full dungeon run with route, shop, rest, rewards, and boss | yes | `ouro run --mock` |
@@ -341,12 +303,12 @@ Agent，把 Prompt、武器、词条和 Build 方向交给它；战斗开始后�
 | Balance and batch reports | yes | `ouro batch --count 50 --seed 1` |
 
 <p align="center">
-  <img alt="tests badge" src="https://img.shields.io/badge/tests-400%20passing-brightgreen">
+  <img alt="tests badge" src="https://img.shields.io/badge/tests-464%20passing-brightgreen">
   <img alt="python badge" src="https://img.shields.io/badge/python-3.11%2B-blue">
   <img alt="providers badge" src="https://img.shields.io/badge/providers-mock%20%7C%20openai%20%7C%20anthropic%20%7C%20openai--compatible-orange">
 </p>
 
-`400 tests passing`. No real network calls in any test.
+`464 tests passing`. No real network calls in any test.
 
 ---
 
@@ -359,7 +321,8 @@ pip install -e .
 
 ouro --version
 ouro doctor --lang en --content-dir content
-ouro demo --lang en --seed 1                              # Guided first-player smoke
+ouro try --lang en --seed 1                               # Fast first-player smoke
+ouro demo --lang en --seed 1                              # Compatibility alias for release review
 ouro run --mock                                           # Continue from demo into a full run
 ouro list-heroes
 ouro weapons --unicode
@@ -582,7 +545,7 @@ Next ready priorities:
    JSON mode `venv312/bin/python scripts/signoff_check.py --json`, or strict
    mode `venv312/bin/python scripts/signoff_check.py --strict` before marking
    the broader goal complete. This dynamically reports user satisfaction,
-   License, live-provider smoke, and git-boundary sign-offs without replacing
+   MIT license readiness, live-provider smoke, and git-boundary sign-offs without replacing
    those human decisions; the user-satisfaction item includes copyable
    acceptance commands. `venv312/bin/python scripts/acceptance_check.py` runs
    the mock-first acceptance path without writing sign-off markers. Pending
@@ -590,7 +553,7 @@ Next ready priorities:
    [docs/engineering/USER_ACCEPTANCE_20260601.md](docs/engineering/USER_ACCEPTANCE_20260601.md)
    [docs/engineering/LICENSE_DECISION_20260601.md](docs/engineering/LICENSE_DECISION_20260601.md),
    and [docs/engineering/PROVIDER_LIVE_SMOKE_20260601.md](docs/engineering/PROVIDER_LIVE_SMOKE_20260601.md);
-   only change their `SIGN-OFF` lines after the real review is complete.
+   only change user/live-provider `SIGN-OFF` lines after the real review is complete.
    For a single final readiness summary, run
    `venv312/bin/python scripts/completion_audit.py`.
 
@@ -610,4 +573,4 @@ See the requirement matrix:
 
 ## License
 
-License is not selected yet.
+MIT License. See [LICENSE](LICENSE).

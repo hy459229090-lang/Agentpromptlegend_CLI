@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_sinking_veil_effect_sheet
+candidate_id: cand_skill_sinking_veil_001
+work_order_id: wo_skill_sinking_veil_effect_sheet
+source_brief: sinking_veil_mire_guard
+runtime_promoted: true
+frames:
+- frame_id: veil_rise
+  path: veil_rise.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 60
+  - 123
+  - 328
+  - 474
+  visible_pixels: 39555
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.veil_rise
+- frame_id: wrap
+  path: wrap.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 37
+  - 151
+  - 315
+  - 474
+  visible_pixels: 47841
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.wrap
+- frame_id: sink
+  path: sink.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 21
+  - 161
+  - 384
+  - 488
+  visible_pixels: 35320
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.sink
+- frame_id: shield_pop
+  path: shield_pop.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 140
+  - 345
+  - 491
+  visible_pixels: 48794
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.shield_pop
+- frame_id: settle
+  path: settle.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 66
+  - 69
+  - 321
+  - 357
+  visible_pixels: 48434
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.settle
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 41
+  - 88
+  - 296
+  - 354
+  visible_pixels: 17083
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_sinking_veil.recover

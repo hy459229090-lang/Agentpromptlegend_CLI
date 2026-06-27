@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_hook_break_effect_sheet
+candidate_id: cand_skill_hook_break_001
+work_order_id: wo_skill_hook_break_effect_sheet
+source_brief: hook_break_execute_arc
+runtime_promoted: true
+frames:
+- frame_id: windup
+  path: windup.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 55
+  - 153
+  - 384
+  - 445
+  visible_pixels: 25120
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.windup
+- frame_id: hook_launch
+  path: hook_launch.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 256
+  - 384
+  - 421
+  visible_pixels: 13735
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.hook_launch
+- frame_id: pull
+  path: pull.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 179
+  - 384
+  - 424
+  visible_pixels: 21992
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.pull
+- frame_id: impact
+  path: impact.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 97
+  - 349
+  - 501
+  visible_pixels: 51222
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.impact
+- frame_id: execute_pop
+  path: execute_pop.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 50
+  - 38
+  - 374
+  - 369
+  visible_pixels: 44398
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.execute_pop
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 57
+  - 66
+  - 326
+  - 348
+  visible_pixels: 13917
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_hook_break.recover

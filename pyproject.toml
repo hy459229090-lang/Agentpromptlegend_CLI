@@ -9,12 +9,13 @@ description = "Agent Prompt Legend CLI: a command-line AI roguelike."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Ouro Agent Contributors" }]
-license = { text = "Unlicensed (license selection pending)" }
+license = { text = "MIT" }
 keywords = ["cli", "roguelike", "ai", "llm", "ascii"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
@@ -49,6 +50,20 @@ where = ["src"]
 "share/ouro-agent/content/affixes" = ["content/affixes/mvp_affixes.yaml"]
 "share/ouro-agent/content/resonances" = ["content/resonances/mvp_resonances.yaml"]
 "share/ouro-agent/content/dungeons" = ["content/dungeons/mvp_dungeons.yaml"]
+"share/ouro-agent/content/assets" = [
+    "content/assets/README.md",
+    "content/assets/_rules.md",
+    "content/assets/manifest.yaml",
+]
+"share/ouro-agent/content/assets/source_briefs" = [
+    "content/assets/source_briefs/README.md",
+    "content/assets/source_briefs/_rules.md",
+    "content/assets/source_briefs/mvp_briefs.yaml",
+]
+"share/ouro-agent/content/assets/qa" = [
+    "content/assets/qa/README.md",
+    "content/assets/qa/_rules.md",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

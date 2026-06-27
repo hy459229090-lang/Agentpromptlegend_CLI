@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: node_normal_combat_stage_variant
+candidate_id: cand_node_normal_combat_001
+work_order_id: wo_node_normal_combat_stage_variant
+source_brief: ember_crypt_normal_combat_lane
+runtime_promoted: true
+frames:
+- frame_id: background
+  path: background.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 0
+  - 0
+  - 724
+  - 724
+  visible_pixels: 524176
+  anchor:
+  - 160
+  - 80
+  duration_ms: 80
+  fallback_cell_id: cell.node.normal_combat.background
+- frame_id: intro_plate
+  path: intro_plate.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 0
+  - 0
+  - 724
+  - 724
+  visible_pixels: 524176
+  anchor:
+  - 160
+  - 80
+  duration_ms: 80
+  fallback_cell_id: cell.node.normal_combat.intro_plate
+- frame_id: encounter_mood
+  path: encounter_mood.png
+  frame_size:
+  - 724
+  - 724
+  visible_bbox:
+  - 0
+  - 0
+  - 724
+  - 724
+  visible_pixels: 524176
+  anchor:
+  - 160
+  - 80
+  duration_ms: 80
+  fallback_cell_id: cell.node.normal_combat.encounter_mood

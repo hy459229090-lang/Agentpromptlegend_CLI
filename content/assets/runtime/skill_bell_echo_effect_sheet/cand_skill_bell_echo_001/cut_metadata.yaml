@@ -1,0 +1,103 @@
+schema_version: '0.1'
+asset_id: skill_bell_echo_effect_sheet
+candidate_id: cand_skill_bell_echo_001
+work_order_id: wo_skill_bell_echo_effect_sheet
+source_brief: bell_echo_guard_ring
+runtime_promoted: true
+frames:
+- frame_id: ring
+  path: ring.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 36
+  - 120
+  - 384
+  - 410
+  visible_pixels: 49887
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.ring
+- frame_id: echo_wave
+  path: echo_wave.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 107
+  - 384
+  - 428
+  visible_pixels: 55182
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.echo_wave
+- frame_id: shield_flash
+  path: shield_flash.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 94
+  - 384
+  - 426
+  visible_pixels: 56869
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.shield_flash
+- frame_id: settle
+  path: settle.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 0
+  - 104
+  - 336
+  - 428
+  visible_pixels: 68642
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.settle
+- frame_id: dissolve
+  path: dissolve.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 43
+  - 4
+  - 337
+  - 353
+  visible_pixels: 42792
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.dissolve
+- frame_id: recover
+  path: recover.png
+  frame_size:
+  - 384
+  - 512
+  visible_bbox:
+  - 58
+  - 89
+  - 294
+  - 308
+  visible_pixels: 16537
+  anchor:
+  - 80
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.skill_bell_echo.recover

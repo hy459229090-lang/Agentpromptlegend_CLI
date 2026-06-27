@@ -19,6 +19,7 @@ RELEASE_SCAN_ROOTS = (
     "README.zh.md",
     "CHANGELOG.md",
     "pyproject.toml",
+    "LICENSE",
     "AGENTS.md",
     "CLAUDE.md",
     "src",
@@ -138,6 +139,21 @@ def main(argv: list[str] | None = None) -> int:
         help="Skip the mock-first user acceptance path gate.",
     )
     parser.add_argument(
+        "--skip-asset-status",
+        action="store_true",
+        help="Skip the terminal graphics asset status report gate.",
+    )
+    parser.add_argument(
+        "--skip-combat-stage",
+        action="store_true",
+        help="Skip the terminal combat-stage graphics evidence gate.",
+    )
+    parser.add_argument(
+        "--skip-timeline-coverage",
+        action="store_true",
+        help="Skip the terminal graphics skill timeline coverage gate.",
+    )
+    parser.add_argument(
         "--install-smoke",
         action="store_true",
         help="Also run the slower clean virtualenv install smoke gate.",
@@ -183,6 +199,29 @@ def main(argv: list[str] | None = None) -> int:
         help="Only run the mock-first user acceptance path check.",
     )
     parser.add_argument(
+        "--asset-status-only",
+        action="store_true",
+        help="Only report terminal graphics asset pipeline readiness.",
+    )
+    parser.add_argument(
+        "--combat-stage-only",
+        action="store_true",
+        help="Only verify terminal combat-stage graphics evidence files.",
+    )
+    parser.add_argument(
+        "--timeline-coverage-only",
+        action="store_true",
+        help="Only verify terminal graphics timeline coverage for all MVP skills.",
+    )
+    parser.add_argument(
+        "--asset-status-strict",
+        action="store_true",
+        help=(
+            "Make the asset status gate require all manifest assets to have "
+            "candidates, cut metadata, QA pass records, and runtime files."
+        ),
+    )
+    parser.add_argument(
         "--install-smoke-only",
         action="store_true",
         help="Only create a clean venv, install the package, and smoke the installed CLI.",
@@ -211,6 +250,12 @@ def main(argv: list[str] | None = None) -> int:
             env=_gate_environment(),
             check=False,
         ).returncode
+    if args.asset_status_only:
+        return _run_asset_status_check(strict=args.asset_status_strict)
+    if args.combat_stage_only:
+        return _run_combat_stage_evidence_check()
+    if args.timeline_coverage_only:
+        return _run_timeline_coverage_check()
     if args.install_smoke_only:
         return _run_install_smoke()
 
@@ -307,6 +352,44 @@ def _build_gates(args: argparse.Namespace) -> list[Gate]:
                 ),
             )
         )
+    if not args.skip_asset_status:
+        command = [python_bin, str(ROOT / "scripts/release_check.py"), "--asset-status-only"]
+        if args.asset_status_strict:
+            command.append("--asset-status-strict")
+        gates.append(
+            Gate(
+                name="asset-status",
+                description=(
+                    "terminal graphics asset pipeline status"
+                    + (" strict gate" if args.asset_status_strict else " report")
+                ),
+                command=tuple(command),
+            )
+        )
+    if not args.skip_combat_stage:
+        gates.append(
+            Gate(
+                name="combat-stage-evidence",
+                description="terminal graphics bitmap/cell stage evidence parity",
+                command=(
+                    python_bin,
+                    str(ROOT / "scripts/release_check.py"),
+                    "--combat-stage-only",
+                ),
+            )
+        )
+    if not args.skip_timeline_coverage:
+        gates.append(
+            Gate(
+                name="timeline-coverage",
+                description="terminal graphics timeline coverage for every MVP skill",
+                command=(
+                    python_bin,
+                    str(ROOT / "scripts/release_check.py"),
+                    "--timeline-coverage-only",
+                ),
+            )
+        )
     if not args.skip_diff:
         gates.append(
             Gate(
@@ -333,6 +416,131 @@ def _build_gates(args: argparse.Namespace) -> list[Gate]:
         )
 
     return gates
+
+
+def _run_asset_status_check(*, strict: bool = False) -> int:
+    python_bin = os.environ.get("OURO_PYTHON", sys.executable)
+    command = [
+        python_bin,
+        str(ROOT / "scripts/asset_status_report.py"),
+        "--content-dir",
+        "content",
+    ]
+    if strict:
+        command.extend(
+            [
+                "--require-all-candidates",
+                "--require-all-cut-metadata",
+                "--require-all-qa-passed",
+                "--require-all-runtime",
+            ]
+        )
+    return subprocess.run(command, cwd=ROOT, env=_gate_environment(), check=False).returncode
+
+
+def _run_combat_stage_evidence_check() -> int:
+    python_bin = os.environ.get("OURO_PYTHON", sys.executable)
+    with tempfile.TemporaryDirectory(prefix="ouro_release_combat_stage_") as output_dir:
+        command = (
+            python_bin,
+            str(ROOT / "scripts/record_combat_stage.py"),
+            "--content-dir",
+            "content",
+            "--output-dir",
+            output_dir,
+            "--width",
+            "96",
+            "--max-frames",
+            "6",
+        )
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            env=_gate_environment(),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.returncode != 0:
+            if result.stderr:
+                print(result.stderr, end="", file=sys.stderr)
+            return result.returncode
+        issues = _combat_stage_evidence_issues(Path(output_dir))
+        if issues:
+            print("Combat stage evidence failed:")
+            for issue in issues:
+                print(f"  - {issue}")
+            return 2
+    print("Combat stage evidence OK: bitmap, Unicode, and ASCII filmstrips verified.")
+    return 0
+
+
+def _run_timeline_coverage_check() -> int:
+    python_bin = os.environ.get("OURO_PYTHON", sys.executable)
+    command = (
+        python_bin,
+        str(ROOT / "scripts/timeline_coverage_report.py"),
+        "--content-dir",
+        "content",
+        "--require-all-skills",
+    )
+    return subprocess.run(command, cwd=ROOT, env=_gate_environment(), check=False).returncode
+
+
+def _combat_stage_evidence_issues(output_dir: Path) -> list[str]:
+    required_markers = {
+        "summary.txt": (
+            "COMBAT STAGE EVIDENCE",
+            "bitmap_filmstrip_iterm2: hex_seal_bitmap_iterm2_filmstrip.txt",
+            "bitmap_filmstrip_kitty: hex_seal_bitmap_kitty_filmstrip.txt",
+            "bitmap_filmstrip_sixel: hex_seal_bitmap_sixel_filmstrip.txt",
+            "Runtime image generation: disabled",
+        ),
+        "hex_seal_bitmap_iterm2_filmstrip.txt": (
+            "BITMAP FRAME 06/12 hit_stop 90ms",
+            "[BITMAP iterm2 role=effect",
+            "sha256=",
+            "DAMAGE -16 HP | HUD impact | HIT STOP",
+        ),
+        "hex_seal_bitmap_kitty_filmstrip.txt": (
+            "BITMAP FRAME 06/12 hit_stop 90ms",
+            "[BITMAP kitty role=enemy",
+            "sha256=",
+            "DAMAGE -16 HP | HUD impact | HIT STOP",
+        ),
+        "hex_seal_bitmap_sixel_filmstrip.txt": (
+            "BITMAP FRAME 06/12 hit_stop 90ms",
+            "[BITMAP sixel role=hero",
+            "sha256=",
+            "DAMAGE -16 HP | HUD impact | HIT STOP",
+        ),
+        "hex_seal_unicode_filmstrip.txt": (
+            "FRAME 06/12 hit_stop 90ms",
+            "-16 HP",
+            "HIT STOP",
+        ),
+        "hex_seal_ascii_filmstrip.txt": (
+            "FRAME 06/12 hit_stop 90ms",
+            "DAMAGE -16 HP",
+            "HIT STOP",
+        ),
+    }
+    issues: list[str] = []
+    for filename, markers in required_markers.items():
+        path = output_dir / filename
+        if not path.is_file():
+            issues.append(f"missing evidence file: {filename}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                issues.append(f"{filename} missing {marker!r}")
+        if filename.endswith("_ascii_filmstrip.txt") and not text.isascii():
+            issues.append(f"{filename} must be ASCII-safe")
+    return issues
 
 
 def _run_isolated_doctor() -> int:
@@ -510,33 +718,36 @@ def _run_install_smoke() -> int:
         if rc != 0:
             return rc
 
-        demo = _run_capture(
+        try_demo = _run_capture(
             (
                 str(ouro_bin),
                 "--lang",
                 "en",
-                "demo",
+                "try",
                 "--seed",
                 "1",
             ),
             cwd=run_cwd,
             env=smoke_env,
         )
-        if demo.returncode != 0:
-            print(demo.stdout)
-            return demo.returncode
-        _print_smoke_lines(demo.stdout)
-        if "OURO DEMO :: FIRST ECHO" not in demo.stdout:
-            print("install smoke failed: missing guided demo header")
+        if try_demo.returncode != 0:
+            print(try_demo.stdout)
+            return try_demo.returncode
+        _print_smoke_lines(try_demo.stdout)
+        if "OURO DEMO :: FIRST ECHO" not in try_demo.stdout:
+            print("install smoke failed: missing guided try header")
             return 1
-        if "BATTLE COMPLETE" not in demo.stdout:
-            print("install smoke failed: guided demo did not finish battle")
+        if "BATTLE COMPLETE" not in try_demo.stdout:
+            print("install smoke failed: guided try did not finish battle")
             return 1
-        if "CODEX :: MONSTER ARCHIVE" not in demo.stdout:
-            print("install smoke failed: guided demo did not read back Codex")
+        if "CODEX :: MONSTER ARCHIVE" not in try_demo.stdout:
+            print("install smoke failed: guided try did not read back Codex")
             return 1
-        if "Next commands" not in demo.stdout or "ouro run --mock" not in demo.stdout:
-            print("install smoke failed: guided demo did not print next commands")
+        if "Next commands" not in try_demo.stdout or "ouro try --seed 1" not in try_demo.stdout:
+            print("install smoke failed: guided try did not print try next command")
+            return 1
+        if "ouro run --mock" not in try_demo.stdout:
+            print("install smoke failed: guided try did not print full-run next command")
             return 1
 
         play = _run_capture(
@@ -768,6 +979,7 @@ def _print_smoke_lines(output: str) -> None:
         "Next commands",
         "NEXT COMMANDS",
         "ouro run --mock",
+        "ouro try --seed 1",
         "ouro status --lang en",
         "ouro codex --lang en",
         "ouro runs --lang en --limit 5",

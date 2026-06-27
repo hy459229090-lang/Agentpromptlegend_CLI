@@ -1,0 +1,119 @@
+schema_version: '0.1'
+asset_id: enemy_black_candle_acolyte_actor_sheet
+candidate_id: cand_enemy_black_candle_acolyte_001
+work_order_id: wo_enemy_black_candle_acolyte_actor_sheet
+source_brief: black_candle_acolyte_chant_silhouette
+runtime_promoted: true
+frames:
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 95
+  - 35
+  - 295
+  - 402
+  visible_pixels: 45551
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.idle
+- frame_id: telegraph
+  path: telegraph.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 35
+  - 18
+  - 408
+  - 402
+  visible_pixels: 58131
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.telegraph
+- frame_id: cast
+  path: cast.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 25
+  - 46
+  - 407
+  - 404
+  visible_pixels: 53543
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.cast
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 41
+  - 40
+  - 325
+  - 402
+  visible_pixels: 53606
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.hit
+- frame_id: break
+  path: break.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 63
+  - 36
+  - 443
+  - 380
+  visible_pixels: 45147
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.break
+- frame_id: death
+  path: death.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 91
+  - 369
+  - 371
+  visible_pixels: 41320
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.death
+- frame_id: codex_reveal
+  path: codex_reveal.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 55
+  - 16
+  - 307
+  - 419
+  visible_pixels: 57567
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_acolyte.codex_reveal

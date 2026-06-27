@@ -608,7 +608,13 @@ def test_cli_play_prints_turn_frames_and_report(content_root, isolated_home, cap
     assert "ENEMY ROSTER" in out
     assert "Tactical Readout" in out
     assert "--- turn 1 / tick" in out
+    assert out.count("--- turn 1 / tick 9 ---") >= 3
     assert out.count("--- turn ") >= 2
+    assert "[>SELECT]" in out
+    assert "[>IMPACT]" in out
+    assert "[>JUDGE]" in out
+    assert "MODE SELECT" not in out
+    assert "OURO LIVE" not in out
     assert "IMPACT" in out
     assert "FAIL IF" in out
     assert "COUNTER CLOCK" in out
@@ -781,6 +787,110 @@ def test_cli_run_death_returns_successful_session_code(content_root, isolated_ho
     assert "YOU DIED" in out
     assert "Run Archive:" in out
     assert "Death History:" in out
+    assert "OURO LIVE" not in out
+    assert "INPUT KEYS" not in out
+
+
+def test_cli_run_zh_localizes_final_run_chrome(content_root, isolated_home, capsys):
+    """Chinese full-run chrome avoids English route/reward/run shell leaks."""
+    rc = main(
+        [
+            "--lang",
+            "zh",
+            "run",
+            "--mock",
+            "--seed",
+            "7",
+            "--hero",
+            "astia",
+            "--no-animation",
+            "--auto",
+            "--no-trace",
+            "--content-dir",
+            str(content_root),
+        ]
+    )
+
+    out = capsys.readouterr().out
+    final_summary = out[out.rfind("运行总结") :]
+
+    assert rc == 0
+    assert "你倒下了" in out
+    assert "运行编号:" in out
+    assert "种子: 7" in out
+    assert "副本: 灰烬墓室" in out
+    assert "读法: 稳进=稳定路线" in out
+    assert "路线图形" in out
+    assert "构筑适配:" in out
+    assert "构筑拼图" in out
+    assert "B 首领" in out
+    assert "进入: 饥饿信徒" in out
+    assert "节点类型: 战斗" in out
+    assert "--- 回合 1 / 刻度" in out
+    assert "模型读取战场" in out
+    assert "--- turn 1 / tick" not in out
+    assert "对齐 Prompt" not in out
+    assert "提示词待机" in out
+    assert "获得: 15金, 10经验" in out
+    assert "选择一项奖励。它会改变下一场战斗的构筑标签与咒语上下文。" in out
+    assert "奖励构筑轨道" in out
+    assert "当前: [ONLINE] 在线" in out
+    assert "[3] [图鉴] => [+1 研读] | 咒语情报" in out
+    assert "读法: 最优=阶段推进" in out
+    assert "[1] 核心" in out
+    assert "[3] 情报" in out
+    assert "构筑前后:" in out
+    assert "构筑标签:" in out
+    assert "模型影响:" in out
+    assert "奖励已选择！" in out
+    assert "先读祭坛: 构筑、经济或生存三种走向。" in out
+    assert "读法: 稳进=贴合状态" in out
+    assert "[1] 贪心" in out
+    assert "[3] 安全" in out
+    assert "首领线索：" in out
+    assert "首领预兆:" in out
+    assert "本局结算板" in out
+    assert "[陨落] 结果: 陨落" in out
+    assert "构筑: [LOCK] 锁定 | 黑烛打断" in out
+    assert "[提示词] control / 降低敌方节奏" in out
+    assert "[种子] 8 / 固定重试样本" in out
+    assert "[路线] 首领压力前找休整/商店" in out
+    assert "[图鉴] 补未知敌人家族" in out
+    assert "楼层到达: 4" in out
+    assert "金币获得: 65" in out
+    assert "经验获得: 50" in out
+    assert "阶段: [LOCK] 锁定" in out
+    assert "运行归档:" in out
+    assert "陨落历史:" in out
+    assert "Run ID:" not in out
+    assert "Dungeon:" not in out
+    assert "Entering:" not in out
+    assert "Node type:" not in out
+    assert "[PATH]" not in out
+    assert "Build 适配:" not in out
+    assert "Earned:" not in out
+    assert "Reward chosen!" not in out
+    assert "奖励 Build 轨道" not in out
+    assert "Current:" not in out
+    assert "Build tags:" not in out
+    assert "Build 前后:" not in out
+    assert "AI 影响:" not in out
+    assert "prompt intel" not in out
+    assert "读法: TAKE 贴合状态" not in out
+    assert "[1] GREED" not in out
+    assert "[3] SAFE" not in out
+    assert "Boss 线索" not in out
+    assert "Boss 预兆" not in out
+    assert "Run Archive:" not in out
+    assert "Death History:" not in out
+    assert "Floor reached:" not in final_summary
+    assert "Gold earned:" not in final_summary
+    assert "XP earned:" not in final_summary
+    assert "Locked In" not in final_summary
+    assert "[PROMPT]" not in final_summary
+    assert "[SEED]" not in final_summary
+    assert "[ROUTE]" not in final_summary
+    assert "[CODEX]" not in final_summary
 
 
 def test_cli_prompt_style_is_visible_in_trace(content_root, isolated_home, tmp_path):

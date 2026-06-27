@@ -1,0 +1,55 @@
+schema_version: '0.1'
+asset_id: item_quick_string_icon_card
+candidate_id: cand_item_quick_string_001
+work_order_id: wo_item_quick_string_icon_card
+source_brief: quick_string_hunter_icon
+runtime_promoted: true
+frames:
+- frame_id: icon
+  path: icon.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 112
+  - 166
+  - 445
+  - 559
+  visible_pixels: 48038
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_quick_string.icon
+- frame_id: card
+  path: card.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 72
+  - 93
+  - 474
+  - 626
+  visible_pixels: 213347
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_quick_string.card
+- frame_id: hud_mark
+  path: hud_mark.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 125
+  - 222
+  - 376
+  - 482
+  visible_pixels: 26520
+  anchor:
+  - 32
+  - 32
+  duration_ms: 80
+  fallback_cell_id: cell.item_quick_string.hud_mark

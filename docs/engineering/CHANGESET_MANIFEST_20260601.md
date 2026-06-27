@@ -23,6 +23,7 @@ These groups are part of the product/release changeset:
   - `README.md`
   - `README.zh.md`
   - `CHANGELOG.md`
+  - `LICENSE`
   - `pyproject.toml`
   - `.gitignore`
 
@@ -60,6 +61,8 @@ Expected release-candidate state:
 - `README.md`, `README.zh.md`, `CHANGELOG.md`, `docs/product/23_QA证据与固定Seed试玩记录_20260601.md`, `docs/product/24_最终产品验收审计_20260601.md`, and `docs/engineering/RELEASE_HANDOFF_20260601.md` agree on the latest test count.
 - `scripts/release_check.py` reports `PASS: doctor` from an isolated temporary `OURO_AGENT_HOME`, with `provider chk : READY`, content OK, and mock play ready.
 - `scripts/release_check.py` reports `PASS: version-consistency`, and `--version-only` reports `Version consistency OK: 0.1.0 / v0.1.0`.
+- `scripts/release_check.py` reports `PASS: combat-stage-evidence` after verifying simulated iTerm2/Kitty/SIXEL bitmap filmstrips plus Unicode/ASCII fallback filmstrips for the Hex Seal smoke timeline.
+- `scripts/release_check.py` reports `PASS: timeline-coverage` after verifying all 18 MVP skills build display-only sprite timelines from QA-promoted runtime atlas frames, including 12-beat authored timelines for all six hero signature skills.
 - `venv312/bin/python scripts/release_check.py --install-smoke-only` passes before tagging when clean install smoke evidence must be refreshed; it verifies installed `play`, `codex`, `run`, `runs`, and `history` readback from outside the source checkout. `--install-smoke` can add the same gate to the full release check.
 - `scripts/release_check.py` reports `PASS: privacy-scan` and does not find likely plaintext provider keys, bearer tokens, or secret assignments in release-bound text files.
-- User satisfaction and License decision remain explicit release sign-off items, not silent assumptions.
+- User satisfaction remains an explicit release sign-off item, not a silent assumption; License decision is recorded as MIT and must stay synchronized across `LICENSE`, `pyproject.toml`, and README files.

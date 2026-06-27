@@ -1,0 +1,119 @@
+schema_version: '0.1'
+asset_id: enemy_black_candle_priest_rite_actor_sheet
+candidate_id: cand_enemy_black_candle_priest_rite_001
+work_order_id: wo_enemy_black_candle_priest_rite_actor_sheet
+source_brief: black_candle_priest_ritebound_chant
+runtime_promoted: true
+frames:
+- frame_id: idle
+  path: idle.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 47487
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.idle
+- frame_id: telegraph
+  path: telegraph.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 60915
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.telegraph
+- frame_id: cast
+  path: cast.png
+  frame_size:
+  - 443
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 443
+  visible_pixels: 54408
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.cast
+- frame_id: hit
+  path: hit.png
+  frame_size:
+  - 444
+  - 443
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 443
+  visible_pixels: 53504
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.hit
+- frame_id: break
+  path: break.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 55773
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.break
+- frame_id: death
+  path: death.png
+  frame_size:
+  - 444
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 444
+  - 444
+  visible_pixels: 52555
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.death
+- frame_id: codex_reveal
+  path: codex_reveal.png
+  frame_size:
+  - 443
+  - 444
+  visible_bbox:
+  - 0
+  - 0
+  - 443
+  - 444
+  visible_pixels: 63098
+  anchor:
+  - 64
+  - 96
+  duration_ms: 80
+  fallback_cell_id: cell.enemy_black_candle_priest_rite.codex_reveal

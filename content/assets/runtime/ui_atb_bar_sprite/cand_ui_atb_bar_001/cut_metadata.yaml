@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: ui_atb_bar_sprite
+candidate_id: cand_ui_atb_bar_001
+work_order_id: wo_ui_atb_bar_sprite
+source_brief: atb_bar_tension_sprite
+runtime_promoted: true
+frames:
+- frame_id: empty
+  path: empty.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 25
+  - 304
+  - 527
+  - 426
+  visible_pixels: 33418
+  anchor:
+  - 48
+  - 8
+  duration_ms: 80
+  fallback_cell_id: cell.ui.atb_bar.empty
+- frame_id: charge
+  path: charge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 24
+  - 304
+  - 526
+  - 426
+  visible_pixels: 33436
+  anchor:
+  - 48
+  - 8
+  duration_ms: 80
+  fallback_cell_id: cell.ui.atb_bar.charge
+- frame_id: ready
+  path: ready.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 21
+  - 247
+  - 530
+  - 435
+  visible_pixels: 40000
+  anchor:
+  - 48
+  - 8
+  duration_ms: 80
+  fallback_cell_id: cell.ui.atb_bar.ready
+- frame_id: spent
+  path: spent.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 13
+  - 308
+  - 513
+  - 421
+  visible_pixels: 31162
+  anchor:
+  - 48
+  - 8
+  duration_ms: 80
+  fallback_cell_id: cell.ui.atb_bar.spent

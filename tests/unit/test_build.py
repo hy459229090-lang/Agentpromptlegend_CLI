@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from ouro_agent.content import load_content_bundle
+from ouro_agent.art.sprite_atlas import SpriteAtlas
+from ouro_agent.content import load_content_bundle, validate_asset_manifest
 from ouro_agent.engine import resolve_build
 from ouro_agent.engine.battle import BattleLoop
 from ouro_agent.i18n import visual_width
@@ -234,6 +235,41 @@ def test_render_hero_card_zh(bundle):
     astia_build = resolve_build(astia, bundle)
     astia_text = render_hero_card(astia, bundle, astia_build, language="zh")
     assert "腐化学派" in astia_text
+    assert "构筑变化: [ONLINE] 暗影/控制" in astia_text
+    assert "AI 行为: 优先打断与节奏技能" in astia_text
+    assert "标签:" in astia_text
+    assert "暗影 / 控制 / 风险 / 图鉴 / 腐化" in astia_text
+    assert "英雄开局配置板" in astia_text
+    assert "[提示词] 英雄默认 / Agent 行为倾向" in astia_text
+    assert "[构筑] [ONLINE] 在线 / 黑烛打断" in astia_text
+    assert "[核心] 暗影 / 控制" in astia_text
+    assert "[开局] 打断施法者，用 MP 换节奏" in astia_text
+    assert "构筑阶段: 在线 [ONLINE]" in astia_text
+    assert "还需: 防守 +2, 护甲 +2" in astia_text
+    assert "- 防守 +2  (对应 铁色军团)" in astia_text
+    assert "裂痕短杖 [普通] (暗影)" in astia_text
+    assert "黑日典籍 [英雄] (暗影, 图鉴)" in astia_text
+    assert "腐化凝神 (暗影, 腐化)" in astia_text
+    assert "腐化学派 (暗影)" in astia_text
+    assert "构筑关系 核心/暗影/控制" in astia_text
+    assert "AI favors interrupts" not in astia_text
+    assert "[common]" not in astia_text
+    assert "[heroic]" not in astia_text
+    assert "HERO LOADOUT BOARD" not in astia_text
+    assert "BUILD MAP BOARD" not in astia_text
+    assert "ACTION KIT BOARD" not in astia_text
+    assert "[PROMPT]" not in astia_text
+    assert "[BUILD]" not in astia_text
+    assert "[CORE]" not in astia_text
+    assert "[OPENER]" not in astia_text
+    assert "[BUILD] [ONLINE] Online" not in astia_text
+    assert "构筑阶段: Online" not in astia_text
+    assert "shadow       [###]" not in astia_text
+    assert "guard +2" not in astia_text
+    assert "(for 铁色军团)" not in astia_text
+    assert "core/shadow" not in astia_text
+    assert "Build 关系" not in astia_text
+    assert "构筑关系 核心/shadow" not in astia_text
     assert "resonance_corruption_school" not in astia_text
 
 
@@ -290,6 +326,29 @@ def test_render_hero_list_en_is_ascii_safe(bundle):
     for line in unicode_text.splitlines():
         assert visual_width(line) <= 100
 
+    zh_text = render_hero_list(bundle, language="zh")
+    assert "英雄队列面板" in zh_text
+    assert "[1] 阿斯缇娅 [ONLINE] | 提示词 控制 | 风险 普通 | 暗影 / 控制" in zh_text
+    assert "[2] 诺恩 [ONLINE] | 提示词 稳守 | 风险 容易 | 防守 / 护甲" in zh_text
+    assert "[3] 薇拉 [PAIR] | 提示词 猛攻 | 风险 困难 | 流血 / 猎手" in zh_text
+    assert "[3] [W:XBW] ==> [PAIR] | 薇拉 | 成对" in zh_text
+    assert "构筑: [ONLINE] 暗影/控制" in zh_text
+    assert "标签: 暗影 / 控制" in zh_text
+    assert "下一步: ouro weapons --unicode，然后打开 hero-card 查看完整构筑计划" in zh_text
+    assert "Prompt control" not in zh_text
+    assert "Prompt guarded" not in zh_text
+    assert "风险 normal" not in zh_text
+    assert "风险 easy" not in zh_text
+    assert "风险 hard" not in zh_text
+    assert "shadow / control" not in zh_text
+    assert "guard / armor" not in zh_text
+    assert "bleed / hunter" not in zh_text
+    assert " | Online" not in zh_text
+    assert " | Pair" not in zh_text
+    assert "Build 计划" not in zh_text
+    for line in zh_text.splitlines():
+        assert visual_width(line) <= 100
+
 
 def test_render_weapon_gallery_command_surface(bundle):
     from ouro_agent.tui import render_weapon_gallery
@@ -323,12 +382,22 @@ def test_render_weapon_gallery_command_surface(bundle):
 
     zh_text = render_weapon_gallery(bundle, language="zh", unicode_mode=True, width=100)
     assert "武器图鉴 :: 构筑兵装" in zh_text
-    assert "先比较武器轮廓、Build 标签和 AI 行为" in zh_text
+    assert "先比较武器轮廓、构筑标签和 Agent 行为" in zh_text
+    assert "[图] ░▓███░" in zh_text
     assert "[拥有] 阿斯缇娅 / 暗影学徒" in zh_text
     assert "[阶段] [ONLINE] 暗影/控制" in zh_text
-    assert "[AI] 优先打断与节奏技能" in zh_text
+    assert "[行为] 优先打断与节奏技能" in zh_text
     assert "[打开] ouro hero-card astia" in zh_text
     assert "下一步武器路线" in zh_text
+    assert "[构筑] ouro list-heroes --unicode" in zh_text
+    assert "[详情] ouro hero-card astia --unicode" in zh_text
+    assert "[运行] ouro run --mock --hero astia" in zh_text
+    assert "Build 标签" not in zh_text
+    assert "ART " not in zh_text
+    assert "[AI]" not in zh_text
+    assert "[BUILD]" not in zh_text
+    assert "[DETAIL]" not in zh_text
+    assert "[RUN]" not in zh_text
     assert "hero_shadow_apprentice" not in zh_text
     for line in zh_text.splitlines():
         assert visual_width(line) <= 100
@@ -352,6 +421,13 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
     assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
     assert "Build Before -> After: [ONLINE] shadow/control" in text
     assert "AI Effect: AI favors interrupts and tempo skills." in text
+    assert "BUILD TUI NAV" in text
+    assert "BUILD FOCUS RAIL" in text
+    assert "* Stage: Online" in text
+    assert "> Prompt: control" in text
+    assert "BUILD COMMAND RAIL" in text
+    assert "[TRY] ouro run --mock --hero astia" in text
+    assert "[ARSENAL] ouro weapons --unicode" in text
     assert "HERO LOADOUT BOARD" in text
     assert "BUILD MAP BOARD" in text
     assert "  Weapon: [W:STF] c==* Cracked Wand [common] tags shadow" in text
@@ -402,25 +478,52 @@ def test_render_hero_card_shows_build_strategy_and_prompt_template(bundle):
         language="zh",
         prompt_style="control",
     )
-    assert "BUILD MAP BOARD :: 构筑关系图" in zh_text
+    assert "构筑关系图" in zh_text
+    assert "构筑 TUI 导航" in zh_text
+    assert "构筑焦点轨" in zh_text
+    assert "* 阶段: 在线" in zh_text
+    assert "> 提示词: control" in zh_text
+    assert "构筑命令轨" in zh_text
+    assert "[试玩] ouro run --mock --hero astia" in zh_text
     assert "  武器    : [W:STF] c==* 裂痕短杖 [普通] 标签 暗影" in zh_text
     assert "  连接    : [R] 腐化学派 <- 暗影 5/3" in zh_text
     assert "  技能计划:" in zh_text
     assert "    [HEX] 禁咒封印 蓝量18 冷却4 -> 核心/暗影/控制 | 封住吟唱窗口" in zh_text
-    assert "  AI倾向: Prompt control + 黑烛打断 -> 先控吟唱窗口" in zh_text
-    assert "ACTION KIT BOARD :: 技能行动套件" in zh_text
-    assert "Build 关系 核心/shadow/control" in zh_text
+    assert "  AI倾向: 提示词 control + 黑烛打断 -> 先控吟唱窗口" in zh_text
+    assert "技能行动套件" in zh_text
+    assert "构筑关系 核心/暗影/控制" in zh_text
+    assert "HERO LOADOUT BOARD" not in zh_text
+    assert "BUILD MAP BOARD" not in zh_text
+    assert "ACTION KIT BOARD" not in zh_text
+    assert "[PROMPT]" not in zh_text
+    assert "[BUILD]" not in zh_text
+    assert "[CORE]" not in zh_text
+    assert "AI倾向: Prompt" not in zh_text
+    assert "Build 关系" not in zh_text
+    assert "构筑关系 核心/shadow/control" not in zh_text
     assert "封住吟唱窗口" in zh_text
     assert "skill_hex_seal" not in zh_text
 
 
-def test_render_hero_card_unicode_shows_block_weapon_art(bundle):
+def test_render_hero_card_unicode_shows_block_weapon_art(bundle, content_root: Path):
     from ouro_agent.tui import render_hero_card
 
     astia = bundle.get_hero("hero_shadow_apprentice")
     build = resolve_build(astia, bundle)
-    text = render_hero_card(astia, bundle, build, language="en", unicode_mode=True)
+    report = validate_asset_manifest(content_root, bundle)
+    atlas = SpriteAtlas.from_manifest_report(report)
+    text = render_hero_card(
+        astia,
+        bundle,
+        build,
+        language="en",
+        unicode_mode=True,
+        asset_atlas=atlas,
+    )
 
+    assert "[ASSET] BMP hero portrait | fallback cell.hero_shadow_apprentice.portrait" in text
+    assert "[THUMB]" in text
+    assert "hero 313x418 crop 249x280 px 50919" in text
     assert "WEAPON CARD: [W:STF] c==* [ONLINE]" in text
     assert "░▓███░" in text
     assert "AI Effect:" in text
@@ -443,6 +546,9 @@ def test_render_all_six_hero_cards_explain_play_and_risk(bundle):
         assert "Build:" in text
         assert "Weapon:" in text
         assert "Risk:" in text
+        assert "BUILD TUI NAV" in text
+        assert "BUILD FOCUS RAIL" in text
+        assert "BUILD COMMAND RAIL" in text
         assert "HERO LOADOUT BOARD" in text
         assert "ACTION KIT BOARD" in text
         assert text.count("ACTION KIT BOARD") == 1

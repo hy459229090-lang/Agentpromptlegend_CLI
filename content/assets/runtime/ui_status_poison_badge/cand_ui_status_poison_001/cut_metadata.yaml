@@ -1,0 +1,71 @@
+schema_version: '0.1'
+asset_id: ui_status_poison_badge
+candidate_id: cand_ui_status_poison_001
+work_order_id: wo_ui_status_poison_badge
+source_brief: poison_status_badge
+runtime_promoted: true
+frames:
+- frame_id: badge
+  path: badge.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 68
+  - 136
+  - 489
+  - 569
+  visible_pixels: 93035
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_poison.badge
+- frame_id: applied
+  path: applied.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 58
+  - 138
+  - 485
+  - 571
+  visible_pixels: 106056
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_poison.applied
+- frame_id: ticking
+  path: ticking.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 58
+  - 128
+  - 487
+  - 595
+  visible_pixels: 106250
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_poison.ticking
+- frame_id: expire
+  path: expire.png
+  frame_size:
+  - 543
+  - 724
+  visible_bbox:
+  - 53
+  - 149
+  - 461
+  - 560
+  visible_pixels: 88613
+  anchor:
+  - 16
+  - 16
+  duration_ms: 80
+  fallback_cell_id: cell.ui.status_poison.expire

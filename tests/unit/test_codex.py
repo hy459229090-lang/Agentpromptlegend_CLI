@@ -11,8 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from ouro_agent.art.sprite_atlas import SpriteAtlas
 from ouro_agent.cli.main import main
-from ouro_agent.content import CodexStage, load_content_bundle
+from ouro_agent.content import CodexStage, load_content_bundle, validate_asset_manifest
 from ouro_agent.sessions import (
     CodexStoreError,
     CodexEntry,
@@ -30,6 +31,11 @@ from ouro_agent.i18n import visual_width
 @pytest.fixture()
 def bundle(content_root: Path):
     return load_content_bundle(content_root)
+
+
+def _atlas(content_root: Path, bundle) -> SpriteAtlas:
+    report = validate_asset_manifest(content_root, bundle)
+    return SpriteAtlas.from_manifest_report(report)
 
 
 def test_codex_stage_from_encounters():
@@ -230,6 +236,23 @@ def test_cli_codex_shows_persisted_summary(bundle, content_root, isolated_home, 
     assert "[OB] [k] Black Candle Acolyte [I: Trace]" in out
     assert "[??] [K] ???? [II: Ritebound]" in out
 
+    rc = main(["codex", "--lang", "zh", "--content-dir", str(content_root)])
+    zh_out = capsys.readouterr().out
+
+    assert rc == 0
+    assert f"图鉴 : {codex_path()}" in zh_out
+    assert "图鉴 :: 怪物档案" in zh_out
+    assert "已观察: 1/9" in zh_out
+    assert "图鉴狩猎板" in zh_out
+    assert "怪物图鉴画廊" in zh_out
+    assert "Codex :" not in zh_out
+    assert "Total:" not in zh_out
+    assert "Observed:" not in zh_out
+    assert "Familiar:" not in zh_out
+    assert "Mastered:" not in zh_out
+    assert "Hunted:" not in zh_out
+    assert "CODEX HUNT BOARD" not in zh_out
+
 
 def test_cli_codex_shows_persisted_detail(content_root, isolated_home, capsys):
     """REQ-LONGVIEW-001: players can open a specific monster card."""
@@ -357,19 +380,27 @@ def test_codex_stage_badge():
     assert codex_stage_badge(CodexStage.HUNTED) == "[HT]"
 
 
-def test_codex_card_unknown(bundle):
+def test_codex_card_unknown(bundle, content_root: Path):
     """REQ-GAMEUI-003: Unknown monsters should show only silhouette."""
     from ouro_agent.tui.screens import render_codex_card
 
+    atlas = _atlas(content_root, bundle)
     card = render_codex_card(
         "enemy_black_candle_acolyte",
         bundle,
         codex_progress=None,
         language="en",
+        width=120,
+        asset_atlas=atlas,
+        unicode_mode=True,
     )
 
     assert "[??]" in card
     assert "UNKNOWN FAMILY" in card
+    assert "[CODEX] BMP codex locked | fallback cell.ui.codex_reveal.locked" in card
+    assert "[CODEX THUMB]" in card
+    assert "codex 470x836 crop 343x564 px 155092" in card
+    assert "cell.enemy_black_candle_acolyte" not in card
     assert "FOG SILHOUETTE" in card
     assert "COUNTER PLAN BOARD" in card
     assert "[THREAT] ????? / encounter to reveal" in card
@@ -378,10 +409,11 @@ def test_codex_card_unknown(bundle):
     assert "never encountered" in card
 
 
-def test_codex_card_observed(bundle):
+def test_codex_card_observed(bundle, content_root: Path):
     """REQ-GAMEUI-003: Observed monsters should show name and basic info."""
     from ouro_agent.tui.screens import render_codex_card
 
+    atlas = _atlas(content_root, bundle)
     progress = CodexProgress()
     progress.record_encounter("family_black_candle")
 
@@ -390,10 +422,22 @@ def test_codex_card_observed(bundle):
         bundle,
         codex_progress=progress,
         language="en",
+        width=120,
+        asset_atlas=atlas,
+        unicode_mode=True,
     )
 
     assert "[OB]" in card
     assert "EVENT: CODEX REVEAL [OB]" in card
+    assert (
+        "[ASSET] BMP enemy codex_reveal | "
+        "fallback cell.enemy_black_candle_acolyte.codex_reveal"
+    ) in card
+    assert "[THUMB]" in card
+    assert "enemy 443x444 crop 252x403 px 57567" in card
+    assert "[CODEX] BMP codex reveal | fallback cell.ui.codex_reveal.reveal" in card
+    assert "[CODEX THUMB]" in card
+    assert "codex 470x836 crop 437x593 px 163546" in card
     assert "BLOCK SILHOUETTE" in card
     assert "BLOCK SILHOUETTE / CODEX REVEAL" in card
     assert "▐▓k▓▌" in card
@@ -408,7 +452,7 @@ def test_codex_card_observed(bundle):
     assert "Encounters: 1" in card
     assert "Defeats: 0" in card
     assert "Next: defeat 2 more" in card
-    assert all(visual_width(line) <= 60 for line in card.splitlines())
+    assert all(visual_width(line) <= 120 for line in card.splitlines())
 
 
 def test_codex_card_familiar(bundle):
@@ -486,10 +530,11 @@ def test_codex_card_hunted(bundle):
     assert "MAX STAGE" in card
 
 
-def test_codex_summary(bundle):
+def test_codex_summary(bundle, content_root: Path):
     """Codex summary should list all monsters with badges."""
     from ouro_agent.tui.screens import render_codex_summary
 
+    atlas = _atlas(content_root, bundle)
     progress = CodexProgress()
     progress.record_encounter("family_black_candle")
 
@@ -497,9 +542,18 @@ def test_codex_summary(bundle):
         bundle,
         codex_progress=progress,
         language="en",
+        asset_atlas=atlas,
+        unicode_mode=True,
     )
 
     assert "CODEX" in summary
+    assert "CODEX TUI NAV" in summary
+    assert "[OVERVIEW] |  HUNT BOARD  |  GALLERY  |  COUNTER PLAN" in summary
+    assert "CODEX FOCUS RAIL" in summary
+    assert "> Observed: [###-----] 3/9" in summary
+    assert "* Mastered: [--------] 0/9" in summary
+    assert "CODEX COMMAND RAIL" in summary
+    assert "[STATUS] ouro status --lang en" in summary
     assert "Total: 9 monsters" in summary
     assert "Observed: 3/9" in summary
     assert "CODEX HUNT BOARD" in summary
@@ -513,6 +567,8 @@ def test_codex_summary(bundle):
     assert "  Family:" in summary
     assert "  Behavior:" in summary
     assert "  Silhouette:" in summary
+    assert "Asset: BMP codex locked" in summary
+    assert "Asset: BMP enemy codex_reveal | BMP codex reveal" in summary
     assert "  Card: c | -> encounter once" in summary
     assert "[OB] [k] Black Candle Acolyte [I: Trace]" in summary
     assert "Silhouette: ~(k)~" in summary
@@ -560,6 +616,9 @@ def test_codex_summary_no_progress(bundle):
     )
 
     assert "CODEX" in summary
+    assert "CODEX TUI NAV" in summary
+    assert "CODEX FOCUS RAIL" in summary
+    assert "CODEX COMMAND RAIL" in summary
     assert "Total: 9 monsters" in summary
     assert "Observed: 0/9" in summary
     assert "CODEX HUNT BOARD" in summary
@@ -588,7 +647,18 @@ def test_codex_summary_zh_gallery_board(bundle):
 
     assert "CODEX :: MONSTER ARCHIVE" in summary or "图鉴 :: 怪物档案" in summary
     assert "图鉴 :: 怪物档案" in summary
-    assert "CODEX HUNT BOARD :: 图鉴狩猎板" in summary
+    assert "图鉴 TUI 导航" in summary
+    assert "[总览] |  狩猎板  |  画廊  |  反制计划" in summary
+    assert "图鉴焦点轨" in summary
+    assert "> 观察: [#-------] 1/9" in summary
+    assert "图鉴命令轨" in summary
+    assert "[状态] ouro status --lang zh" in summary
+    assert "总计: 9 只怪物" in summary
+    assert "已观察: 1/9" in summary
+    assert "已熟悉: 0/9" in summary
+    assert "已掌握: 0/9" in summary
+    assert "已追猎: 0/9" in summary
+    assert "图鉴狩猎板" in summary
     assert "怪物图鉴画廊" in summary
     assert "优先目标:" in summary
     assert "卡片 c" in summary
@@ -600,4 +670,11 @@ def test_codex_summary_zh_gallery_board(bundle):
     assert "  Family:" not in summary
     assert "  Behavior:" not in summary
     assert "  Silhouette:" not in summary
+    assert "Total:" not in summary
+    assert "monsters" not in summary
+    assert "Observed:" not in summary
+    assert "Familiar:" not in summary
+    assert "Mastered:" not in summary
+    assert "Hunted:" not in summary
+    assert "CODEX HUNT BOARD" not in summary
     assert "enemy_" not in summary

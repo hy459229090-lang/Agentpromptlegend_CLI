@@ -40,6 +40,7 @@
 |       |-- trace/
 |       `-- validation/
 |-- content/
+|   |-- assets/
 |   |-- heroes/
 |   |-- enemies/
 |   |-- skills/
@@ -75,7 +76,8 @@
 | `src/ouro_agent/art/` | glyph、头像、符号映射 | 玩法规则 |
 | `src/ouro_agent/trace/` | trace 结构、写入、脱敏摘要 | API key |
 | `src/ouro_agent/validation/` | 内容校验、快照校验、doctor 检查 | 游戏运行主逻辑 |
-| `content/` | 结构化游戏内容数据 | Python 逻辑 |
+| `content/` | 结构化游戏内容数据和运行时本地资产 | Python 逻辑 |
+| `content/assets/` | QA 通过的 runtime 图片资产、sprite metadata、fallback manifest | 未筛选的生成候选图、Python 逻辑、用户私密素材 |
 | `tests/` | 单元、集成、fixtures | 运行时输出 |
 | `examples/` | 示例配置、示例 trace、README 媒体画面 | 用户真实配置 |
 | `scripts/` | 开发辅助脚本 | 核心产品逻辑 |
